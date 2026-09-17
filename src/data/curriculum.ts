@@ -14,6 +14,21 @@ export interface ModuleData {
     summary: string;
     points: { title: string; desc: string }[];
     diagramNote?: string;
+    deepDiveSections?: {
+      title: string;
+      badge?: string;
+      content: string;
+      subpoints?: { label: string; text: string }[];
+      comparisonTable?: {
+        headers: string[];
+        rows: string[][];
+      };
+      callout?: {
+        type: "warning" | "tip" | "info";
+        title: string;
+        text: string;
+      };
+    }[];
   };
   references: { title: string; url: string; source: string }[];
   
@@ -67,7 +82,97 @@ export const MODULES: ModuleData[] = [
         { title: "Arsitektur 3 Area Git", desc: "Working Tree (file yang diedit) ➔ Staging Area (git add untuk memilih berkas) ➔ Local Repository (git commit untuk snapshot permanen) ➔ Remote GitHub (git push)." },
         { title: "Identitas & Git Hygiene", desc: "Identitas global vs lokal (git config) menentukan pencatatan author. File .env.local berisi kunci rahasia yang wajib masuk .gitignore agar tidak terunggah ke publik." }
       ],
-      diagramNote: "Client Browser ↔️ Next.js (Vercel Serverless) ↔️ Supabase (Data/Auth) & Cloudinary (Media CDN)"
+      diagramNote: "Client Browser ↔️ Next.js (Vercel Serverless) ↔️ Supabase (Data/Auth) & Cloudinary (Media CDN)",
+      deepDiveSections: [
+        {
+          title: "1. Paradigma Serverless: FaaS vs BaaS vs Monolith",
+          badge: "Pilar 1: Komputasi Cloud Modern",
+          content: "Di era web tradisional, developer harus menyewa VPS (Virtual Private Server), menginstal OS Linux, memasang web server Nginx, PM2 process manager, dan memelihara database 24 jam sehari meskipun tidak ada pengguna yang aktif. Serverless mengubah paradigma ini: server tetap ada di cloud, namun seluruh provisioning, auto-scaling, dan maintenance dikelola secara otomatis oleh penyedia platform.",
+          subpoints: [
+            {
+              label: "FaaS (Function as a Service)",
+              text: "Model komputasi berbasis event (event-driven). Kode backend dipecah menjadi fungsi-fungsi modular yang hanya 'bangun' saat dipanggil (misal: saat request HTTP masuk), mengeksekusi logika dalam milidetik, lalu otomatis mati kembali (scale-to-zero). Anda hanya membayar per milidetik eksekusi (Rp 0 saat idle). Contoh: Vercel Serverless Functions & Next.js 16 Server Actions."
+            },
+            {
+              label: "BaaS (Backend as a Service)",
+              text: "Layanan penyedia seluruh infrastruktur backend siap pakai berbasis API & SDK. Menyediakan Database PostgreSQL terkelola penuh, Autentikasi Pengguna (OAuth GitHub/JWT), File Storage CDN, dan WebSocket Realtime tanpa perlu merakit Linux server database manual. Contoh: Supabase."
+            },
+            {
+              label: "Ekosistem 4 Pilar di Perkuliahan Kita",
+              text: "Next.js 16 (Frontend & Server Actions) ↔️ Vercel (Edge/Serverless CI/CD Hosting) ↔️ Supabase (Database PostgreSQL & Auth) ↔️ Cloudinary (AI Media CDN)."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Dimensi", "Monolith VPS Tradisional", "FaaS (Function as a Service)", "BaaS (Backend as a Service)"],
+            rows: [
+              ["Manajemen Server", "Manual (Install Linux, Nginx, PM2)", "Zero Server (Dikelola Vercel)", "Zero Server (Dikelola Supabase)"],
+              ["Skalabilitas", "Manual / Perlu Setup Load Balancer", "Auto-scale Instan per Event Masuk", "Auto-scale Cloud PostgreSQL Native"],
+              ["Model Biaya", "Sewa Tetap 24/7 (Bayar meski idle)", "Pay-per-execution (Rp 0 saat sepi)", "Freemium / Berbasis Kuota Database"],
+              ["Fokus Pengembang", "Mengurus Infrastruktur + Kode", "Fokus Murni Logika Server Actions", "Fokus Konsumsi SDK & Skema Data"]
+            ]
+          }
+        },
+        {
+          title: "2. Mental Model Git & Keamanan Kunci Rahasia (Secrets Hygiene)",
+          badge: "Pilar 2: Keamanan Repositori",
+          content: "Git adalah sistem pelacak versi terdistribusi yang membagi status file ke dalam 3 wilayah kerja lokal dan 1 repositori remote di cloud. Memahami siklus ini sangat krusial untuk mencegah kebocoran data sensitif.",
+          subpoints: [
+            {
+              label: "Arsitektur 3 Wilayah Kerja Lokal",
+              text: "Working Tree (tempat Anda mengetik kode di editor) ➔ Staging Area (keranjang seleksi berkas via 'git add') ➔ Local Repository / HEAD (snapshot riwayat permanen di folder tersembunyi .git via 'git commit')."
+            },
+            {
+              label: "Identitas Author (Global vs Local)",
+              text: "Git mewajibkan setiap commit memiliki user.name dan user.email. Konfigurasi '--global' berlaku untuk seluruh komputer (~/.gitconfig), sedangkan konfigurasi lokal (tanpa --global) memungkinkan override identitas per-folder untuk memisahkan akun kampus dan akun pribadi."
+            },
+            {
+              label: "Mekanisme Perlindungan .gitignore",
+              text: "File .env.local memuat API Secret (seperti Supabase Service Role Key). Bot scraper otomatis di GitHub publik memindai setiap commit publik setiap detik. Mendaftarkan .env.local ke dalam file .gitignore memastikan berkas rahasia tidak pernah terunggah ke GitHub."
+            },
+            {
+              label: "Filosofi Feature Branch Workflow",
+              text: "Cabang utama 'main' selalu dijaga dalam kondisi stabil dan siap rilis. Seluruh pengerjaan tugas mingguan wajib dilakukan di cabang terpisah ('git checkout -b feature/*') sebelum digabungkan kembali via merge."
+            }
+          ],
+          callout: {
+            type: "warning",
+            title: "Hukum Keamanan Industri: Jangan Pernah Commit File .env.local!",
+            text: "Kunci API yang terlanjur ter-push ke repositori GitHub publik akan tersimpan permanen di histori Git meskipun file tersebut dihapus pada commit berikutnya. Selalu periksa aturan .gitignore sebelum melakukan commit pertama!"
+          }
+        },
+        {
+          title: "3. Metodologi Prompting AI Berkonteks Tinggi (Framework C-R-E-T)",
+          badge: "Pilar 3: AI-Assisted Engineering",
+          content: "Model bahasa besar (LLM seperti Cursor, Copilot, ChatGPT, Claude) dilatih menggunakan miliaran baris kode di internet. Tanpa batasan konteks yang presisi, AI cenderung menghasilkan kode usang (seperti Next.js Pages Router atau React 18 deprecated hooks) yang memicu error fatal di Next.js 16.",
+          subpoints: [
+            {
+              label: "C — Context (Domain Aplikasi)",
+              text: "Jelaskan konteks spesifik aplikasi yang sedang dibangun (misal: 'Saya sedang membangun dashboard tugas kuliah serverless')."
+            },
+            {
+              label: "R — Role (Persona Pakar)",
+              text: "Berikan peran profesional spesifik kepada AI (misal: 'Bertindaklah sebagai Senior Full-Stack Cloud Architect')."
+            },
+            {
+              label: "E — Explicit Versions & Constraints",
+              text: "Sebutkan versi tepat dan batasan arsitektur (misal: 'Wajib Next.js 16 App Router, React 19 useActionState, Tailwind CSS v4, Server Actions async, dilarang membuat file /api/ terpisah')."
+            },
+            {
+              label: "T — Target Output Structure",
+              text: "Minta format output yang terstruktur (misal: 'Sertakan skema validasi Zod, tipe return { success, errors }, dan pesan ramah pengguna')."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Aspek", "Vague Prompt (Asal-asalan) ❌", "High-Context Prompt (Presisi C-R-E-T) ✅"],
+            rows: [
+              ["Spesifikasi Versi", "\"Buatkan form input data tugas\"", "\"Buatkan form input di Next.js 16 App Router dengan React 19\""],
+              ["Logika & Backend", "\"Pakai validasi form\"", "\"Validasi FormData menggunakan skema Zod dan Server Actions 'use server'\""],
+              ["State Management", "Menghasilkan useState / API routes usang", "Menggunakan useActionState untuk umpan balik instan tanpa reload"],
+              ["Hasil Kode", "Beresiko error / deprecated di Next.js 16", "Kompatibel 100%, modern, aman, dan siap produksi"]
+            ]
+          }
+        }
+      ]
     },
     references: [
       { title: "Next.js Official Documentation", url: "https://nextjs.org/docs", source: "Next.js" },
@@ -127,7 +232,13 @@ git push -u origin main
 # =========================================================================
 # OPSI B: Cara Modern (GitHub CLI 'gh') - [Satu Perintah 3-in-1 Otomatis]
 # =========================================================================
-# Otomatis buat repo di cloud, pasang remote, dan push sekaligus:
+# 💡 Panduan Instalasi GitHub CLI (jika belum terpasang):
+# - Windows (PowerShell/CMD) : winget install --id GitHub.cli
+# - macOS (Homebrew)         : brew install gh
+# - Linux (Ubuntu/Debian)    : sudo apt install gh
+# - Login akun (sekali saja) : gh auth login (Pilih GitHub.com -> HTTPS -> Browser)
+#
+# Eksekusi 1 baris (otomatis buat repo di cloud, pasang remote, dan push):
 gh repo create my-serverless-app --public --source=. --remote=origin --push
 
 # =========================================================================
@@ -136,7 +247,7 @@ gh repo create my-serverless-app --public --source=. --remote=origin --push
 # 1. Buka tab Source Control di kiri VS Code (Ctrl + Shift + G)
 # 2. Klik tombol "Publish to GitHub" -> Pilih "Publish to GitHub Public Repository"`,
           language: "bash",
-          explanation: "Opsi A melatih pemahaman alur remote URL dan flag '-u' (upstream locking). Opsi B adalah standar efisiensi industri modern dengan GitHub CLI. Opsi C memanfaatkan integrasi grafis editor. Ketiganya menghasilkan repositori aktif yang sama di akun GitHub Anda."
+          explanation: "Opsi A melatih pemahaman alur remote URL dan flag '-u' (upstream locking). Opsi B adalah standar efisiensi industri modern dengan GitHub CLI (lengkap dengan panduan instalasi multi-platform). Opsi C memanfaatkan integrasi grafis editor. Ketiganya menghasilkan repositori aktif yang sama di akun GitHub Anda."
         }
       ],
       aiPromptTemplate: {

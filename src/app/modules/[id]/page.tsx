@@ -14,7 +14,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
-  Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2
+  Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
+  Info, Lightbulb, ShieldAlert
 } from "lucide-react";
 
 export default function ModuleDetailPage() {
@@ -265,6 +266,135 @@ export default function ModuleDetailPage() {
                   </Card>
                 ))}
               </div>
+
+              {/* Deep Dive Conceptual Sections */}
+              {currentModule.concepts.deepDiveSections && currentModule.concepts.deepDiveSections.length > 0 && (
+                <div className="space-y-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                      <Layers className="w-5 h-5 text-indigo-500" />
+                      Landasan Teori & Arsitektur Mendalam
+                    </h3>
+                    <span className="text-xs text-zinc-500 hidden sm:inline">Pemahaman Konsep Komprehensif</span>
+                  </div>
+
+                  <div className="space-y-6">
+                    {currentModule.concepts.deepDiveSections.map((section, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-5 md:p-6 space-y-4 shadow-sm"
+                      >
+                        {/* Header & Badge */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+                          <h4 className="text-base md:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                            {section.title}
+                          </h4>
+                          {section.badge && (
+                            <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 text-xs font-semibold">
+                              {section.badge}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Main Content Paragraph */}
+                        <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                          {section.content}
+                        </p>
+
+                        {/* Subpoints */}
+                        {section.subpoints && section.subpoints.length > 0 && (
+                          <div className="space-y-2.5 pt-1">
+                            {section.subpoints.map((sub, subIdx) => (
+                              <div
+                                key={subIdx}
+                                className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/70 dark:border-zinc-700/50 text-xs md:text-sm"
+                              >
+                                <span className="flex items-center justify-center w-5 h-5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold shrink-0 mt-0.5 text-xs">
+                                  {subIdx + 1}
+                                </span>
+                                <div className="space-y-0.5">
+                                  <span className="font-bold text-zinc-900 dark:text-zinc-100 mr-1.5">
+                                    {sub.label}:
+                                  </span>
+                                  <span className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                    {sub.text}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Comparison Table */}
+                        {section.comparisonTable && (
+                          <div className="space-y-2 pt-2">
+                            <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                              <table className="w-full text-left text-xs md:text-sm border-collapse">
+                                <thead>
+                                  <tr className="bg-zinc-100 dark:bg-zinc-800/80 border-b border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-bold">
+                                    {section.comparisonTable.headers.map((h, hIdx) => (
+                                      <th key={hIdx} className="py-3 px-4 first:rounded-tl-xl last:rounded-tr-xl whitespace-nowrap">
+                                        {h}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                  {section.comparisonTable.rows.map((row, rIdx) => (
+                                    <tr
+                                      key={rIdx}
+                                      className={rIdx % 2 === 0 ? "bg-white dark:bg-zinc-900/40" : "bg-zinc-50/70 dark:bg-zinc-900/80"}
+                                    >
+                                      {row.map((cell, cIdx) => (
+                                        <td
+                                          key={cIdx}
+                                          className={`py-3 px-4 ${cIdx === 0 ? "font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap" : ""}`}
+                                        >
+                                          {cell}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Callout Box */}
+                        {section.callout && (
+                          <div
+                            className={`rounded-xl p-4 flex items-start gap-3 border ${
+                              section.callout.type === "warning"
+                                ? "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200"
+                                : section.callout.type === "tip"
+                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200"
+                                : "bg-blue-500/10 border-blue-500/30 text-blue-900 dark:text-blue-200"
+                            }`}
+                          >
+                            {section.callout.type === "warning" && (
+                              <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                            )}
+                            {section.callout.type === "tip" && (
+                              <Lightbulb className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                            )}
+                            {section.callout.type === "info" && (
+                              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            )}
+                            <div className="space-y-1">
+                              <h5 className="text-sm font-bold">{section.callout.title}</h5>
+                              <p className="text-xs md:text-sm opacity-90 leading-relaxed">
+                                {section.callout.text}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Official References Section (Primary Sources) */}
               <div className="space-y-3 pt-4">
