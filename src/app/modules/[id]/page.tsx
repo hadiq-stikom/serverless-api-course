@@ -8,15 +8,126 @@ import { MODULES, ModuleData } from "@/data/curriculum";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CopyButton } from "@/components/copy-button";
 import { InteractiveTerm, FaasVsBaasVisualizer } from "@/components/interactive-term";
+import { ServerClientAnimator } from "@/components/visualizers/server-client-animator";
+import { ClientHydrationAnimator } from "@/components/visualizers/client-hydration-animator";
+import { InterleavingCompositionAnimator } from "@/components/visualizers/interleaving-composition-animator";
+import { SpecialFilesHierarchyAnimator } from "@/components/visualizers/special-files-hierarchy-animator";
+import { DynamicRoutingAnimator } from "@/components/visualizers/dynamic-routing-animator";
+import { CatchAllRoutingAnimator } from "@/components/visualizers/catch-all-routing-animator";
+import { RouteGroupsAnimator } from "@/components/visualizers/route-groups-animator";
+import { NavigationStrategiesAnimator } from "@/components/visualizers/navigation-strategies-animator";
+import { RadixPrimitivesAnimator } from "@/components/visualizers/radix-primitives-animator";
+import { SemanticTokensAnimator } from "@/components/visualizers/semantic-tokens-animator";
+import { CvaMergeAnimator } from "@/components/visualizers/cva-merge-animator";
+import { ShadcnArchitectureAnimator } from "@/components/visualizers/shadcn-architecture-animator";
+import { ContainerWidgetAnimator } from "@/components/visualizers/container-widget-animator";
+import { ResponsiveTokensAnimator } from "@/components/visualizers/responsive-tokens-animator";
+import { VsCodeSnippet } from "@/components/vscode-snippet";
+import { VsCodePrompt } from "@/components/vscode-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
-  ArrowLeft, ChevronLeft, ChevronRight, BookOpen, Terminal, Target,
+  ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
   Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
-  Info, Lightbulb, ShieldAlert
+  Info, Lightbulb, ShieldAlert, Code
 } from "lucide-react";
+
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 14 Subpoin Konsep Pertemuan 2
+const MODULE_2_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Paradigma Komputasi Next.js 16 (Server vs Client)
+  "0-0": {
+    key: "server-client",
+    title: "Simulasi Arsitektur: RSC vs Client Components",
+    subtitle: "Buka visualisasi alur cloud server, database query, secrets isolation & 0 kB JS bundle",
+    component: <ServerClientAnimator />,
+  },
+  "0-1": {
+    key: "client-hydration",
+    title: "Simulasi Siklus Rehidrasi: Client Component ('use client')",
+    subtitle: "Lihat transisi HTML statis ➔ Unduh JS Bundle ➔ Binding Event Listener ➔ Full Interaktif",
+    component: <ClientHydrationAnimator />,
+  },
+  "0-2": {
+    key: "interleaving",
+    title: "Simulasi Pola Komposisi: Interleaving Pattern & Children Props",
+    subtitle: "Bandingkan Anti-Pattern (Direct Import) vs Best Practice (Children Props)",
+    component: <InterleavingCompositionAnimator />,
+  },
+
+  // Pilar 2: Anatomi Sistem Routing Next.js 16 App Router
+  "1-0": {
+    key: "special-files",
+    title: "Simulasi Hierarki Berkas Khusus: layout, loading, error & not-found",
+    subtitle: "Uji respons Next.js saat navigasi normal, loading Suspense, runtime error crash, dan 404",
+    component: <SpecialFilesHierarchyAnimator />,
+  },
+  "1-1": {
+    key: "dynamic-routing",
+    title: "Simulasi Routing: Dynamic Routes [id] & Async Params",
+    subtitle: "Uji coba perubahan parameter URL, resolusi Promise await params, dan respon notFound()",
+    component: <DynamicRoutingAnimator />,
+  },
+  "1-2": {
+    key: "catch-all",
+    title: "Simulasi Segmen Catch-all [...slug] & [[...slug]]",
+    subtitle: "Eksplorasi parsing URL segmen bersarang tak terbatas menjadi array parameter string",
+    component: <CatchAllRoutingAnimator />,
+  },
+  "1-3": {
+    key: "route-groups",
+    title: "Simulasi Route Groups '(folder)' & Private Folders '_folder'",
+    subtitle: "Pahami perbedaan organisasi struktur folder internal vs URL publik browser",
+    component: <RouteGroupsAnimator />,
+  },
+  "1-4": {
+    key: "nav-strategies",
+    title: "Simulasi 3 Strategi Navigasi: <Link> vs useRouter() vs redirect()",
+    subtitle: "Bandingkan kecepatan instant prefetch 0ms vs programmatic push vs HTTP redirect server",
+    component: <NavigationStrategiesAnimator />,
+  },
+
+  // Pilar 3: Revolusi Shadcn UI
+  "2-0": {
+    key: "radix-primitives",
+    title: "Simulasi Headless Accessibility: Radix UI Primitives",
+    subtitle: "Uji navigasi keyboard, focus trap, dan atribut WAI-ARIA standar industri",
+    component: <RadixPrimitivesAnimator />,
+  },
+  "2-1": {
+    key: "semantic-tokens",
+    title: "Simulasi Semantic CSS Variables & Tailwind Tokens",
+    subtitle: "Lihat adaptabilitas warna HSL pada Dark Mode & Light Mode tanpa duplikasi CSS",
+    component: <SemanticTokensAnimator />,
+  },
+  "2-2": {
+    key: "cva-merge",
+    title: "Simulasi CVA & Utilitas cn() (tailwind-merge + clsx)",
+    subtitle: "Uji resolusi otomatis konflik class CSS Tailwind dan seleksi varian type-safe",
+    component: <CvaMergeAnimator />,
+  },
+  "2-3": {
+    key: "shadcn-arch",
+    title: "Simulasi Arsitektur: Shadcn Open Scaffolding vs NPM Blackbox",
+    subtitle: "Bandingkan kepemilikan kode langsung di src/components/ui/ vs node_modules tertutup",
+    component: <ShadcnArchitectureAnimator />,
+  },
+
+  // Pilar 4: Clean Component Scaffolding
+  "3-0": {
+    key: "container-widget",
+    title: "Simulasi Pemisahan: Server Container (RSC) vs Client Widget",
+    subtitle: "Alur fetch data 1x di server ➔ filtering instan di memori browser pengguna",
+    component: <ContainerWidgetAnimator />,
+  },
+  "3-1": {
+    key: "responsive-tokens",
+    title: "Simulasi Desain Responsif & Semantic Token Hierarchy",
+    subtitle: "Uji kartu Shadcn pada ukuran Mobile (320px), Tablet (500px), dan Desktop dengan token semantic",
+    component: <ResponsiveTokensAnimator />,
+  },
+};
 
 export default function ModuleDetailPage() {
   const params = useParams();
@@ -26,6 +137,11 @@ export default function ModuleDetailPage() {
   const [activeTab, setActiveTab] = useState<"concept" | "lab" | "mission">("concept");
   const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
   const [mergeStrategy, setMergeStrategy] = useState<"terminal" | "pr">("terminal");
+  const [expandedVisualizers, setExpandedVisualizers] = useState<Record<string, boolean>>({});
+
+  const toggleVisualizer = (key: string) => {
+    setExpandedVisualizers((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   if (!currentModule) {
     return notFound();
@@ -236,6 +352,23 @@ export default function ModuleDetailPage() {
                       <span>Arahkan kursor (hover) atau klik badge FaaS / BaaS untuk melihat definisi & simulasi alur kerjanya.</span>
                     </p>
                   </div>
+                ) : currentModule.id === 2 ? (
+                  <div className="space-y-2">
+                    <div className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
+                      Next.js 16 App Router memadukan performa tinggi{" "}
+                      <InteractiveTerm term="rsc">Server Components (RSC)</InteractiveTerm>{" "}
+                      dengan interaktivitas dinamis{" "}
+                      <InteractiveTerm term="client-component">Client Components (&apos;use client&apos;)</InteractiveTerm>,{" "}
+                      sistem navigasi{" "}
+                      <InteractiveTerm term="app-router">App Router</InteractiveTerm>,{" "}
+                      serta arsitektur komponen terbuka{" "}
+                      <InteractiveTerm term="shadcn">Shadcn UI</InteractiveTerm>.
+                    </div>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                      <span>💡</span>
+                      <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
                     {currentModule.concepts.summary}
@@ -243,7 +376,7 @@ export default function ModuleDetailPage() {
                 )}
               </div>
 
-              {/* Interactive FaaS vs BaaS Visualizer on Module 1 */}
+              {/* Interactive Visualizers */}
               {currentModule.id === 1 && (
                 <FaasVsBaasVisualizer />
               )}
@@ -304,23 +437,98 @@ export default function ModuleDetailPage() {
 
                         {/* Subpoints */}
                         {section.subpoints && section.subpoints.length > 0 && (
-                          <div className="space-y-2.5 pt-1">
+                          <div className="space-y-3 pt-1">
                             {section.subpoints.map((sub, subIdx) => (
                               <div
                                 key={subIdx}
-                                className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/70 dark:border-zinc-700/50 text-xs md:text-sm"
+                                className="p-4 rounded-xl bg-zinc-50/90 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 space-y-3 transition-all hover:border-zinc-300 dark:hover:border-zinc-600"
                               >
-                                <span className="flex items-center justify-center w-5 h-5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold shrink-0 mt-0.5 text-xs">
-                                  {subIdx + 1}
-                                </span>
-                                <div className="space-y-0.5">
-                                  <span className="font-bold text-zinc-900 dark:text-zinc-100 mr-1.5">
-                                    {sub.label}:
+                                <div className="flex items-start gap-3">
+                                  <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold shrink-0 mt-0.5 text-xs">
+                                    {subIdx + 1}
                                   </span>
-                                  <span className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                                    {sub.text}
-                                  </span>
+                                  <div className="space-y-1 flex-1">
+                                    <h5 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
+                                      {sub.label}
+                                    </h5>
+                                    <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                      {sub.text}
+                                    </p>
+                                  </div>
                                 </div>
+
+                                {/* VS Code Styled Code / File Structure Example Box with 1.2x Zoom on Hover */}
+                                {sub.code && (
+                                  <div className="ml-0 sm:ml-9 pt-2 pb-2">
+                                    <VsCodeSnippet
+                                      code={sub.code}
+                                      language={sub.language}
+                                      caption={sub.caption}
+                                      enableZoom={true}
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulation Accordions for All Module 2 Concepts (Option 2: Smooth Accordion Unfold) */}
+                                {currentModule.id === 2 && MODULE_2_VISUALIZERS[`${sIdx}-${subIdx}`] && (() => {
+                                  const viz = MODULE_2_VISUALIZERS[`${sIdx}-${subIdx}`];
+                                  const isExpanded = !!expandedVisualizers[viz.key];
+
+                                  return (
+                                    <div className="ml-0 sm:ml-9 pt-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleVisualizer(viz.key)}
+                                        className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                          isExpanded
+                                            ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-400 dark:border-indigo-600 shadow-md ring-2 ring-indigo-500/20"
+                                            : "bg-white dark:bg-zinc-800/80 border-indigo-200/80 dark:border-zinc-700/80 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-indigo-50/40 dark:hover:bg-zinc-800 shadow-sm"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className={`p-2 rounded-lg transition-colors ${
+                                            isExpanded
+                                              ? "bg-indigo-600 text-white"
+                                              : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white"
+                                          }`}>
+                                            <Sparkles className="w-4 h-4" />
+                                          </div>
+                                          <div>
+                                            <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                              <span>{viz.title}</span>
+                                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                                Interactive Lab
+                                              </span>
+                                            </div>
+                                            <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                              {isExpanded
+                                                ? "Klik untuk melipat panel simulasi interaktif"
+                                                : viz.subtitle}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                          <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Jalankan Simulasi"}</span>
+                                          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                        </div>
+                                      </button>
+
+                                      <AnimatePresence>
+                                        {isExpanded && (
+                                          <motion.div
+                                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                            animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                            transition={{ duration: 0.35, ease: "easeInOut" }}
+                                            className="overflow-hidden"
+                                          >
+                                            {viz.component}
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             ))}
                           </div>
@@ -474,11 +682,11 @@ export default function ModuleDetailPage() {
                       </div>
 
                       {step.code && (
-                        <div className="relative bg-zinc-950 text-zinc-100 rounded-xl p-3.5 font-mono text-xs overflow-x-auto border border-zinc-800">
-                          <pre className="pr-8">{step.code}</pre>
-                          <div className="absolute top-2 right-2">
-                            <CopyButton text={step.code} />
-                          </div>
+                        <div className="pt-1 pb-1 pl-0 sm:pl-9">
+                          <VsCodeSnippet
+                            code={step.code}
+                            language={step.language}
+                          />
                         </div>
                       )}
 
@@ -492,30 +700,23 @@ export default function ModuleDetailPage() {
                 </div>
               </div>
 
-              {/* AI Prompt Formula Box */}
-              <div className="border-2 border-indigo-500/40 bg-indigo-500/5 dark:bg-indigo-950/20 rounded-2xl p-5 space-y-3">
+              {/* AI Prompt Formula Box (VS Code Style) */}
+              <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-indigo-500" />
-                    <h4 className="text-sm font-bold text-indigo-950 dark:text-indigo-200">
-                      Formula Prompt AI Teruji (Copilot / Cursor)
+                    <Sparkles className="w-5 h-5 text-indigo-500" />
+                    <h4 className="text-base font-bold text-zinc-900 dark:text-white">
+                      Formula Prompt AI Teruji
                     </h4>
                   </div>
-                  <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
-                    Role: {currentModule.lab.aiPromptTemplate.role}
-                  </Badge>
+                  <span className="text-xs text-zinc-500 hidden sm:inline">Format Editor Prompt VS Code</span>
                 </div>
 
-                <div className="relative bg-white dark:bg-zinc-900 border border-indigo-200 dark:border-zinc-800 rounded-xl p-3.5 text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed font-sans">
-                  <p className="pr-8 italic">"{currentModule.lab.aiPromptTemplate.prompt}"</p>
-                  <div className="absolute top-2 right-2">
-                    <CopyButton text={currentModule.lab.aiPromptTemplate.prompt} />
-                  </div>
-                </div>
-
-                <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
-                  🎯 Tips Prompting: {currentModule.lab.aiPromptTemplate.tip}
-                </p>
+                <VsCodePrompt
+                  role={currentModule.lab.aiPromptTemplate.role}
+                  prompt={currentModule.lab.aiPromptTemplate.prompt}
+                  tip={currentModule.lab.aiPromptTemplate.tip}
+                />
               </div>
             </motion.div>
           )}
@@ -527,37 +728,58 @@ export default function ModuleDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-zinc-900/90 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-emerald-500" />
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                    {currentModule.mission.taskTitle}
-                  </h3>
+              {/* Mission Briefing Hero Card */}
+              <div className="relative overflow-hidden rounded-2xl border border-indigo-200 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50/70 via-white to-indigo-50/30 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-indigo-950/30 p-6 md:p-8 space-y-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <Target className="w-5 h-5" />
+                    </span>
+                    <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-xs font-semibold">
+                      Target Capaian Mingguan
+                    </Badge>
+                  </div>
+                  <Badge variant="outline" className="text-xs border-indigo-500/30 text-indigo-700 dark:text-indigo-300 bg-indigo-500/5 px-3 py-1 font-semibold flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    Reward: +{currentModule.xp} XP
+                  </Badge>
                 </div>
 
-                <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  {currentModule.mission.taskDesc}
-                </p>
+                <div className="space-y-2">
+                  <h3 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                    {currentModule.mission.taskTitle}
+                  </h3>
+                  <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-3xl">
+                    {currentModule.mission.taskDesc}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 text-xs text-indigo-800 dark:text-indigo-300 font-medium">
+                  <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                  <span>
+                    Metode Bola Salju: Dikerjakan langsung pada repositori proyek akhir Anda (tanpa membuat repositori baru).
+                  </span>
+                </div>
               </div>
 
               {/* Git Branch & Merge Workflow Guide */}
               {(() => {
                 const branchName = currentModule.mission.gitBranchTask.replace("git checkout -b ", "").trim();
                 return (
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/60 dark:to-zinc-950 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 p-5 md:p-6 space-y-5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                       <div>
-                        <h4 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <h4 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                           <GitBranch className="w-4 h-4 text-indigo-500" />
-                          Alur Siklus Branch & Cara Penggabungan (Merge ke Main)
+                          Alur Kerja Git Branch & Penggabungan (*Merge*)
                         </h4>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                          Pola standar industri untuk mengerjakan misi tanpa merusak cabang <code>main</code>
+                        <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          Standar industri: pisahkan fitur mingguan ke branch terpisah agar cabang <code>main</code> selalu aman dan stabil.
                         </p>
                       </div>
 
                       {/* Merge Mode Toggle */}
-                      <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-zinc-800/80 p-1 rounded-xl shrink-0">
+                      <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0 self-start sm:self-auto border border-zinc-200/60 dark:border-zinc-700/60">
                         <button
                           type="button"
                           onClick={() => setMergeStrategy("terminal")}
@@ -585,150 +807,237 @@ export default function ModuleDetailPage() {
                       </div>
                     </div>
 
-                    {/* 4 Step Pipeline in 2 Columns (2 Rows) */}
+                    {/* 4 Steps Grid with Improved Readability */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Step 1 */}
-                      <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 space-y-2 flex flex-col justify-between">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
-                            <span className="w-5 h-5 rounded-full bg-indigo-500/10 flex items-center justify-center text-[10px]">1</span>
-                            <span>Buat & Masuk Branch</span>
+                      {/* Step 1: Create Branch */}
+                      <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/40 space-y-3 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500 text-white text-[11px] font-bold">1</span>
+                            <span className="font-bold text-sm text-zinc-900 dark:text-white">Buat & Masuk ke Branch Fitur</span>
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                            Buka cabang baru khusus untuk tugas minggu ini agar <code>main</code> tetap aman.
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pl-7">
+                            Isolasi pengerjaan misi minggu ini ke dalam cabang baru agar branch <code>main</code> tidak rusak.
                           </p>
                         </div>
-                        <div className="relative bg-zinc-950 text-zinc-100 rounded-lg p-2.5 font-mono text-[11px] border border-zinc-800">
-                          <code>{currentModule.mission.gitBranchTask}</code>
-                          <div className="absolute top-1.5 right-1.5">
+
+                        <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-xs">
+                          <div className="flex items-center justify-between px-3 py-1 bg-zinc-900/90 border-b border-zinc-800 text-[10px] text-zinc-400 font-mono">
+                            <span className="flex items-center gap-1.5 text-[#4ec9b0]">
+                              <Terminal className="w-3 h-3" />
+                              terminal
+                            </span>
                             <CopyButton text={currentModule.mission.gitBranchTask} />
                           </div>
+                          <pre className="p-3 text-xs font-mono text-zinc-200 overflow-x-auto">
+                            <code>{currentModule.mission.gitBranchTask}</code>
+                          </pre>
                         </div>
                       </div>
 
-                      {/* Step 2 */}
-                      <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 space-y-2 flex flex-col justify-between">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
-                            <span className="w-5 h-5 rounded-full bg-indigo-500/10 flex items-center justify-center text-[10px]">2</span>
-                            <span>Kerjakan & Simpan</span>
+                      {/* Step 2: Commit */}
+                      <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/40 space-y-3 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500 text-white text-[11px] font-bold">2</span>
+                            <span className="font-bold text-sm text-zinc-900 dark:text-white">Kerjakan & Simpan (*Commit*)</span>
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                            Setelah fitur selesai dan dicek, simpan seluruh perubahan ke riwayat branch.
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pl-7">
+                            Setelah fitur berfungsi dan teruji, buat snapshot riwayat pekerjaan Anda.
                           </p>
                         </div>
-                        <div className="relative bg-zinc-950 text-zinc-100 rounded-lg p-2.5 font-mono text-[11px] border border-zinc-800">
-                          <pre className="pr-6">{`git add .\ngit commit -m "feat: complete week ${currentModule.weekNumber} mission"`}</pre>
-                          <div className="absolute top-1.5 right-1.5">
+
+                        <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-xs">
+                          <div className="flex items-center justify-between px-3 py-1 bg-zinc-900/90 border-b border-zinc-800 text-[10px] text-zinc-400 font-mono">
+                            <span className="flex items-center gap-1.5 text-[#4ec9b0]">
+                              <Terminal className="w-3 h-3" />
+                              terminal
+                            </span>
                             <CopyButton text={`git add .\ngit commit -m "feat: complete week ${currentModule.weekNumber} mission"`} />
                           </div>
+                          <pre className="p-3 text-xs font-mono text-zinc-200 overflow-x-auto leading-relaxed">
+                            <code>{`git add .\ngit commit -m "feat: complete week ${currentModule.weekNumber} mission"`}</code>
+                          </pre>
                         </div>
                       </div>
 
-                      {/* Step 3 */}
-                      <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 space-y-2 flex flex-col justify-between">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                            <span className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-[10px]">3</span>
-                            <span>{mergeStrategy === "terminal" ? "Merge ke Main" : "Merge via PR"}</span>
+                      {/* Step 3: Merge */}
+                      <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/40 space-y-3 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[11px] font-bold">3</span>
+                            <span className="font-bold text-sm text-zinc-900 dark:text-white">
+                              {mergeStrategy === "terminal" ? "Gabungkan ke Main (Terminal)" : "Merge via GitHub Pull Request"}
+                            </span>
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pl-7">
                             {mergeStrategy === "terminal"
-                              ? "Pindah ke main, gabungkan branch fitur, lalu push ke GitHub."
-                              : "Push branch ke GitHub, buka web, lalu merge Pull Request."}
+                              ? "Beralih ke cabang main, lalu tarik perubahan dari branch fitur."
+                              : "Push branch ke GitHub, buat Pull Request, lalu lakukan konfirmasi merge di web."}
                           </p>
                         </div>
 
-                        {mergeStrategy === "terminal" ? (
-                          <div className="relative bg-zinc-950 text-zinc-100 rounded-lg p-2.5 font-mono text-[11px] border border-zinc-800">
-                            <pre className="pr-6">{`git checkout main\ngit merge ${branchName}\ngit push origin main`}</pre>
-                            <div className="absolute top-1.5 right-1.5">
-                              <CopyButton text={`git checkout main\ngit merge ${branchName}\ngit push origin main`} />
-                            </div>
+                        <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-xs">
+                          <div className="flex items-center justify-between px-3 py-1 bg-zinc-900/90 border-b border-zinc-800 text-[10px] text-zinc-400 font-mono">
+                            <span className="flex items-center gap-1.5 text-emerald-400">
+                              <Terminal className="w-3 h-3" />
+                              terminal
+                            </span>
+                            <CopyButton
+                              text={
+                                mergeStrategy === "terminal"
+                                  ? `git checkout main\ngit merge ${branchName}\ngit push origin main`
+                                  : `git push -u origin ${branchName}\n# Buka GitHub repo & klik 'Compare & pull request'\ngit checkout main && git pull`
+                              }
+                            />
                           </div>
-                        ) : (
-                          <div className="relative bg-zinc-950 text-zinc-100 rounded-lg p-2.5 font-mono text-[11px] border border-zinc-800">
-                            <pre className="pr-6">{`git push -u origin ${branchName}\n# Merge PR di web GitHub\ngit checkout main && git pull`}</pre>
-                            <div className="absolute top-1.5 right-1.5">
-                              <CopyButton text={`git push -u origin ${branchName}`} />
-                            </div>
-                          </div>
-                        )}
+                          <pre className="p-3 text-xs font-mono text-zinc-200 overflow-x-auto leading-relaxed">
+                            <code>
+                              {mergeStrategy === "terminal"
+                                ? `git checkout main\ngit merge ${branchName}\ngit push origin main`
+                                : `git push -u origin ${branchName}\n# Buka GitHub & merge PR\ngit checkout main && git pull`}
+                            </code>
+                          </pre>
+                        </div>
                       </div>
 
                       {/* Step 4: Cleanup */}
-                      <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 space-y-2 flex flex-col justify-between">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-xs">
-                            <span className="w-5 h-5 rounded-full bg-rose-500/10 flex items-center justify-center text-[10px]">4</span>
-                            <span className="flex items-center gap-1">
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Bersihkan Branch
+                      <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/40 space-y-3 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold">4</span>
+                            <span className="font-bold text-sm text-zinc-900 dark:text-white flex items-center gap-1.5">
+                              <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                              Bersihkan Branch Fitur (*Housekeeping*)
                             </span>
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                            Hapus branch fitur yang sudah di-merge agar repositori tetap bersih dan rapi.
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pl-7">
+                            Hapus branch fitur yang sudah selesai di-merge agar repositori tetap rapi.
                           </p>
                         </div>
 
-                        {mergeStrategy === "terminal" ? (
-                          <div className="relative bg-zinc-950 text-zinc-100 rounded-lg p-2.5 font-mono text-[11px] border border-zinc-800">
-                            <pre className="pr-6">{`git branch -d ${branchName}`}</pre>
-                            <div className="absolute top-1.5 right-1.5">
-                              <CopyButton text={`git branch -d ${branchName}`} />
-                            </div>
+                        <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-xs">
+                          <div className="flex items-center justify-between px-3 py-1 bg-zinc-900/90 border-b border-zinc-800 text-[10px] text-zinc-400 font-mono">
+                            <span className="flex items-center gap-1.5 text-rose-400">
+                              <Terminal className="w-3 h-3" />
+                              terminal
+                            </span>
+                            <CopyButton
+                              text={
+                                mergeStrategy === "terminal"
+                                  ? `git branch -d ${branchName}`
+                                  : `git branch -d ${branchName}\ngit push origin --delete ${branchName}`
+                              }
+                            />
                           </div>
-                        ) : (
-                          <div className="relative bg-zinc-950 text-zinc-100 rounded-lg p-2.5 font-mono text-[11px] border border-zinc-800">
-                            <pre className="pr-6">{`git branch -d ${branchName}\ngit push origin --delete ${branchName}`}</pre>
-                            <div className="absolute top-1.5 right-1.5">
-                              <CopyButton text={`git branch -d ${branchName}\ngit push origin --delete ${branchName}`} />
-                            </div>
-                          </div>
-                        )}
+                          <pre className="p-3 text-xs font-mono text-zinc-200 overflow-x-auto leading-relaxed">
+                            <code>
+                              {mergeStrategy === "terminal"
+                                ? `git branch -d ${branchName}`
+                                : `git branch -d ${branchName}\ngit push origin --delete ${branchName}`}
+                            </code>
+                          </pre>
+                        </div>
                       </div>
                     </div>
                   </div>
                 );
               })()}
 
-              {/* Definition of Done (Checklist Mandiri) */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  Checklist Kriteria Selesai (Definition of Done)
-                </h4>
+              {/* Definition of Done (Checklist Mandiri & Quest Tracker) */}
+              {(() => {
+                const totalDod = currentModule.mission.definitionOfDone.length;
+                const completedDodCount = currentModule.mission.definitionOfDone.filter(
+                  (_, idx) => !!completedTasks[`${currentModule.id}-${idx}`]
+                ).length;
+                const dodProgress = totalDod > 0 ? Math.round((completedDodCount / totalDod) * 100) : 0;
+                const isAllCompleted = totalDod > 0 && completedDodCount === totalDod;
 
-                <div className="space-y-2">
-                  {currentModule.mission.definitionOfDone.map((dod, idx) => {
-                    const isChecked = !!completedTasks[`${currentModule.id}-${idx}`];
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => toggleTask(idx)}
-                        className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                          isChecked
-                            ? "bg-emerald-500/10 border-emerald-500/30 text-zinc-900 dark:text-white"
-                            : "bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300"
-                        }`}
-                      >
-                        <div
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center mt-0.5 transition-colors ${
-                            isChecked
-                              ? "bg-emerald-500 border-emerald-500 text-white"
-                              : "border-zinc-300 dark:border-zinc-700"
-                          }`}
-                        >
-                          {isChecked && <CheckCircle2 className="w-3 h-3" />}
-                        </div>
-                        <span className={`text-xs md:text-sm font-medium ${isChecked ? "line-through opacity-80" : ""}`}>
-                          {dod}
+                return (
+                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 p-5 md:p-6 space-y-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                      <div>
+                        <h4 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                          Kriteria Selesai (*Definition of Done*)
+                        </h4>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          Centang setiap kriteria setelah Anda memverifikasinya di aplikasi lokal.
+                        </p>
+                      </div>
+
+                      {/* Progress Counter Badge */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                          {completedDodCount} dari {totalDod} Kriteria ({dodProgress}%)
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${dodProgress}%` }}
+                      />
+                    </div>
+
+                    {/* All Completed Banner */}
+                    {isAllCompleted && (
+                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-emerald-800 dark:text-emerald-300 text-xs md:text-sm font-semibold animate-in fade-in duration-300">
+                        <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>
+                          🎉 Hebat! Seluruh kriteria misi minggu ini telah terpenuhi. Siap untuk di-merge ke main dan dilaporkan!
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Interactive Checklist Cards */}
+                    <div className="space-y-2.5 pt-1">
+                      {currentModule.mission.definitionOfDone.map((dod, idx) => {
+                        const isChecked = !!completedTasks[`${currentModule.id}-${idx}`];
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => toggleTask(idx)}
+                            className={`flex items-start gap-3.5 p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-200 ${
+                              isChecked
+                                ? "bg-emerald-500/10 border-emerald-500/30 text-zinc-900 dark:text-white shadow-xs"
+                                : "bg-zinc-50/60 dark:bg-zinc-950/40 border-zinc-200/80 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700"
+                            }`}
+                          >
+                            <div
+                              className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200 ${
+                                isChecked
+                                  ? "bg-emerald-500 border-emerald-500 text-white shadow-xs scale-105"
+                                  : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900"
+                              }`}
+                            >
+                              {isChecked && <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />}
+                            </div>
+                            <div className="space-y-0.5 flex-1">
+                              <span
+                                className={`text-xs md:text-sm leading-relaxed transition-all duration-200 ${
+                                  isChecked
+                                    ? "line-through text-zinc-500 dark:text-zinc-400 font-normal"
+                                    : "font-medium text-zinc-900 dark:text-zinc-100"
+                                }`}
+                              >
+                                {dod}
+                              </span>
+                            </div>
+                            {isChecked && (
+                              <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-semibold">
+                                Selesai
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </motion.div>
           )}
 

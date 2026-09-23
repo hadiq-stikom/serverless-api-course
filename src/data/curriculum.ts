@@ -18,7 +18,13 @@ export interface ModuleData {
       title: string;
       badge?: string;
       content: string;
-      subpoints?: { label: string; text: string }[];
+      subpoints?: {
+        label: string;
+        text: string;
+        code?: string;
+        language?: string;
+        caption?: string;
+      }[];
       comparisonTable?: {
         headers: string[];
         rows: string[][];
@@ -91,15 +97,43 @@ export const MODULES: ModuleData[] = [
           subpoints: [
             {
               label: "FaaS (Function as a Service)",
-              text: "Model komputasi berbasis event (event-driven). Kode backend dipecah menjadi fungsi-fungsi modular yang hanya 'bangun' saat dipanggil (misal: saat request HTTP masuk), mengeksekusi logika dalam milidetik, lalu otomatis mati kembali (scale-to-zero). Anda hanya membayar per milidetik eksekusi (Rp 0 saat idle). Contoh: Vercel Serverless Functions & Next.js 16 Server Actions."
+              text: "Model komputasi berbasis event (event-driven). Kode backend dipecah menjadi fungsi-fungsi modular yang hanya 'bangun' saat dipanggil (misal: saat request HTTP masuk), mengeksekusi logika dalam milidetik, lalu otomatis mati kembali (scale-to-zero). Anda hanya membayar per milidetik eksekusi (Rp 0 saat idle).",
+              code: `// Contoh Server Action di Next.js 16 (FaaS on Vercel)
+"use server";
+
+export async function submitTask(formData: FormData) {
+  // Hanya aktif saat ada HTTP request, lalu mati otomatis
+  const title = formData.get("title");
+  return { success: true, message: \`Tugas "\${title}" berhasil disimpan!\` };
+}`,
+              language: "tsx",
+              caption: "Contoh Logika Serverless Function"
             },
             {
               label: "BaaS (Backend as a Service)",
-              text: "Layanan penyedia seluruh infrastruktur backend siap pakai berbasis API & SDK. Menyediakan Database PostgreSQL terkelola penuh, Autentikasi Pengguna (OAuth GitHub/JWT), File Storage CDN, dan WebSocket Realtime tanpa perlu merakit Linux server database manual. Contoh: Supabase."
+              text: "Layanan penyedia seluruh infrastruktur backend siap pakai berbasis API & SDK. Menyediakan Database PostgreSQL terkelola penuh, Autentikasi Pengguna (OAuth GitHub/JWT), File Storage CDN, dan WebSocket Realtime tanpa perlu merakit Linux server database manual.",
+              code: `// Mengakses Database PostgreSQL via Supabase SDK
+import { supabase } from "@/lib/supabase";
+
+const { data: tasks, error } = await supabase
+  .from("tasks")
+  .select("*")
+  .order("created_at", { ascending: false });`,
+              language: "typescript",
+              caption: "Konsumsi SDK BaaS Supabase"
             },
             {
               label: "Ekosistem 4 Pilar di Perkuliahan Kita",
-              text: "Next.js 16 (Frontend & Server Actions) ↔️ Vercel (Edge/Serverless CI/CD Hosting) ↔️ Supabase (Database PostgreSQL & Auth) ↔️ Cloudinary (AI Media CDN)."
+              text: "Next.js 16 (Frontend & Server Actions) ↔️ Vercel (Edge/Serverless CI/CD Hosting) ↔️ Supabase (Database PostgreSQL & Auth) ↔️ Cloudinary (AI Media CDN).",
+              code: `Next.js 16 (Frontend & Server Actions)
+   ↕️ (Hosting & Edge CI/CD)
+Vercel Serverless Platform
+   ↕️ (Database PostgreSQL & Auth)
+Supabase Cloud BaaS
+   ↕️ (Media Optimization CDN)
+Cloudinary AI Image Pipeline`,
+              language: "text",
+              caption: "Arsitektur Integrasi 4 Pilar"
             }
           ],
           comparisonTable: {
@@ -119,19 +153,52 @@ export const MODULES: ModuleData[] = [
           subpoints: [
             {
               label: "Arsitektur 3 Wilayah Kerja Lokal",
-              text: "Working Tree (tempat Anda mengetik kode di editor) ➔ Staging Area (keranjang seleksi berkas via 'git add') ➔ Local Repository / HEAD (snapshot riwayat permanen di folder tersembunyi .git via 'git commit')."
+              text: "Git membagi tahapan perubahan file secara teratur sebelum dikirim ke remote cloud:",
+              code: `Working Tree (Ketik Kode)
+   ➔ [git add] ➔ Staging Area (Seleksi Berkas)
+   ➔ [git commit] ➔ Local Repository / HEAD (Snapshot Permanen)
+   ➔ [git push] ➔ Remote GitHub (Cloud Hosting)`,
+              language: "text",
+              caption: "Siklus 3 Wilayah Kerja Git"
             },
             {
               label: "Identitas Author (Global vs Local)",
-              text: "Git mewajibkan setiap commit memiliki user.name dan user.email. Konfigurasi '--global' berlaku untuk seluruh komputer (~/.gitconfig), sedangkan konfigurasi lokal (tanpa --global) memungkinkan override identitas per-folder untuk memisahkan akun kampus dan akun pribadi."
+              text: "Git mewajibkan setiap commit memiliki user.name dan user.email. Konfigurasi '--global' berlaku untuk seluruh komputer (~/.gitconfig), sedangkan konfigurasi lokal (tanpa --global) memungkinkan override identitas per-folder untuk memisahkan akun kampus dan akun pribadi:",
+              code: `# 1. Konfigurasi Global (berlaku untuk semua proyek di laptop ini):
+git config --global user.name "Nama Lengkap Anda"
+git config --global user.email "email-utama@example.com"
+
+# 2. Konfigurasi Lokal (override hanya untuk repositori folder ini):
+git config user.name "Nama Mahasiswa Kuliah"
+git config user.email "nim@kampus.ac.id"`,
+              language: "bash",
+              caption: "Perintah Konfigurasi Identitas Git"
             },
             {
               label: "Mekanisme Perlindungan .gitignore",
-              text: "File .env.local memuat API Secret (seperti Supabase Service Role Key). Bot scraper otomatis di GitHub publik memindai setiap commit publik setiap detik. Mendaftarkan .env.local ke dalam file .gitignore memastikan berkas rahasia tidak pernah terunggah ke GitHub."
+              text: "File .env.local memuat API Secret (seperti Supabase Service Role Key). Bot scraper otomatis di GitHub publik memindai setiap commit publik setiap detik. Mendaftarkan .env.local ke dalam file .gitignore memastikan berkas rahasia tidak pernah terunggah ke GitHub:",
+              code: `# .gitignore
+# Berkas kredensial rahasia (DILARANG di-commit)
+.env*.local
+.env
+
+# Dependensi paket eksternal
+node_modules/
+.next/`,
+              language: "gitignore",
+              caption: "Aturan Proteksi di .gitignore"
             },
             {
               label: "Filosofi Feature Branch Workflow",
-              text: "Cabang utama 'main' selalu dijaga dalam kondisi stabil dan siap rilis. Seluruh pengerjaan tugas mingguan wajib dilakukan di cabang terpisah ('git checkout -b feature/*') sebelum digabungkan kembali via merge."
+              text: "Cabang utama 'main' selalu dijaga dalam kondisi stabil dan siap rilis. Seluruh pengerjaan tugas mingguan wajib dilakukan di cabang terpisah sebelum digabungkan kembali via merge:",
+              code: `# 1. Buat dan berpindah ke branch fitur baru:
+git checkout -b feature/setup-auth-security
+
+# 2. Setelah selesai dan diuji, gabungkan kembali ke main:
+git checkout main
+git merge feature/setup-auth-security`,
+              language: "bash",
+              caption: "Siklus Feature Branch & Merge"
             }
           ],
           callout: {
@@ -147,19 +214,31 @@ export const MODULES: ModuleData[] = [
           subpoints: [
             {
               label: "C — Context (Domain Aplikasi)",
-              text: "Jelaskan konteks spesifik aplikasi yang sedang dibangun (misal: 'Saya sedang membangun dashboard tugas kuliah serverless')."
+              text: "Jelaskan konteks spesifik aplikasi yang sedang dibangun secara mendalam:",
+              code: `Konteks: "Saya sedang membangun portal submission tugas perkuliahan berbasis Serverless Next.js 16 dengan Supabase PostgreSQL..."`,
+              language: "text",
+              caption: "Contoh Komponen Context"
             },
             {
               label: "R — Role (Persona Pakar)",
-              text: "Berikan peran profesional spesifik kepada AI (misal: 'Bertindaklah sebagai Senior Full-Stack Cloud Architect')."
+              text: "Berikan peran profesional spesifik kepada AI untuk menyelaraskan kualitas jawaban:",
+              code: `Peran: "Bertindaklah sebagai Senior Cloud Software Engineer dengan spesialisasi Next.js App Router dan Clean Architecture..."`,
+              language: "text",
+              caption: "Contoh Komponen Role"
             },
             {
               label: "E — Explicit Versions & Constraints",
-              text: "Sebutkan versi tepat dan batasan arsitektur (misal: 'Wajib Next.js 16 App Router, React 19 useActionState, Tailwind CSS v4, Server Actions async, dilarang membuat file /api/ terpisah')."
+              text: "Sebutkan versi tepat dan batasan arsitektur secara tegas:",
+              code: `Batasan: "Wajib Next.js 16 App Router, React 19 useActionState, Tailwind CSS v4, dan Server Actions async (dilarang membuat /api/* terpisah)..."`,
+              language: "text",
+              caption: "Contoh Komponen Explicit Constraints"
             },
             {
               label: "T — Target Output Structure",
-              text: "Minta format output yang terstruktur (misal: 'Sertakan skema validasi Zod, tipe return { success, errors }, dan pesan ramah pengguna')."
+              text: "Minta format output yang terstruktur dan siap pakai:",
+              code: `Format: "Hasilkan 2 file terpisah: server page.tsx dan client component filter, sertakan skema validasi Zod dan TypeScript types lengkap..."`,
+              language: "text",
+              caption: "Contoh Komponen Target Output"
             }
           ],
           comparisonTable: {
@@ -277,54 +356,497 @@ gh repo create my-serverless-app --public --source=. --remote=origin --push
     worldId: "world-1",
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 2,
-    title: "Next.js App Router & Komponen Shadcn UI",
-    subtitle: "Membedakan Server vs Client Components, dan merakit antarmuka modern dengan Shadcn UI.",
-    cpmk: "Mahasiswa mampu merancang tata letak halaman web dengan Server & Client Components serta mengintegrasikan komponen Shadcn UI.",
+    title: "Next.js 16 App Router, RSC & Arsitektur Komponen Shadcn UI",
+    subtitle: "Menguasai paradigma Server vs Client Components, sistem routing file-system lengkap, dan merakit antarmuka modern dengan Shadcn UI.",
+    cpmk: "Mahasiswa mampu merancang arsitektur halaman web hibrida (Server & Client Components), mengimplementasikan routing bersarang dan dinamis di Next.js 16, serta mengintegrasikan sistem komponen Shadcn UI yang responsif dan accessible.",
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 200,
     concepts: {
-      summary: "Next.js App Router secara default memperlakukan semua komponen sebagai Server Components (RSC) untuk performa instan tanpa bundle JS ke client.",
+      summary: "Next.js 16 App Router memadukan arsitektur React Server Components (RSC) untuk efisiensi komputasi server dengan Client Components untuk interaktivitas dinamis. Didukung oleh sistem routing hierarki folder dan ekosistem komponen terbuka Shadcn UI, developer dapat membangun antarmuka web skala produksi berkecepatan tinggi tanpa overhead bundle JavaScript berlebih.",
       points: [
-        { title: "Server vs Client Components", desc: "RSC merender HTML di server (cepat, SEO friendly). Client Component ('use client') dibutuhkan hanya saat ada event interaktif (onClick, onChange, hooks)." },
-        { title: "Shadcn UI Paradigm", desc: "Bukan library NPM tertutup, melainkan komponen berbasis Radix UI & Tailwind yang kodenya disalin langsung ke folder project kita untuk kustomisasi 100%." }
+        { title: "Server Components (RSC) by Default", desc: "Dieksekusi 100% di server dengan payload streaming HTML, 0 kB JavaScript bundle ke klien, aman mengakses environment secrets dan database langsung." },
+        { title: "Client Components ('use client')", desc: "Komponen interaktif yang mengirim bundle JavaScript ke browser untuk proses hydration saat membutuhkan state (useState), event listener (onClick), atau API browser." },
+        { title: "Anatomi File-System Routing", desc: "Hierarki konvensi file khusus (layout.tsx, page.tsx, loading.tsx, error.tsx, not-found.tsx) beserta rute dinamis [id] dan route groups (auth)." },
+        { title: "Filosofi Open Architecture Shadcn UI", desc: "Bukan library NPM tertutup, melainkan komponen berbasis Radix UI Primitives & Tailwind CSS yang disalin langsung ke folder proyek untuk kepemilikan kode 100%." }
+      ],
+      diagramNote: "Browser Client (Hydrated UI) ↔️ Next.js 16 (App Router + RSC Streaming) ↔️ Shadcn Components (Radix + Tailwind) ↔️ Backend Database",
+      deepDiveSections: [
+        {
+          title: "1. Paradigma Komputasi Next.js 16: Server Components (RSC) vs Client Components ('use client')",
+          badge: "Pilar 1: Arsitektur Rendering React 19",
+          content: "Secara default di Next.js App Router, setiap file komponen (.tsx) adalah React Server Component (RSC). Komponen ini dieksekusi 100% di server dan hanya mengirimkan hasil komputasi berupa HTML siap pakai dan RSC payload ringan ke browser. Ini menghemat kuota pengguna, mempercepat waktu muat (FCP), dan melindungi kunci rahasia backend dari kebocoran.",
+          subpoints: [
+            {
+              label: "Kapan Wajib Menggunakan Server Component (Default)",
+              text: "Server Components adalah pilihan default ideal untuk membaca data dari backend, menjaga kredensial database tetap aman di server, dan memastikan browser pengguna menerima HTML instan tanpa beban bundle JavaScript.",
+              code: `// src/app/dashboard/page.tsx (Server Component secara default)
+import { supabase } from "@/lib/supabase";
+
+export default async function DashboardPage() {
+  // 🔒 Query database langsung di server — Kunci API rahasia 100% aman
+  const { data: projects } = await supabase.from("projects").select("*");
+  return <ProjectGrid items={projects} />;
+}`,
+              language: "tsx",
+              caption: "Contoh Server Component Data Fetching"
+            },
+            {
+              label: "Kapan Wajib Menggunakan Client Component ('use client')",
+              text: "Tambahkan direktif 'use client' hanya pada komponen yang secara langsung menangani interaktivitas pengguna, state reaktif, atau API khusus browser.",
+              code: `// src/components/counter-button.tsx (Client Component)
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+export function CounterButton() {
+  // ✨ Memerlukan state dan onClick handler di browser
+  const [count, setCount] = useState(0);
+  return <Button onClick={() => setCount(count + 1)}>Diklik: {count}x</Button>;
+}`,
+              language: "tsx",
+              caption: "Contoh Client Component Interaktif"
+            },
+            {
+              label: "Aturan Emas Komposisi (Interleaving Pattern)",
+              text: "Anda dapat mengimpor Client Component ke dalam Server Component. Namun, Anda DILARANG mengimpor Server Component secara langsung di dalam Client Component. Solusinya: lewati Server Component sebagai prop 'children' agar ServerList tetap dieksekusi di server tanpa menjadi bundle client.",
+              code: `// src/app/page.tsx (Server Component)
+import { ClientModal } from "@/components/client-modal";
+import { ServerTaskList } from "@/components/server-task-list";
+
+export default function Page() {
+  return (
+    <ClientModal> {/* Client Component: menangani tombol buka/tutup */}
+      <ServerTaskList /> {/* Server Component: tetap 0 kB JS di server! */}
+    </ClientModal>
+  );
+}`,
+              language: "tsx",
+              caption: "Pola Komposisi Props Children (Interleaving)"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Dimensi / Fitur", "Server Component (RSC) ⚡", "Client Component ('use client') 🚀"],
+            rows: [
+              ["Tempat Eksekusi", "100% di Server (Node.js / Edge)", "Pre-render di Server + Hydration di Browser"],
+              ["Ukuran JS Bundle", "0 kB (Zero Client Bundle Overhead)", "Sesuai ukuran kode komponen & pustaka (30-60 kB)"],
+              ["Akses Database & Secrets", "✅ Langsung & Aman via process.env", "❌ DILARANG (Kredensial rahasia bisa bocor ke publik)"],
+              ["State (useState / useEffect)", "❌ Tidak Didukung", "✅ Penuh & Responsif"],
+              ["Event Listener (onClick, onChange)", "❌ Tidak Didukung", "✅ Penuh untuk Interaktivitas Pengguna"],
+              ["Akses Browser APIs (window, storage)", "❌ Tidak Ada (Berjalan di Server)", "✅ Dapat Mengakses DOM & Web APIs"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Prinsip Desain: Pushing 'use client' to the Leaves (Daun Terluar)",
+            text: "Jangan letakkan direktif 'use client' di file layout atau page utama. Buatlah halaman utama sebagai Server Component untuk data fetching, lalu pisahkan bagian interaktif kecil (seperti tombol toggle, modal pop-up, atau search input) ke dalam komponen Client tersendiri di folder components/."
+          }
+        },
+        {
+          title: "2. Anatomi Sistem Routing Next.js 16 App Router (File-System Based Routing)",
+          badge: "Pilar 2: Navigasi & Struktur URL",
+          content: "Next.js menggunakan hierarki folder di dalam direktori /src/app untuk mendefinisikan rute URL secara otomatis. Setiap folder merepresentasikan segmen URL, dan konvensi nama file khusus mengontrol perilaku tampilan, layout bersama, status loading, dan penanganan error.",
+          subpoints: [
+            {
+              label: "Konvensi File Khusus (Special Files Hierarchy)",
+              text: "App Router membaca struktur file khusus secara hierarkis per folder untuk merakit pengalaman navigasi halaman secara otomatis:",
+              code: `src/app/
+├── layout.tsx     # Shell bersama (Header/Sidebar, persistent state)
+├── loading.tsx    # Fallback skeleton instan (React Suspense)
+├── error.tsx      # Boundary penanganan crash runtime ('use client')
+├── not-found.tsx  # Tampilan HTTP 404 kustom saat rute tidak ditemukan
+└── page.tsx       # Tampilan konten unik untuk segmen URL ini`,
+              language: "bash",
+              caption: "Hierarki Berkas Khusus App Router"
+            },
+            {
+              label: "Dynamic Routes & Parameter Asinkron Next.js 16",
+              text: "Folder bernama [id] menangani parameter URL dinamis (misal /tasks/123). Pada Next.js 16, params adalah Promise asinkron yang wajib di-await sebelum nilainya dibaca:",
+              code: `// src/app/tasks/[id]/page.tsx
+export default async function TaskDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // ⚠️ Breaking Change Next.js 16: params wajib di-await!
+  const { id } = await params;
+  return <h1>Detail Tugas ID: #{id}</h1>;
+}`,
+              language: "tsx",
+              caption: "Implementasi Async Params di Next.js 16"
+            },
+            {
+              label: "Catch-all ([...slug]) & Optional Catch-all ([[...slug]])",
+              text: "Gunakan tanda kurung siku tiga titik untuk menangani rute bersarang tak terbatas (seperti hierarki artikel dokumentasi atau kategori katalog):",
+              code: `# Catch-all ([...slug]):
+/app/docs/[...slug]/page.tsx   ➔ Menangkap /docs/a, /docs/a/b, /docs/a/b/c
+
+# Optional Catch-all ([[...slug]]):
+/app/shop/[[...slug]]/page.tsx  ➔ Menangkap /shop DAN /shop/kategori/sepatu`,
+              language: "text",
+              caption: "Pemetaan URL Catch-All Segments"
+            },
+            {
+              label: "Route Groups '(namaFolder)' & Private Folders '_namaFolder'",
+              text: "Atur struktur arsitektur folder kode Anda tanpa mengotori atau mengubah path URL publik pengguna:",
+              code: `# Route Groups: Folder dalam tanda kurung diabaikan dari URL publik
+src/app/(auth)/login/page.tsx       ➔ URL: /login (folder (auth) dilewati)
+src/app/(dashboard)/tasks/page.tsx  ➔ URL: /tasks
+
+# Private Folders: Awalan underscore dikecualikan dari routing sistem
+src/app/_components/task-card.tsx   ➔ File internal (tidak bisa diakses browser)`,
+              language: "text",
+              caption: "Organisasi Berkas vs Path URL Publik"
+            },
+            {
+              label: "Strategi Navigasi: <Link> vs useRouter() vs redirect()",
+              text: "Pilih metode navigasi yang tepat sesuai arsitektur komponen dan kebutuhan performa aplikasi:",
+              code: `// 1. Navigasi Deklaratif di JSX (Otomatis Prefetching di Background):
+<Link href="/tasks">Buka Daftar Tugas</Link>
+
+// 2. Server-Side Redirect di Server Component atau Server Actions:
+import { redirect } from "next/navigation";
+redirect("/login");
+
+// 3. Navigasi Imperatif di Client Component ('use client'):
+const router = useRouter();
+router.push("/dashboard");`,
+              language: "tsx",
+              caption: "3 Pola Navigasi di Next.js 16"
+            }
+          ],
+          comparisonTable: {
+            headers: ["File Spesial", "Tipe Default", "Fungsi Utama & Perilaku Navigasi"],
+            rows: [
+              ["page.tsx", "Server Component", "Mendefinisikan UI unik yang dapat diakses publik pada path URL terkait."],
+              ["layout.tsx", "Server Component", "Membungkus halaman anak (children). Mempertahankan state & tidak me-re-render saat navigasi."],
+              ["loading.tsx", "Server Component", "Menampilkan skeleton/spinner instan menggunakan React Suspense saat page.tsx memproses data."],
+              ["error.tsx", "Client Component ('use client')", "Menangkap runtime error pada segmen rute agar seluruh aplikasi tidak crash."],
+              ["not-found.tsx", "Server Component", "UI fallback khusus saat fungsi notFound() dipanggil atau rute tidak terdaftar (HTTP 404)."],
+              ["(group)/", "Folder Pengelompok", "Mengelompokkan rute secara logis tanpa menambahkan nama folder ke dalam path URL."]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Breaking Change Next.js 16: Params & SearchParams adalah Asinkron!",
+            text: "Pada Next.js 16, mengakses params dan searchParams secara langsung (misal: props.params.id) akan memicu runtime error. Anda WAJIB menggunakan 'await params' atau 'await searchParams' di dalam Server Components!"
+          }
+        },
+        {
+          title: "3. Revolusi Shadcn UI: Filosofi Open Architecture, Radix Primitives & Tailwind CVA",
+          badge: "Pilar 3: Modern UI Engineering",
+          content: "Shadcn UI mendisrupsi paradigma library UI konvensional. Daripada mengunci developer ke dalam paket NPM tertutup yang sulit dimodifikasi (black-box), Shadcn menyalin kode sumber komponen TypeScript langsung ke dalam direktori proyek (@/components/ui/*). Ini memberikan 100% kepemilikan kode tanpa dependency lock-in.",
+          subpoints: [
+            {
+              label: "Pilar 1: Radix UI Primitives (Headless Accessibility)",
+              text: "Menyediakan logika antarmuka yang kompleks, navigasi keyboard (keyboard navigation), fokus manajemen (focus trap pada modal), dan kepatuhan standar WAI-ARIA kelas dunia tanpa menyertakan styling CSS kaku."
+            },
+            {
+              label: "Pilar 2: Tailwind CSS & Semantic CSS Variables",
+              text: "Styling diatur menggunakan utility classes dan CSS variables HSL (seperti bg-background, text-foreground, bg-primary). Tema Dark Mode dan Light Mode dapat berganti secara mulus tanpa penulisan style terpisah."
+            },
+            {
+              label: "Pilar 3: CVA (Class Variance Authority) & Utilitas cn()",
+              text: "CVA memungkinkan pembuatan varian komponen secara type-safe, sedangkan fungsi helper cn() menggabungkan clsx dan tailwind-merge untuk mencegah konflik class CSS:",
+              code: `// src/lib/utils.ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  // Otomatis menggabungkan class dan menyelesaikan konflik utilitas Tailwind
+  return twMerge(clsx(inputs));
+}`,
+              language: "typescript",
+              caption: "Utilitas cn() Pemersatu Class Tailwind"
+            },
+            {
+              label: "Anatomi Folder Shadcn UI di Proyek",
+              text: "Struktur berkas yang rapi memberikan kontrol dan kustomisasi 100% pada antarmuka aplikasi Anda:",
+              code: `my-serverless-app/
+├── components.json          # Konfigurasi skema & direktori alias Shadcn
+├── src/
+│   ├── components/ui/       # Komponen copy-paste (button.tsx, card.tsx, dll)
+│   └── lib/utils.ts         # Fungsi helper cn() penggabung Tailwind class
+└── tailwind.config.ts       # Definisi token tema warna & CSS variables`,
+              language: "bash",
+              caption: "Arsitektur Folder Shadcn UI"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Karakteristik", "Library NPM Konvensional (MUI / AntD) 📦", "Arsitektur Shadcn UI 🚀"],
+            rows: [
+              ["Metode Distribusi", "Paket NPM ter-bundle di node_modules", "Scaffolding source code via CLI langsung ke src/components/ui/"],
+              ["Kepemilikan Kode", "Tertutup (Black-box), sulit diubah", "100% Milik Anda, bebas diedit langsung di file .tsx"],
+              ["Kustomisasi Desain", "Memerlukan override style / theme provider yang rumit", "Cukup ubah Tailwind utility class di kode komponen"],
+              ["Ukuran Bundle", "Sering memuat kode komponen yang tidak terpakai", "Hanya menyertakan komponen yang Anda install via CLI"],
+              ["Aksesibilitas (a11y)", "Bervariasi antar vendor", "Sempurna (Didukung Radix UI Primitives WAI-ARIA)"]
+            ]
+          },
+          callout: {
+            type: "info",
+            title: "Standar Industri: Mengapa Perusahaan Modern Memilih Shadcn UI?",
+            text: "Dengan kepemilikan kode penuh, tim rekayasa perangkat lunak tidak perlu menunggu update dari maintainer open-source jika ingin menambahkan fitur kustom atau memperbaiki bug internal."
+          }
+        },
+        {
+          title: "4. Strategi Clean Component Scaffolding & Komposisi Antarmuka Responsif",
+          badge: "Pilar 4: Best Practices",
+          content: "Membangun aplikasi web skala besar membutuhkan struktur komponen yang rapi dan modular. Memisahkan container logika backend dari elemen interaktif adalah kunci arsitektur Next.js 16 yang bersih dan mudah dirawat.",
+          subpoints: [
+            {
+              label: "Pemisahan Container (RSC) vs Presentational Widget (Client)",
+              text: "Terapkan prinsip separation of concerns agar komponen pengambilan data tetap aman di server dan widget interaktif tetap ringan di browser:",
+              code: `// 1. Server Container: src/app/(dashboard)/tasks/page.tsx (0 kB JS bundle)
+export default async function TasksPage() {
+  const data = await getTasksFromSupabase();
+  return <TaskFilterWidget initialData={data} />;
+}
+
+// 2. Client Widget: src/components/tasks/task-filter.tsx ('use client')
+"use client";
+export function TaskFilterWidget({ initialData }: Props) {
+  const [filter, setFilter] = useState("all");
+  return <div>{/* Tombol filter & event listener onClick */}</div>;
+}`,
+              language: "tsx",
+              caption: "Arsitektur Server Container vs Client Widget"
+            },
+            {
+              label: "Pemanfaatan Semantic CSS Tokens Shadcn",
+              text: "Gunakan class semantic seperti text-muted-foreground untuk teks sekunder dan bg-card / border-border untuk kontainer kartu agar otomatis harmonis di mode gelap maupun terang:",
+              code: `<Card className="bg-card border-border text-card-foreground shadow-sm">
+  <p className="text-muted-foreground text-xs">Otomatis adaptif dark/light mode</p>
+</Card>`,
+              language: "tsx",
+              caption: "Contoh Penggunaan Semantic Tokens"
+            }
+          ],
+          callout: {
+            type: "tip",
+            title: "Tips AI Workflow: Menjaga Komponen Tetap Modular",
+            text: "Saat meminta AI membuat tampilan dengan Shadcn UI, selalu instruksikan AI untuk membuat file terpisah antara Server Page utama dengan Client Interactive Components agar struktur kode tetap bersih."
+          }
+        }
       ]
     },
     references: [
       { title: "Next.js Server and Client Components", url: "https://nextjs.org/docs/app/building-your-application/rendering/server-components", source: "Next.js" },
-      { title: "Shadcn UI Installation for Next.js", url: "https://ui.shadcn.com/docs/installation/next", source: "Shadcn UI" }
+      { title: "Next.js App Router File Conventions", url: "https://nextjs.org/docs/app/building-your-application/routing", source: "Next.js" },
+      { title: "Shadcn UI Installation & Concepts", url: "https://ui.shadcn.com/docs/installation/next", source: "Shadcn UI" },
+      { title: "Radix UI Primitives Philosophy", url: "https://www.radix-ui.com/primitives/docs/overview/introduction", source: "Radix UI" }
     ],
     lab: {
-      prerequisites: ["Proyek Minggu 1 yang sudah berjalan"],
+      prerequisites: ["Proyek Minggu 1 yang sudah berjalan di http://localhost:3000", "Node.js v20+ LTS", "Git workspace aktif"],
       steps: [
         {
           stepNumber: 1,
-          instruction: "Inisialisasi Shadcn UI di proyek Anda",
-          code: "npx shadcn@latest init",
+          instruction: "Inisialisasi Shadcn UI di Proyek Next.js 16",
+          code: `npx shadcn@latest init -d`,
           language: "bash",
-          explanation: "Pilih gaya New York / Default, warna Netral/Zinc, dan aktifkan CSS variables."
+          explanation: "Perintah ini otomatis mengonfigurasi file components.json, membuat direktori src/lib/utils.ts dengan utilitas cn(), dan menyuntikkan variabel CSS warna HSL ke dalam globals.css."
         },
         {
           stepNumber: 2,
-          instruction: "Tambahkan komponen Button, Card, dan Input dari Shadcn",
-          code: "npx shadcn@latest add button card input badge",
-          language: "bash"
+          instruction: "Tambahkan Komponen Inti Shadcn UI yang Dibutuhkan",
+          code: `npx shadcn@latest add button card badge input label separator tabs dialog`,
+          language: "bash",
+          explanation: "CLI akan menyalin kode TypeScript murni untuk masing-masing komponen ke dalam folder src/components/ui/. Komponen ini sepenuhnya menjadi milik Anda dan dapat diedit secara bebas."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Buat Struktur Rute Dashboard Bersama (Route Groups & Nested Layout)",
+          code: `// src/app/(dashboard)/layout.tsx (Server Component)
+import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <span className="font-black text-lg tracking-tight">CloudTask Pro</span>
+          <nav className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
+            <Link href="/tasks" className="hover:text-foreground transition-colors">Tugas</Link>
+            <Link href="/analytics" className="hover:text-foreground transition-colors">Analitik</Link>
+          </nav>
+        </div>
+        <ThemeToggle />
+      </header>
+      <main className="flex-1 p-6 md:p-10 max-w-6xl mx-auto w-full">
+        {children}
+      </main>
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "Route group (dashboard) mengelompokkan halaman tanpa mengubah URL publik (URL tetap /tasks). File layout.tsx membungkus konten dan mempertahankan state saat berpindah halaman."
+        },
+        {
+          stepNumber: 4,
+          instruction: "Rakit Server Page dengan Komposisi Client Component",
+          code: `// 1. Client Component: src/components/task-status-filter.tsx
+"use client";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+export function TaskStatusFilter() {
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  return (
+    <div className="flex items-center gap-2">
+      {["all", "pending", "completed"].map((status) => (
+        <Button
+          key={status}
+          size="sm"
+          variant={activeFilter === status ? "default" : "outline"}
+          onClick={() => setActiveFilter(status)}
+          className="capitalize text-xs"
+        >
+          {status}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+// 2. Server Component: src/app/(dashboard)/tasks/page.tsx
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TaskStatusFilter } from "@/components/task-status-filter";
+import Link from "next/link";
+
+export default async function TasksPage() {
+  // Simulasi data fetch di server (0 KB JS ke browser!)
+  const tasks = [
+    { id: "1", title: "Setup Database PostgreSQL Supabase", status: "Selesai", xp: 150 },
+    { id: "2", title: "Rancang Layout Dashboard dengan Shadcn", status: "Berjalan", xp: 200 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Daftar Tugas Serverless</h1>
+          <p className="text-sm text-muted-foreground">Kelola progres tugas kuliah Anda secara real-time.</p>
+        </div>
+        <TaskStatusFilter />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {tasks.map((task) => (
+          <Link key={task.id} href={\`/tasks/\${task.id}\`}>
+            <Card className="hover:border-primary/50 transition-all cursor-pointer">
+              <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-base font-semibold">{task.title}</CardTitle>
+                <Badge variant={task.status === "Selesai" ? "default" : "secondary"}>
+                  {task.status}
+                </Badge>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 text-xs text-muted-foreground">
+                Hadiah: +{task.xp} XP • Klik untuk melihat detail & rute dinamis
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "Perhatikan pemisahan tanggung jawab: Page utama adalah Server Component (data fetch cepat & aman), sedangkan TaskStatusFilter adalah Client Component terisolasi yang menangani event onClick dan hook useState."
+        },
+        {
+          stepNumber: 5,
+          instruction: "Buat Dynamic Route dengan Parameter Asinkron Next.js 16 & Loading Fallback",
+          code: `// 1. Loading UI: src/app/(dashboard)/tasks/[id]/loading.tsx
+export default function TaskDetailLoading() {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-8 w-1/3 bg-muted rounded-lg" />
+      <div className="h-32 bg-muted rounded-2xl" />
+    </div>
+  );
+}
+
+// 2. Dynamic Page: src/app/(dashboard)/tasks/[id]/page.tsx
+import { notFound } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+export default async function TaskDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // PENTING: Di Next.js 16, params adalah Promise asinkron
+  const { id } = await params;
+
+  if (id !== "1" && id !== "2") {
+    notFound();
+  }
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <Link href="/tasks" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
+        <ArrowLeft className="w-4 h-4" /> Kembali ke Daftar Tugas
+      </Link>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <Badge variant="outline">ID Tugas: #{id}</Badge>
+            <Badge>Next.js 16 Async Params</Badge>
+          </div>
+          <CardTitle className="text-xl mt-2">Detail Modul Perkuliahan #{id}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground leading-relaxed">
+          Halaman ini membuktikan cara kerja Dynamic Route [id] dengan async params dan streaming React Suspense otomatis via loading.tsx.
+        </CardContent>
+      </Card>
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "File loading.tsx otomatis membungkus rute dengan React Suspense. Di Next.js 16, params wajib di-await sebelum membaca nilainya."
         }
       ],
       aiPromptTemplate: {
-        role: "UI Engineer",
-        prompt: "Buatkan halaman dashboard sederhana di Next.js App Router (src/app/dashboard/page.tsx) menggunakan komponen Button, Card, dan Badge dari Shadcn UI. Buat komponen ini sebagai Server Component dan gunakan Tailwind CSS untuk tata letak grid responsif.",
-        tip: "Ingatkan AI untuk tidak menambahkan 'use client' jika komponen tersebut hanya menampilkan data statis."
+        role: "Senior Frontend UI/UX Engineer & Next.js 16 Specialist",
+        prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer & Next.js 16 Specialist.
+
+Saya sedang membangun antarmuka dashboard manajemen tugas di Next.js 16 App Router dengan Shadcn UI dan Tailwind CSS v4.
+
+Tolong buatkan arsitektur 2 file terpisah:
+1. 'src/app/(dashboard)/tasks/page.tsx' sebagai Server Component (RSC) yang merender data list tugas statis, kartu metrik ringkasan, dan layout grid responsif (1 kolom mobile, 3 kolom desktop) menggunakan komponen Card, Badge, dan Button dari Shadcn UI (@/components/ui/*).
+2. 'src/components/task-status-filter.tsx' sebagai Client Component ('use client') yang menyediakan tombol tab filter status (Semua, Berjalan, Selesai) menggunakan hook useState.
+
+Batasan Teknis Wajib:
+- Dilarang menambahkan 'use client' di file page.tsx utama.
+- Gunakan class semantic Tailwind Shadcn (bg-background, text-muted-foreground, border-border, bg-card).
+- Pastikan seluruh tipe TypeScript didefinisikan secara eksplisit dan bebas dari tipe any.`,
+        tip: "Selalu instruksikan AI secara eksplisit untuk memisahkan file Server Page dari Client Component agar AI tidak menggabungkan seluruh kode menjadi satu file Client Component raksasa."
+      },
+      warningZone: {
+        title: "Zona Bahaya: Menjadikan Seluruh Halaman 'use client'!",
+        desc: "Kesalahan paling fatal developer pemula adalah menaruh direktif 'use client' di baris teratas file page.tsx atau layout.tsx hanya karena ada 1 tombol interaktif. Tindakan ini merusak seluruh keunggulan Server Components (RSC) dan membengkakkan ukuran bundle JavaScript ke browser pengguna. Selalu isolasi 'use client' ke komponen terkecil di daun terluar (leaves)!"
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 2: Layout Dashboard Proyek Akhir",
-      taskDesc: "Rancang kerangka antarmuka (Wireframe / Shell UI) untuk Proyek Akhir Anda menggunakan komponen Shadcn UI.",
+      taskTitle: "Misi Minggu 2: Scaffolding Dashboard & Shell UI Proyek Akhir",
+      taskDesc: "Rancang kerangka antarmuka (Wireframe & Shell UI) untuk Proyek Akhir Anda menggunakan Route Groups, Server & Client Components, serta komponen Shadcn UI yang responsif.",
       definitionOfDone: [
-        "Shadcn UI terpasang dan dapat digunakan",
-        "Terdapat minimal 3 komponen Shadcn di halaman utama proyek",
-        "Layout responsif di layar mobile dan desktop"
+        "Shadcn UI terinisialisasi dan minimal 4 komponen terpasang (@/components/ui/*)",
+        "Struktur rute menggunakan Route Group (dashboard) dengan layout.tsx bersama",
+        "Halaman utama dashboard dibuat sebagai Server Component dengan pemisahan Client Component untuk interaktivitas",
+        "Terdapat minimal 1 rute dinamis [id] dengan file loading.tsx skeleton",
+        "Tampilan responsif di mobile & desktop serta mendukung Dark/Light mode"
       ],
-      gitBranchTask: "git checkout -b feature/ui-scaffolding"
+      gitBranchTask: "git checkout -b feature/ui-scaffolding-shadcn"
     }
   },
   {

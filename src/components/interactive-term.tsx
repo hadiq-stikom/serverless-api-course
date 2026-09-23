@@ -18,10 +18,19 @@ import {
   FolderLock,
   Globe,
   Radio,
-  X
+  X,
+  Code,
+  Laptop,
+  Lock,
+  Unlock,
+  Layout,
+  Check,
+  FileCode,
+  Compass,
+  Workflow
 } from "lucide-react";
 
-export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary";
+export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router";
 
 interface TermData {
   title: string;
@@ -107,6 +116,66 @@ const TERMS_DATA: Record<TermKey, TermData> = {
       "⚡ Global CDN: Pengiriman gambar super cepat dari server terdekat dengan pengguna"
     ],
     courseRole: "Di kuliah ini: Direct Upload Widget & Optimasi Gambar Proyek Akhir."
+  },
+  rsc: {
+    title: "Server Component (RSC)",
+    fullName: "React Server Component",
+    badgeColor: "from-blue-600 to-indigo-600",
+    icon: Server,
+    type: "general",
+    summary: "Komponen React default di Next.js App Router yang dieksekusi 100% di server. Mengalirkan HTML murni ke browser dengan 0 kB bundle JavaScript, aman mengakses database & environment variables rahasia.",
+    analogy: "💡 Analogi: Seperti memesan makanan siap saji yang sudah matang dari dapur restoran. Anda langsung memakannya tanpa perlu membawa kompor dan wajan (JavaScript) ke meja makan.",
+    keyPoints: [
+      "🚀 Zero Bundle Size: Tidak ada JavaScript komponen ini yang dikirim ke browser klien",
+      "🔒 Keamanan Maksimal: Akses langsung ke database tanpa risiko bocornya API keys",
+      "⚡ Performa Cepat: Mengurangi beban CPU dan memori pada HP/laptop pengguna"
+    ],
+    courseRole: "Di kuliah ini: Halaman layout, page data fetching, dan container utama di Next.js 16."
+  },
+  "client-component": {
+    title: "Client Component",
+    fullName: "Client Component ('use client')",
+    badgeColor: "from-purple-500 to-pink-500",
+    icon: Cpu,
+    type: "general",
+    summary: "Komponen yang dideklarasikan dengan direktif 'use client' di baris pertama. Mengirim bundle JavaScript ke browser untuk proses hydration agar mendukung event interaktif (onClick, onChange) dan state React (useState, useEffect).",
+    analogy: "💡 Analogi: Seperti menerima mainan bongkar-pasang (Lego) beserta baterai. Anda membutuhkan waktu perakitan di rumah (browser hydration) agar mainan bisa bergerak dan merespons tombol.",
+    keyPoints: [
+      "✨ Interaktivitas Penuh: Mendukung onClick, onChange, drag-and-drop, dan animasi",
+      "🔄 State & Hooks: Memungkinkan penggunaan useState, useEffect, useReducer, custom hooks",
+      "🌐 Browser APIs: Dapat mengakses localStorage, window, navigator, dan geolocation"
+    ],
+    courseRole: "Di kuliah ini: Form interaktif, modal dialog, toggle theme, dan komponen dinamis."
+  },
+  shadcn: {
+    title: "Shadcn UI",
+    fullName: "Open-Source Accessible Component Architecture",
+    badgeColor: "from-zinc-700 to-zinc-900 dark:from-zinc-300 dark:to-zinc-500",
+    icon: Layers,
+    type: "general",
+    summary: "Pendekatan arsitektur komponen modern di mana kode sumber komponen (berbasis Radix UI & Tailwind CSS) disalin langsung ke folder proyek Anda via CLI, memberikan 100% kepemilikan kode tanpa keterikatan library NPM tertutup.",
+    analogy: "💡 Analogi: Seperti resep masakan koki bintang lima yang diberikan langsung ke Anda. Anda bebas mengubah bumbu dan menyajikannya sesuai selera tanpa harus bergantung pada pesanan luar.",
+    keyPoints: [
+      "🔓 100% Code Ownership: Komponen ada di folder Anda, bebas diedit dan dikustomisasi",
+      "♿ World-Class Accessibility: Dibangun di atas Radix UI Primitives (WAI-ARIA compliant)",
+      "🎨 Tailwind & CSS Variables: Kompatibel sempurna dengan tema Dark/Light mode instan"
+    ],
+    courseRole: "Di kuliah ini: Desain antarmuka proyek akhir (Button, Card, Dialog, Input, Form)."
+  },
+  "app-router": {
+    title: "App Router",
+    fullName: "Next.js File-System Based Routing Engine",
+    badgeColor: "from-cyan-500 to-blue-500",
+    icon: Globe,
+    type: "general",
+    summary: "Sistem routing modern Next.js berbasis struktur folder di /src/app yang mendukung Server Components, layout bersarang (nested layouts), dynamic segments [id], streaming Suspense, dan konvensi file terstruktur.",
+    analogy: "💡 Analogi: Seperti denah bangunan berlantai. Setiap lantai memiliki lorong umum (layout) dan ruangan-ruangan khusus (page) dengan pintu masuk terstruktur.",
+    keyPoints: [
+      "📁 Folder-Based Hierarchy: Struktur folder otomatis memetakan path URL browser",
+      "🧩 Nested Layouts: Header dan Sidebar bertahan tanpa re-render saat pindah halaman",
+      "⚡ Streaming & Fallback: Dukungan otomatis loading.tsx dan error.tsx per rute"
+    ],
+    courseRole: "Di kuliah ini: Pondasi arsitektur routing dan navigasi seluruh halaman aplikasi."
   }
 };
 
@@ -507,6 +576,268 @@ export function FaasVsBaasVisualizer() {
                   </div>
                   <p className="text-[10px] text-zinc-400 font-sans">Policy auth.uid() = user_id</p>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function ServerVsClientVisualizer() {
+  const [activeTab, setActiveTab] = useState<"server" | "client" | "composition">("server");
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 p-5 md:p-6 space-y-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div>
+          <h4 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+            <Cpu className="w-5 h-5 text-indigo-500" />
+            Simulasi Arsitektur Komputasi Next.js 16
+          </h4>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            Eksplorasi perbedaan eksekusi Server Component (RSC), Client Component (&apos;use client&apos;), dan Pola Komposisi Interleaving.
+          </p>
+        </div>
+
+        {/* Tab Controls */}
+        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl">
+          <button
+            onClick={() => setActiveTab("server")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeTab === "server"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+            }`}
+          >
+            Server (RSC)
+          </button>
+          <button
+            onClick={() => setActiveTab("client")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeTab === "client"
+                ? "bg-purple-600 text-white shadow-sm"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+            }`}
+          >
+            Client (&apos;use client&apos;)
+          </button>
+          <button
+            onClick={() => setActiveTab("composition")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeTab === "composition"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+            }`}
+          >
+            Komposisi Interleaving
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {activeTab === "server" && (
+          <motion.div
+            key="server-view"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center"
+          >
+            <div className="lg:col-span-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-500/30">
+                  React Server Component (RSC) — Standar Default
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                Di Next.js 16 App Router, secara default <strong className="text-zinc-900 dark:text-white">seluruh komponen adalah Server Component</strong>. Komponen dieksekusi 100% di server, menghasilkan payload HTML murni yang dialirkan ke browser tanpa mengorbankan ukuran JavaScript bundle.
+              </p>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">Bundle JS ke Klien</span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">0 kB (Zero JS)</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">Akses Database / Secrets</span>
+                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400">100% Langsung & Aman</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">First Contentful Paint</span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">⚡ Instan (Streaming)</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">React Hooks / onClick</span>
+                  <span className="text-sm font-bold text-zinc-400">❌ Tidak Didukung</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-6 bg-zinc-950 p-4 sm:p-5 rounded-2xl border border-zinc-800 text-white space-y-3 font-mono text-xs shadow-inner">
+              <div className="flex items-center justify-between text-[11px] text-zinc-400 pb-2 border-b border-zinc-800">
+                <span className="flex items-center gap-1.5 text-blue-400 font-bold">
+                  <Server className="w-3.5 h-3.5" /> ALUR EKSEKUSI SERVER COMPONENT
+                </span>
+                <span className="text-emerald-400 text-[10px]">0 KB Bundle</span>
+              </div>
+
+              <div className="space-y-2 font-sans text-xs">
+                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-blue-400">
+                    <span className="flex items-center gap-1.5"><Server className="w-4 h-4" /> 1. Server-Side Execution</span>
+                    <span className="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded">Node / Edge</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">Query Supabase Postgres langsung via SQL/SDK dengan kunci rahasia aman.</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-cyan-400">
+                    <span className="flex items-center gap-1.5"><Radio className="w-4 h-4" /> 2. Streaming RSC Payload</span>
+                    <span className="text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded">HTTP Stream</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">Mengalirkan data JSON representasi UI + HTML siap saji ke browser.</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-400">
+                    <span className="flex items-center gap-1.5"><Laptop className="w-4 h-4" /> 3. Browser Paint</span>
+                    <span className="text-[10px] bg-emerald-900 text-emerald-300 px-1.5 py-0.5 rounded">Zero JS Hydration</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-300">Browser langsung menampilkan HTML tanpa parsing JS yang berat. RAM hemat.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "client" && (
+          <motion.div
+            key="client-view"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center"
+          >
+            <div className="lg:col-span-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold border border-purple-500/30">
+                  Client Component (&apos;use client&apos;) — Khusus Interaktivitas
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                Diaktifkan dengan menambahkan <code className="text-purple-600 dark:text-purple-400 font-mono bg-purple-500/10 px-1 rounded">&apos;use client&apos;</code> di baris pertama. File ini mengirimkan JavaScript bundle ke browser agar React dapat melakukan <strong className="text-zinc-900 dark:text-white">Hydration</strong> (menghubungkan event listener, state, dan lifecycle).
+              </p>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">Bundle JS ke Klien</span>
+                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400">+35 s/d 60 kB</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">Akses Database Secrets</span>
+                  <span className="text-sm font-bold text-rose-500">❌ Terlarang (Bocor)</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">React State (useState)</span>
+                  <span className="text-sm font-bold text-purple-600 dark:text-purple-400">✅ Penuh & Responsif</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60">
+                  <span className="text-[11px] text-zinc-500 block">DOM Event Listeners</span>
+                  <span className="text-sm font-bold text-purple-600 dark:text-purple-400">✅ onClick, onChange, dll.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-6 bg-zinc-950 p-4 sm:p-5 rounded-2xl border border-zinc-800 text-white space-y-3 font-mono text-xs shadow-inner">
+              <div className="flex items-center justify-between text-[11px] text-zinc-400 pb-2 border-b border-zinc-800">
+                <span className="flex items-center gap-1.5 text-purple-400 font-bold">
+                  <Cpu className="w-3.5 h-3.5" /> ALUR SIKLUS HYDRATION CLIENT
+                </span>
+                <span className="text-amber-400 text-[10px]">Bundle JS Download</span>
+              </div>
+
+              <div className="space-y-2 font-sans text-xs">
+                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-blue-400">
+                    <span className="flex items-center gap-1.5"><Server className="w-4 h-4" /> 1. Server Pre-render</span>
+                    <span className="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded">Initial HTML Shell</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">Next.js merender kerangka HTML awal di server agar SEO dan preview cepat.</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-amber-400">
+                    <span className="flex items-center gap-1.5"><Globe className="w-4 h-4" /> 2. Unduh Bundle JS</span>
+                    <span className="text-[10px] bg-amber-900 text-amber-300 px-1.5 py-0.5 rounded">Network Transfer</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-300">Browser mendownload file komponen .js dan pustaka dependensinya.</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-purple-400">
+                    <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4" /> 3. React Hydration</span>
+                    <span className="text-[10px] bg-purple-900 text-purple-300 px-1.5 py-0.5 rounded">Ready Interactive</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-300">React memasang event listener ke DOM. Tombol kini aktif dan siap diklik.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "composition" && (
+          <motion.div
+            key="composition-view"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center"
+          >
+            <div className="lg:col-span-6 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/30">
+                  Pola Komposisi Emas (Interleaving Children Pattern)
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                Bagaimana jika kita butuh container interaktif (misal: Sidebar bisa di-toggle atau Modal Dialog) yang di dalamnya memuat data berat dari database?
+              </p>
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+                <p className="font-bold flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5" /> Aturan Larangan Keras:
+                </p>
+                <p className="opacity-90">
+                  Jangan pernah mengimpor Server Component secara langsung di dalam Client Component (<code className="font-mono">import ServerData from &apos;./ServerData&apos;</code>), karena itu akan memaksa ServerData ikut di-bundle ke client!
+                </p>
+              </div>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                ✅ <strong>Solusi Elegan:</strong> Lewatkan Server Component sebagai prop <code className="font-mono text-emerald-600 dark:text-emerald-400">children</code> ke Client Component.
+              </p>
+            </div>
+
+            <div className="lg:col-span-6 bg-zinc-950 p-4 sm:p-5 rounded-2xl border border-zinc-800 text-white space-y-3 font-mono text-xs shadow-inner">
+              <div className="flex items-center justify-between text-[11px] text-zinc-400 pb-2 border-b border-zinc-800">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <Workflow className="w-3.5 h-3.5" /> BLUEPRINT KODE KOMPOSISI
+                </span>
+                <span className="text-zinc-400 text-[10px]">src/app/page.tsx</span>
+              </div>
+
+              <div className="bg-zinc-900 p-3 rounded-xl border border-zinc-800 space-y-2 text-[11px] text-zinc-300 overflow-x-auto leading-relaxed">
+                <div className="text-zinc-500">// 1. page.tsx adalah SERVER COMPONENT</div>
+                <div><span className="text-purple-400">import</span> InteractiveModal <span className="text-purple-400">from</span> <span className="text-emerald-300">&apos;@/components/modal&apos;</span>; <span className="text-zinc-500">// &apos;use client&apos;</span></div>
+                <div><span className="text-purple-400">import</span> HeavyDatabaseList <span className="text-purple-400">from</span> <span className="text-emerald-300">&apos;@/components/db-list&apos;</span>; <span className="text-zinc-500">// Server</span></div>
+                <div className="pt-1"><span className="text-blue-400">export default async function</span> <span className="text-amber-300">Page</span>() &#123;</div>
+                <div className="pl-3"><span className="text-purple-400">return</span> (</div>
+                <div className="pl-6 text-emerald-400">&lt;<span className="text-indigo-400">InteractiveModal</span>&gt;</div>
+                <div className="pl-9 text-blue-400">&lt;<span className="text-amber-300">HeavyDatabaseList</span> /&gt; <span className="text-zinc-500">// ✅ Tetap 0 KB JS di Server!</span></div>
+                <div className="pl-6 text-emerald-400">&lt;/<span className="text-indigo-400">InteractiveModal</span>&gt;</div>
+                <div className="pl-3">);</div>
+                <div>&#125;</div>
               </div>
             </div>
           </motion.div>
