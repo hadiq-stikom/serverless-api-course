@@ -567,20 +567,114 @@ src/app/_components/task-card.tsx   ➔ File internal (tidak bisa diakses browse
               caption: "Organisasi Berkas vs Path URL Publik"
             },
             {
-              label: "Strategi Navigasi: <Link> vs useRouter() vs redirect()",
-              text: "Pilih metode navigasi yang tepat sesuai arsitektur komponen dan kebutuhan performa aplikasi:",
-              code: `// 1. Navigasi Deklaratif di JSX (Otomatis Prefetching di Background):
-<Link href="/tasks">Buka Daftar Tugas</Link>
+              label: "Strategi Navigasi & Pengiriman Parameter/Query: <Link> vs useRouter() vs redirect()",
+              text: "Next.js 16 menyediakan **3 mekanisme navigasi utama** dengan batas arsitektur, metode pengiriman parameter rute (`route params`), dan query string (`searchParams`) yang berbeda secara fundamental:\n\n" +
+                "1. `<Link>` (Deklaratif & Link UI): Pilihan utama untuk **90% navigasi tautan antarmuka** (Navbar, Card, Sidebar). Mengunduh rute target secara asinkron saat elemen masuk ke viewport (**automatic prefetching**), sepenuhnya **ramah SEO** (dirender sebagai tag HTML native `<a>`), dan mendukung transmisi query string via **string template literals** maupun **Objek URL**.\n\n" +
+                "2. `useRouter()` (Navigasi Programatik Client): Hook khusus Client Component (`'use client'`) untuk navigasi yang dipicu oleh **event non-anchor** (misal: submit form client, debounce input pencarian, dropdown filter, timer). Memungkinkan manipulasi query params dinamis tanpa *full page reload* via utilitas `URLSearchParams` bersama hook `usePathname()` dan `useSearchParams()`, lengkap dengan opsi `{ scroll: false }` agar posisi layar tidak melompat.\n\n" +
+                "3. `redirect()` (Server-Side Navigation): Fungsi navigasi server yang **wajib digunakan** di Server Components, Server Actions (`'use server'`), atau Route Handlers. Mengirimkan respons **HTTP 307 (Temporary Redirect)** atau **303 (See Other)** langsung dari server sebelum payload HTML dikirimkan ke browser. Menjadi standar industri untuk **Server Auth Guards** (mencegah *Flash of Unauthorized Content* / FOUC) dan implementasi pola **Post-Redirect-Get (PRG)** pasca mutasi basis data berhasil.\n\n" +
+                "4. Pembacaan Parameter & Query di Sisi Penerima (Breaking Change Next.js 16): Di Server Component (`page.tsx`), parameter dan query **WAJIB di-await secara asinkron**: `const { id } = await params;` dan `const { status, sort } = await searchParams;`. Sedangkan di Client Component, gunakan hook `useParams()` dan `useSearchParams()` yang **wajib dibungkus komponen `<Suspense>`** agar tidak merusak streaming SSR.",
+              code: `// ============================================================================
+// 1. PENGIRIMAN PARAMS & QUERY STRING DENGAN <Link> (Deklaratif)
+// ============================================================================
+import Link from "next/link";
 
-// 2. Server-Side Redirect di Server Component atau Server Actions:
+export function ProjectNavLinks({ projectId }: { projectId: string }) {
+  return (
+    <div className="flex gap-4">
+      {/* Opsi A: Format String Interpolation Langsung */}
+      <Link href={\`/projects/\${projectId}/tasks?status=in_progress&sort=priority\`}>
+        Tugas Aktif (String Literal)
+      </Link>
+
+      {/* Opsi B: Format Objek URL Bersih & Terstruktur */}
+      <Link
+        href={{
+          pathname: \`/projects/\${projectId}/tasks\`,
+          query: { status: "completed", sort: "deadline" },
+        }}
+      >
+        Tugas Selesai (URL Object)
+      </Link>
+    </div>
+  );
+}
+
+// ============================================================================
+// 2. PENGIRIMAN & PEMBARUAN QUERY DENGAN useRouter() (Client Component)
+// ============================================================================
+"use client";
+
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+
+export function TaskFilterBar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Memperbarui query parameter tanpa menghapus parameter URL yang sudah ada
+  const handleFilterChange = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    // Navigasi programatik tanpa melompat ke atas halaman ({ scroll: false })
+    router.push(\`\${pathname}?\${params.toString()}\`, { scroll: false });
+  };
+
+  return (
+    <select onChange={(e) => handleFilterChange("status", e.target.value)}>
+      <option value="all">Semua Status</option>
+      <option value="in_progress">Sedang Dikerjakan</option>
+      <option value="completed">Selesai</option>
+    </select>
+  );
+}
+
+// ============================================================================
+// 3. SERVER-SIDE REDIRECT DENGAN redirect() (Server Actions & Auth Guards)
+// ============================================================================
+// src/actions/task-actions.ts ('use server')
 import { redirect } from "next/navigation";
-redirect("/login");
 
-// 3. Navigasi Imperatif di Client Component ('use client'):
-const router = useRouter();
-router.push("/dashboard");`,
+export async function createProjectTask(formData: FormData) {
+  "use server";
+  const projectId = formData.get("projectId") as string;
+  const title = formData.get("title") as string;
+
+  // 1. Eksekusi mutasi basis data...
+  // await db.tasks.create({ projectId, title });
+
+  // 2. Terapkan pola Post-Redirect-Get (PRG) dengan query notifikasi
+  redirect(\`/projects/\${projectId}/tasks?status=all&toast=created_success\`);
+}
+
+// ============================================================================
+// 4. PEMBACAAN PARAMS & QUERY DI NEXT.JS 16 SERVER COMPONENT (page.tsx)
+// ============================================================================
+// src/app/projects/[id]/tasks/page.tsx
+export default async function ProjectTasksPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ status?: string; sort?: string; toast?: string }>;
+}) {
+  // Breaking Change Next.js 16: WAJIB di-await secara asinkron!
+  const { id } = await params;
+  const { status = "all", sort = "newest", toast } = await searchParams;
+
+  return (
+    <main className="p-6">
+      <h1 className="text-xl font-bold">Proyek ID: {id}</h1>
+      <p className="text-sm">Filter: {status} | Sort: {sort}</p>
+      {toast && <div className="alert alert-success">Operasi Berhasil!</div>}
+    </main>
+  );
+}`,
               language: "tsx",
-              caption: "3 Pola Navigasi di Next.js 16"
+              caption: "Sintaks Lengkap Pengiriman & Pembacaan Params/Query di Next.js 16"
             }
           ],
           comparisonTable: {
@@ -597,7 +691,7 @@ router.push("/dashboard");`,
           callout: {
             type: "warning",
             title: "Breaking Change Next.js 16: Params & SearchParams adalah Asinkron!",
-            text: "Pada Next.js 16, mengakses params dan searchParams secara langsung (misal: props.params.id) akan memicu runtime error. Anda WAJIB menggunakan 'await params' atau 'await searchParams' di dalam Server Components!"
+            text: "Pada Next.js 16, mengakses params dan searchParams secara langsung (misal: props.params.id) akan memicu runtime error. Anda WAJIB menggunakan 'await params' atau 'await searchParams' di dalam Server Components! Untuk Client Components, bungkus komponen yang menggunakan 'useSearchParams()' dengan <Suspense> agar tidak membatalkan streaming HTML dari server."
           }
         },
         {

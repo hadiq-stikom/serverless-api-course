@@ -116,8 +116,8 @@ const MODULE_2_VISUALIZERS: Record<string, { key: string; title: string; subtitl
   },
   "1-4": {
     key: "nav-strategies",
-    title: "Simulasi 3 Strategi Navigasi: <Link> vs useRouter() vs redirect()",
-    subtitle: "Bandingkan kecepatan instant prefetch 0ms vs programmatic push vs HTTP redirect server",
+    title: "Simulasi 3 Strategi Navigasi & Pengiriman Params/Query: <Link> vs useRouter() vs redirect()",
+    subtitle: "Uji transmisi parameter dinamis, query strings URLSearchParams, dan panduan matriks use case",
     component: <NavigationStrategiesAnimator />,
   },
 
@@ -392,6 +392,105 @@ const MODULE_4_VISUALIZERS: Record<string, { key: string; title: string; subtitl
     component: <SupabaseTypegenAnimator />,
   },
 };
+
+function FormattedSubpointText({ text }: { text: string }) {
+  if (!text) return null;
+
+  // Split into paragraphs by double newlines or single newlines
+  const paragraphs = text.split(/\n\n+/).filter(Boolean);
+
+  // Helper to format inline markdown like `code`, **bold**, and *italic*
+  const formatInline = (str: string) => {
+    // Regex for matching `code`, **bold**, or *italic*
+    const parts = str.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith("`") && part.endsWith("`")) {
+        const code = part.slice(1, -1);
+        return (
+          <code
+            key={idx}
+            className="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/70 mx-0.5 inline-block align-baseline"
+          >
+            {code}
+          </code>
+        );
+      }
+      if (part.startsWith("**") && part.endsWith("**")) {
+        const bold = part.slice(2, -2);
+        return (
+          <strong key={idx} className="font-bold text-zinc-900 dark:text-zinc-100">
+            {bold}
+          </strong>
+        );
+      }
+      if (part.startsWith("*") && part.endsWith("*")) {
+        const italic = part.slice(1, -1);
+        return (
+          <em key={idx} className="italic text-zinc-800 dark:text-zinc-200 font-medium">
+            {italic}
+          </em>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  };
+
+  // If there's only 1 paragraph and it's not a numbered list item
+  if (paragraphs.length === 1 && !paragraphs[0].match(/^\d+\.\s+/)) {
+    return (
+      <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+        {formatInline(paragraphs[0])}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3 pt-1">
+      {paragraphs.map((p, pIdx) => {
+        // Check if paragraph is a numbered item: "1. Title: Description" or "1. Description"
+        const numMatch = p.match(/^(\d+)\.\s+([^:]+):?\s*([\s\S]*)$/);
+
+        if (numMatch) {
+          const num = numMatch[1];
+          const hasColon = p.includes(":");
+          const itemTitle = hasColon ? numMatch[2].trim() : "";
+          const itemDesc = hasColon ? numMatch[3].trim() : numMatch[2].trim() + (numMatch[3] ? ": " + numMatch[3].trim() : "");
+
+          return (
+            <div
+              key={pIdx}
+              className="group relative flex items-start gap-3 p-3.5 sm:p-4 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300 ease-out origin-center cursor-pointer hover:scale-[1.2] hover:z-50 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] dark:hover:shadow-[0_25px_70px_rgba(0,0,0,0.9)] hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/25"
+            >
+              <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-600 text-white font-bold font-mono text-xs shrink-0 shadow-xs mt-0.5 group-hover:scale-110 transition-transform">
+                {num}
+              </span>
+              <div className="space-y-1.5 flex-1 text-xs md:text-sm leading-relaxed">
+                {itemTitle && (
+                  <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 flex-wrap">
+                    {formatInline(itemTitle)}
+                  </div>
+                )}
+                <div className="text-zinc-600 dark:text-zinc-300">
+                  {formatInline(itemDesc)}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Standard introductory or concluding paragraph
+        return (
+          <p
+            key={pIdx}
+            className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium"
+          >
+            {formatInline(p)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function ModuleDetailPage() {
   const params = useParams();
@@ -712,9 +811,7 @@ export default function ModuleDetailPage() {
                                     <h5 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                                       {sub.label}
                                     </h5>
-                                    <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                                      {sub.text}
-                                    </p>
+                                    <FormattedSubpointText text={sub.text} />
                                   </div>
                                 </div>
 
