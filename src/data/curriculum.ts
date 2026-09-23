@@ -91,12 +91,12 @@ export const MODULES: ModuleData[] = [
       diagramNote: "Client Browser ↔️ Next.js (Vercel Serverless) ↔️ Supabase (Data/Auth) & Cloudinary (Media CDN)",
       deepDiveSections: [
         {
-          title: "1. Paradigma Serverless: FaaS vs BaaS vs Monolith",
+          title: "1. Paradigma Serverless: FaaS vs BaaS vs Monolith VPS",
           badge: "Pilar 1: Komputasi Cloud Modern",
           content: "Di era web tradisional, developer harus menyewa VPS (Virtual Private Server), menginstal OS Linux, memasang web server Nginx, PM2 process manager, dan memelihara database 24 jam sehari meskipun tidak ada pengguna yang aktif. Serverless mengubah paradigma ini: server tetap ada di cloud, namun seluruh provisioning, auto-scaling, dan maintenance dikelola secara otomatis oleh penyedia platform.",
           subpoints: [
             {
-              label: "FaaS (Function as a Service)",
+              label: "FaaS (Function as a Service) & Event-Driven Execution",
               text: "Model komputasi berbasis event (event-driven). Kode backend dipecah menjadi fungsi-fungsi modular yang hanya 'bangun' saat dipanggil (misal: saat request HTTP masuk), mengeksekusi logika dalam milidetik, lalu otomatis mati kembali (scale-to-zero). Anda hanya membayar per milidetik eksekusi (Rp 0 saat idle).",
               code: `// Contoh Server Action di Next.js 16 (FaaS on Vercel)
 "use server";
@@ -110,7 +110,7 @@ export async function submitTask(formData: FormData) {
               caption: "Contoh Logika Serverless Function"
             },
             {
-              label: "BaaS (Backend as a Service)",
+              label: "BaaS (Backend as a Service) & Layanan Cloud Terkelola",
               text: "Layanan penyedia seluruh infrastruktur backend siap pakai berbasis API & SDK. Menyediakan Database PostgreSQL terkelola penuh, Autentikasi Pengguna (OAuth GitHub/JWT), File Storage CDN, dan WebSocket Realtime tanpa perlu merakit Linux server database manual.",
               code: `// Mengakses Database PostgreSQL via Supabase SDK
 import { supabase } from "@/lib/supabase";
@@ -144,25 +144,30 @@ Cloudinary AI Image Pipeline`,
               ["Model Biaya", "Sewa Tetap 24/7 (Bayar meski idle)", "Pay-per-execution (Rp 0 saat sepi)", "Freemium / Berbasis Kuota Database"],
               ["Fokus Pengembang", "Mengurus Infrastruktur + Kode", "Fokus Murni Logika Server Actions", "Fokus Konsumsi SDK & Skema Data"]
             ]
+          },
+          callout: {
+            type: "tip",
+            title: "Prinsip Scale-to-Zero: Mengapa Startup Modern Memilih Serverless?",
+            text: "Dengan FaaS dan BaaS, startup tidak perlu mengeluarkan biaya infrastruktur ribuan dolar per bulan saat pengguna masih sedikit. Arsitektur serverless otomatis membesar saat viral dan mengecil ke Rp 0 saat sepi pengunjung."
           }
         },
         {
-          title: "2. Mental Model Git & Keamanan Kunci Rahasia (Secrets Hygiene)",
-          badge: "Pilar 2: Keamanan Repositori",
-          content: "Git adalah sistem pelacak versi terdistribusi yang membagi status file ke dalam 3 wilayah kerja lokal dan 1 repositori remote di cloud. Memahami siklus ini sangat krusial untuk mencegah kebocoran data sensitif.",
+          title: "2. Sistem Kontrol Versi Terdistribusi & Siklus Kerja Git",
+          badge: "Pilar 2: Manajemen Riwayat Kode",
+          content: "Git adalah sistem pelacak versi terdistribusi yang membagi status file ke dalam 3 wilayah kerja lokal dan 1 repositori remote di cloud. Memahami siklus ini sangat krusial agar kolaborasi tim berjalan mulus dan riwayat commit tetap bersih.",
           subpoints: [
             {
-              label: "Arsitektur 3 Wilayah Kerja Lokal",
+              label: "Arsitektur 3 Wilayah Kerja Git",
               text: "Git membagi tahapan perubahan file secara teratur sebelum dikirim ke remote cloud:",
-              code: `Working Tree (Ketik Kode)
-   ➔ [git add] ➔ Staging Area (Seleksi Berkas)
+              code: `Working Tree (Ketik Kode di VS Code)
+   ➔ [git add] ➔ Staging Area (Seleksi Berkas Siap Simpan)
    ➔ [git commit] ➔ Local Repository / HEAD (Snapshot Permanen)
-   ➔ [git push] ➔ Remote GitHub (Cloud Hosting)`,
+   ➔ [git push] ➔ Remote GitHub (Penyimpanan Cloud Terdistribusi)`,
               language: "text",
               caption: "Siklus 3 Wilayah Kerja Git"
             },
             {
-              label: "Identitas Author (Global vs Local)",
+              label: "Identitas Author (Konfigurasi Global vs Local Override)",
               text: "Git mewajibkan setiap commit memiliki user.name dan user.email. Konfigurasi '--global' berlaku untuk seluruh komputer (~/.gitconfig), sedangkan konfigurasi lokal (tanpa --global) memungkinkan override identitas per-folder untuk memisahkan akun kampus dan akun pribadi:",
               code: `# 1. Konfigurasi Global (berlaku untuk semua proyek di laptop ini):
 git config --global user.name "Nama Lengkap Anda"
@@ -175,70 +180,122 @@ git config user.email "nim@kampus.ac.id"`,
               caption: "Perintah Konfigurasi Identitas Git"
             },
             {
-              label: "Mekanisme Perlindungan .gitignore",
-              text: "File .env.local memuat API Secret (seperti Supabase Service Role Key). Bot scraper otomatis di GitHub publik memindai setiap commit publik setiap detik. Mendaftarkan .env.local ke dalam file .gitignore memastikan berkas rahasia tidak pernah terunggah ke GitHub:",
+              label: "Filosofi Feature Branch & Siklus Merge Git (4 Langkah Baku)",
+              text: "Cabang utama 'main' selalu dijaga dalam kondisi stabil dan siap rilis. Seluruh pengerjaan tugas mingguan wajib dilakukan di cabang terpisah sebelum digabungkan kembali via merge:",
+              code: `# 1. Langkah 1: Buat dan berpindah ke branch fitur:
+git checkout -b feature/sandbox-init
+
+# 2. Langkah 2: Kerjakan tugas dan simpan commit:
+git add . && git commit -m "feat: inisialisasi sandbox"
+
+# 3. Langkah 3: Gabungkan kembali ke branch main:
+git checkout main && git merge feature/sandbox-init
+
+# 4. Langkah 4: Hapus branch fitur yang sudah selesai:
+git branch -d feature/sandbox-init`,
+              language: "bash",
+              caption: "Siklus 4 Langkah Git Workflow"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Zona Git", "Lokasi Fisik", "Status File", "Tujuan Utama"],
+            rows: [
+              ["Working Tree", "Folder proyek di komputer", "Untracked / Modified", "Tempat mengetik dan mengedit kode aplikasi"],
+              ["Staging Area", "Indeks memori internal Git", "Staged (Changes to be committed)", "Memilih berkas yang siap dipotret ke riwayat"],
+              ["Local Repo", "Folder tersembunyi .git/objects", "Committed (Snapshot Permanen)", "Menyimpan versi riwayat utuh di mesin lokal"],
+              ["Remote GitHub", "Cloud Server GitHub", "Pushed (Origin Main)", "Kolaborasi tim, backup aman & trigger auto-deploy Vercel"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Aturan Emas: Jangan Pernah Ngoding Langsung di Branch Main!",
+            text: "Selalu buat branch fitur baru untuk setiap pengerjaan misi. Jika terjadi kesalahan fatal atau kode error, branch main tetap aman dan dapat dipulihkan dengan mudah."
+          }
+        },
+        {
+          title: "3. Keamanan Repositori & Higienitas Kredensial Rahasia (Secrets Hygiene)",
+          badge: "Pilar 3: Keamanan Data Sensitif",
+          content: "File .env.local memuat API Secret (seperti Supabase Service Role Key) yang memberi akses penuh ke database cloud. Bot scraper otomatis di internet memindai setiap commit publik setiap detik. Menjaga higienitas repositori adalah garis pertahanan pertama bagi software engineer.",
+          subpoints: [
+            {
+              label: "Mekanisme Proteksi .gitignore & File .env.local",
+              text: "File .env.local menyimpan kredensial rahasia database. Mendaftarkan aturan '.env*.local' ke dalam file .gitignore memastikan Git mengabaikan file tersebut secara otomatis:",
               code: `# .gitignore
 # Berkas kredensial rahasia (DILARANG di-commit)
 .env*.local
 .env
 
-# Dependensi paket eksternal
+# Dependensi & Cache Turbopack
 node_modules/
 .next/`,
               language: "gitignore",
               caption: "Aturan Proteksi di .gitignore"
             },
             {
-              label: "Filosofi Feature Branch Workflow",
-              text: "Cabang utama 'main' selalu dijaga dalam kondisi stabil dan siap rilis. Seluruh pengerjaan tugas mingguan wajib dilakukan di cabang terpisah sebelum digabungkan kembali via merge:",
-              code: `# 1. Buat dan berpindah ke branch fitur baru:
-git checkout -b feature/setup-auth-security
+              label: "Ancaman Bot Scraper & Jejak Digital Commit History",
+              text: "Jika file rahasia terlanjur ter-push ke GitHub publik, menghapusnya di commit berikutnya TIDAK AKAN MENGHAPUS kunci dari riwayat Git. Bot scraper hanya butuh 2 detik untuk mencuri kunci Anda dari histori commit:",
+              code: `# ⚠️ SALAH KAPRAH: Menghapus file di commit berikutnya
+git rm .env.local
+git commit -m "fix: hapus secret" 
+# Hasil: Kunci API TETAP BISA DILIHAT di riwayat commit sebelumnya!
 
-# 2. Setelah selesai dan diuji, gabungkan kembali ke main:
-git checkout main
-git merge feature/setup-auth-security`,
+# ✅ SOLUSI BENAR: Segera rotate (ganti) API Key di Dashboard Cloud Provider!`,
               language: "bash",
-              caption: "Siklus Feature Branch & Merge"
+              caption: "Mengapa History Commit Menyimpan Data Permanen"
             }
           ],
+          comparisonTable: {
+            headers: ["Jenis Berkas", "Contoh File", "Status Git", "Risiko Jika Terunggah"],
+            rows: [
+              ["Kode Sumber Publik", "src/app/page.tsx, components/*", "Wajib di-commit & di-push", "Tidak ada (merupakan logika aplikasi publik)"],
+              ["Konfigurasi Dependensi", "package.json, tsconfig.json", "Wajib di-commit", "Aman (hanya daftar nama pustaka)"],
+              ["Environment Variables", ".env.local, .env.production", "WAJIB DIABAIKAN (.gitignore)", "FATAL (Database bisa disusupi, kuota jebol)"]
+            ]
+          },
           callout: {
             type: "warning",
-            title: "Hukum Keamanan Industri: Jangan Pernah Commit File .env.local!",
-            text: "Kunci API yang terlanjur ter-push ke repositori GitHub publik akan tersimpan permanen di histori Git meskipun file tersebut dihapus pada commit berikutnya. Selalu periksa aturan .gitignore sebelum melakukan commit pertama!"
+            title: "Hukum Keamanan Industri: Anggap Secret yang Ter-push Sudah Dicuri!",
+            text: "Jika Anda tidak sengaja mengunggah .env.local ke GitHub publik, jangan hanya menghapus file tersebut. Anda WAJIB membuka dashboard Supabase dan menekan tombol 'Roll / Rotate Secret Key' agar kunci lama dimatikan seketika."
           }
         },
         {
-          title: "3. Metodologi Prompting AI Berkonteks Tinggi (Framework C-R-E-T)",
-          badge: "Pilar 3: AI-Assisted Engineering",
-          content: "Model bahasa besar (LLM seperti Cursor, Copilot, ChatGPT, Claude) dilatih menggunakan miliaran baris kode di internet. Tanpa batasan konteks yang presisi, AI cenderung menghasilkan kode usang (seperti Next.js Pages Router atau React 18 deprecated hooks) yang memicu error fatal di Next.js 16.",
+          title: "4. Metodologi Rekayasa AI Berkonteks Tinggi (Framework C-R-E-T)",
+          badge: "Pilar 4: AI-Assisted Engineering",
+          content: "Model bahasa besar (LLM seperti Claude, ChatGPT, Cursor, Copilot) dilatih menggunakan miliaran baris kode lama di internet. Tanpa batasan konteks presisi (C-R-E-T), AI akan menghasilkan kode usang React 18 atau Pages Router yang memicu error fatal di Next.js 16.",
           subpoints: [
             {
-              label: "C — Context (Domain Aplikasi)",
-              text: "Jelaskan konteks spesifik aplikasi yang sedang dibangun secara mendalam:",
-              code: `Konteks: "Saya sedang membangun portal submission tugas perkuliahan berbasis Serverless Next.js 16 dengan Supabase PostgreSQL..."`,
+              label: "C — Context & R — Role (Mengarahkan Domain & Persona Pakar)",
+              text: "Mendefinisikan peran profesional senior dan konteks domain aplikasi untuk mengarahkan gaya arsitektur dan standar rekayasa yang dihasilkan AI:",
+              code: `// [ROLE]: Persona Pakar di baris teratas
+"Bertindaklah sebagai Senior Cloud Software Engineer & Next.js 16 Specialist."
+
+// [CONTEXT]: Domain aplikasi & arsitektur sistem
+"Saya sedang membangun portal perkuliahan Serverless menggunakan Next.js 16 App Router, Tailwind CSS v4, dan Supabase PostgreSQL."`,
               language: "text",
-              caption: "Contoh Komponen Context"
+              caption: "Komponen Context & Role"
             },
             {
-              label: "R — Role (Persona Pakar)",
-              text: "Berikan peran profesional spesifik kepada AI untuk menyelaraskan kualitas jawaban:",
-              code: `Peran: "Bertindaklah sebagai Senior Cloud Software Engineer dengan spesialisasi Next.js App Router dan Clean Architecture..."`,
+              label: "E — Explicit Constraints & Versi Teknologi (Next.js 16 & React 19)",
+              text: "Sebutkan versi spesifik dan batasan teknis yang dilarang/diharuskan secara tegas guna menangkal kode usang:",
+              code: `// [EXPLICIT CONSTRAINTS]: Batasan teknis tegas
+- Wajib Next.js 16 App Router (params adalah Promise async yang wajib di-await).
+- Gunakan React 19 hook (useActionState, useFormStatus).
+- Dilarang menambahkan direktif 'use client' di file page.tsx.
+- Dilarang menggunakan tipe 'any' (wajib strict TypeScript).
+- Gunakan Server Actions 'use server' (dilarang membuat /api/* terpisah).`,
               language: "text",
-              caption: "Contoh Komponen Role"
+              caption: "Komponen Explicit Constraints"
             },
             {
-              label: "E — Explicit Versions & Constraints",
-              text: "Sebutkan versi tepat dan batasan arsitektur secara tegas:",
-              code: `Batasan: "Wajib Next.js 16 App Router, React 19 useActionState, Tailwind CSS v4, dan Server Actions async (dilarang membuat /api/* terpisah)..."`,
+              label: "T — Target Output Structure & Standar Review Kode AI",
+              text: "Minta arsitektur berkas terpisah yang modular dan selalu lakukan review mandiri sebelum kode disalin ke codebase:",
+              code: `// [TARGET OUTPUT]: Struktur file modular
+"Hasilkan 3 file terpisah:
+ 1. src/app/tasks/page.tsx (Server Component untuk fetch data)
+ 2. src/components/tasks/task-form.tsx (Client Component form)
+ 3. src/actions/tasks.ts (Server Action dengan validasi Zod)"`,
               language: "text",
-              caption: "Contoh Komponen Explicit Constraints"
-            },
-            {
-              label: "T — Target Output Structure",
-              text: "Minta format output yang terstruktur dan siap pakai:",
-              code: `Format: "Hasilkan 2 file terpisah: server page.tsx dan client component filter, sertakan skema validasi Zod dan TypeScript types lengkap..."`,
-              language: "text",
-              caption: "Contoh Komponen Target Output"
+              caption: "Komponen Target Output"
             }
           ],
           comparisonTable: {
@@ -249,6 +306,11 @@ git merge feature/setup-auth-security`,
               ["State Management", "Menghasilkan useState / API routes usang", "Menggunakan useActionState untuk umpan balik instan tanpa reload"],
               ["Hasil Kode", "Beresiko error / deprecated di Next.js 16", "Kompatibel 100%, modern, aman, dan siap produksi"]
             ]
+          },
+          callout: {
+            type: "tip",
+            title: "Filosofi Human in the Loop: Pahami Kode AI Anda!",
+            text: "Kalian diizinkan dan diwajibkan memanfaatkan AI sebagai co-pilot pemrograman. Namun, Anda tetaplah kaptennya. Selalu review setiap baris kode yang dihasilkan AI menggunakan checklist verifikasi sebelum melakukan commit."
           }
         }
       ]
@@ -330,9 +392,15 @@ gh repo create my-serverless-app --public --source=. --remote=origin --push
         }
       ],
       aiPromptTemplate: {
-        role: "Senior Full-Stack Architect",
-        prompt: "Saya sedang membangun aplikasi web menggunakan Next.js 16 (App Router), Tailwind CSS v4, dan Supabase. Tolong jelaskan struktur folder terbaik di dalam folder /src untuk memisahkan komponen UI, server actions, dan utilitas database sesuai konvensi Next.js 16.",
-        tip: "Selalu sebutkan versi Next.js 16 secara spesifik agar AI menghasilkan kode Server Actions terkini dengan standar React 19 dan async cookies."
+        role: "Formula Prompt AI Teruji (C-R-E-T Framework)",
+        prompt: `Bertindaklah sebagai Senior Cloud Software Engineer & Next.js 16 Specialist.
+
+Saya sedang menginisialisasi repositori proyek perkuliahan "The Serverless Odyssey" menggunakan Next.js 16 (App Router), Tailwind CSS v4, dan TypeScript strict.
+
+Tolong berikan konfigurasi berkas .gitignore paling komprehensif untuk memastikan seluruh environment variables (.env*.local), file log, cache Turbopack (.next/), dan node_modules tidak akan pernah bocor ke GitHub publik.
+
+Sertakan pula panduan perintah CLI git untuk memeriksa apakah file .env.local berstatus aman (ignored) sebelum saya menjalankan commit pertama.`,
+        tip: "Salin formula C-R-E-T ini ke AI coding assistant pilihan Anda untuk memverifikasi proteksi secrets sebelum commit pertama."
       },
       warningZone: {
         title: "Zona Bahaya: Kebocoran API Key!",
@@ -341,12 +409,12 @@ gh repo create my-serverless-app --public --source=. --remote=origin --push
     },
     mission: {
       taskTitle: "Misi Minggu 1: Setup Repository & Sandbox Proyek",
-      taskDesc: "Buat repository GitHub publik baru untuk proyek kuliah Anda, inisialisasi Next.js, dan buat commit pertama yang bersih.",
+      taskDesc: "Inisialisasi repositori GitHub publik proyek perkuliahan Anda, amankan berkas .env.local via .gitignore, dan eksekusi siklus 4 langkah Git.",
       definitionOfDone: [
-        "Repository GitHub berhasil dibuat dan terhubung ke local workspace",
-        "Next.js berjalan lancar di http://localhost:3000",
-        "File .gitignore memuat aturan pengabaian .env.local dan node_modules",
-        "Link GitHub disubmit ke LMS / dosen"
+        "Langkah 1: Berpindah ke branch fitur baru ('git checkout -b feature/sandbox-init')",
+        "Langkah 2: Inisialisasi Next.js 16 App Router dan buat file .env.local dengan proteksi .gitignore",
+        "Langkah 3: Simpan commit pertama yang bersih ('git add . && git commit -m \"feat: init sandbox\"')",
+        "Langkah 4: Gabungkan ke branch main dan push ke repositori GitHub publik"
       ],
       gitBranchTask: "git checkout -b feature/sandbox-init"
     }
@@ -854,56 +922,469 @@ Batasan Teknis Wajib:
     worldId: "world-1",
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 3,
-    title: "Server Actions & Validasi Data (Zod)",
-    subtitle: "Mutasi data aman tanpa membuat API route manual, divalidasi dengan skema Zod.",
-    cpmk: "Mahasiswa mampu mengimplementasikan Server Actions ('use server') untuk mutasi data form dan memvalidasi input dengan Zod.",
+    title: "Server Actions, React 19 Form Hooks & Validasi Data (Zod)",
+    subtitle: "Mutasi data aman tanpa membuat API route manual, divalidasi dengan skema Zod dan dikelola dengan useActionState.",
+    cpmk: "Mahasiswa mampu mengimplementasikan Server Actions ('use server') untuk mutasi data form, mengelola lifecycle state dengan React 19 useActionState, dan memvalidasi integritas data dengan Zod.",
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 250,
     concepts: {
-      summary: "Server Actions memungkinkan pemanggilan fungsi backend asinkron langsung dari form HTML atau tombol tanpa membuat file API terpisah di /api/*.",
+      summary: "Server Actions merevolusi mutasi data di Next.js 16 dengan memungkinkan pemanggilan fungsi server langsung dari form JSX tanpa membuat file API endpoint manual di /api/*. Dipadukan dengan validasi skema Zod yang ketat dan hook terpadu React 19 useActionState, developer dapat membangun alur pengiriman formulir yang aman, bebas runtime crash, dan responsif secara instan.",
       points: [
-        { title: "'use server' Directive", desc: "Menandai fungsi yang dieksekusi secara aman di server, menjaga logic dan kredensial database tetap tersembunyi dari browser." },
-        { title: "React 19 useActionState & Zod", desc: "Menggunakan hook useActionState dari React 19 untuk mengelola state feedback form dan memvalidasi tipe data secara ketat dengan skema Zod." }
-      ]
-    },
-    references: [
-      { title: "Next.js Server Actions Guide", url: "https://nextjs.org/docs/app/building-your-application/data-mutation/server-actions-and-mutations", source: "Next.js" },
-      { title: "Zod Schema Validation Docs", url: "https://zod.dev", source: "Zod" }
-    ],
-    lab: {
-      prerequisites: ["Library zod terpasang"],
-      steps: [
+        { title: "Direktif 'use server' & Eksekusi RPC", desc: "Mengeksekusi fungsi mutasi langsung di server Node.js/Edge melalui protokol RPC terenkripsi, menjaga logic dan database keys tetap tersembunyi dari peramban." },
+        { title: "Pertahanan Input Berlapis dengan Zod", desc: "Memvalidasi seluruh input pengguna di server menggunakan schema.safeParse() untuk menjamin integritas tipe data dan mencegah payload anomali." },
+        { title: "React 19 Form Lifecycle (useActionState)", desc: "Mengelola status loading pending, data return state, dan trigger formAction dalam 1 hook terpadu tanpa boilerplate useState manual." },
+        { title: "Revalidasi Cache On-Demand (revalidatePath)", desc: "Memperbarui cache data server seketika setelah mutasi berhasil agar antarmuka pengguna tersinkronisasi tanpa reload halaman penuh." }
+      ],
+      diagramNote: "Browser Form JSX ➔ React 19 useActionState ➔ RPC POST (__rsc) ➔ Next.js 'use server' ➔ Zod safeParse() ➔ Supabase DB ➔ revalidatePath()",
+      deepDiveSections: [
         {
-          stepNumber: 1,
-          instruction: "Instal pustaka Zod untuk validasi skema",
-          code: "npm install zod",
-          language: "bash"
+          title: "1. Paradigma Mutasi Data Next.js 16: Server Actions vs API Routes Tradisional",
+          badge: "Pilar 1: Arsitektur RPC Serverless",
+          content: "Sebelum Server Actions, setiap mutasi data di aplikasi React membutuhkan pembuatan endpoint API terpisah (misal POST /api/tasks), penanganan parsing body JSON secara manual, dan pemanggilan fetch() dari client. Next.js 16 mengeliminasi kompleksitas ini melalui Remote Procedure Call (RPC) yang terintegrasi langsung dengan JSX form.",
+          subpoints: [
+            {
+              label: "Direktif 'use server' & Eksekusi RPC Otomatis",
+              text: "Menandai sebuah fungsi dengan direktif 'use server' menginstruksikan Next.js untuk membuat endpoint RPC POST internal dengan hash Action ID unik. Browser memanggil fungsi ini secara asinkron tanpa membocorkan kode implementasi ke bundle klien:",
+              code: `// src/actions/tasks.ts
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+export async function createTaskAction(formData: FormData) {
+  // 🔒 Eksekusi 100% aman di Server
+  const title = formData.get("title");
+  
+  // Mutasi database langsung tanpa ekspos API key
+  await db.tasks.create({ data: { title } });
+  
+  // Revalidasi cache halaman seketika
+  revalidatePath("/tasks");
+}`,
+              language: "tsx",
+              caption: "Deklarasi Server Action dengan 'use server'"
+            },
+            {
+              label: "Pola Penempatan: Inline vs Berkas Terpisah (src/actions/*)",
+              text: "Server Action dapat didefinisikan secara inline di dalam Server Component untuk mutasi cepat. Namun, untuk digunakan bersama Client Component ('use client') atau hook React 19, Server Action WAJIB ditempatkan pada berkas terpisah dengan 'use server' di baris paling atas:",
+              code: `// ✅ REKOMENDASI: Berkas Terpisah (src/actions/tasks.ts)
+"use server";
+export async function updateTask(id: string, formData: FormData) {
+  // Dapat diimpor oleh Server Component maupun Client Component
+}
+
+// ⚠️ INLINE: Hanya di Server Component (src/app/tasks/page.tsx)
+export default function TasksPage() {
+  async function inlineAction(formData: FormData) {
+    "use server"; // Dilarang di Client Component!
+  }
+  return <form action={inlineAction}>...</form>;
+}`,
+              language: "tsx",
+              caption: "Pola Penempatan Berkas Terpisah vs Inline"
+            },
+            {
+              label: "Revalidasi Cache Instan (revalidatePath & revalidateTag)",
+              text: "Setelah Server Action berhasil memodifikasi database, panggil revalidatePath() untuk membersihkan Data Cache dan Full Route Cache di server. Pengguna menerima data terbaru via Soft Navigation tanpa refresh peramban:",
+              code: `import { revalidatePath, revalidateTag } from "next/cache";
+
+export async function deleteTask(id: string) {
+  "use server";
+  await db.tasks.delete({ where: { id } });
+
+  // 1. Revalidasi path spesifik:
+  revalidatePath("/dashboard/tasks");
+
+  // 2. Revalidasi berdasarkan cache tag:
+  revalidateTag("user-tasks");
+}`,
+              language: "tsx",
+              caption: "Purge Cache On-Demand dengan revalidatePath"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Karakteristik", "API Route Tradisional (/api/*) 📦", "Server Actions ('use server') ⚡"],
+            rows: [
+              ["File Endpoint", "Wajib membuat file route.ts terpisah", "Cukup tulis fungsi TypeScript dengan 'use server'"],
+              ["Metode Pemanggilan", "fetch('/api/tasks', { method: 'POST', body })", "Dilewatkan langsung ke prop action={formAction}"],
+              ["Type Safety", "Rentan desinkronisasi tipe antara client & API", "100% Type-Safe dari input form hingga backend"],
+              ["Revalidasi Cache", "Harus memanggil router.refresh() manual di client", "Otomatis di server via revalidatePath()"],
+              ["Keamanan Secrets", "Bisa bocor jika endpoint publik tidak diproteksi", "Otomatis terisolasi di server tanpa endpoint publik terbuka"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Keamanan Database: Mengapa Server Actions Kebal dari Kebocoran Secrets?",
+            text: "Kunci API rahasia (seperti SUPABASE_SERVICE_ROLE_KEY) hanya dibaca di dalam runtime server. Karena kode Server Action tidak pernah dikirim ke browser pengguna, risiko kebocoran kunci kredensial menjadi nol."
+          }
         },
         {
-          stepNumber: 2,
-          instruction: "Buat file skema validasi Zod (src/lib/schemas.ts)",
-          code: `import { z } from "zod";
+          title: "2. Validasi Skema & Pertahanan Input Ketat dengan Zod",
+          badge: "Pilar 2: Data Integrity & Security",
+          content: "Validasi form di browser (HTML5 required, minlength) hanyalah untuk kenyamanan pengalaman pengguna (UX), bukan untuk keamanan. Pengguna jahat dapat dengan mudah mem-bypass form menggunakan Postman, Curl, atau script eksternal. Server Actions WAJIB memvalidasi ulang seluruh data menggunakan skema Zod.",
+          subpoints: [
+            {
+              label: "Prinsip 'Never Trust Client Input' & schema.safeParse()",
+              text: "Hindari penggunaan schema.parse() karena akan melempar unhandled exception saat data invalid. Selalu gunakan safeParse() yang mengembalikan objek diskriminatif { success: true, data } atau { success: false, error }:",
+              code: `import { z } from "zod";
 
 export const TaskSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter").max(100),
-  description: z.string().optional(),
+  priority: z.enum(["low", "medium", "high"], {
+    errorMap: () => ({ message: "Pilih prioritas yang valid" })
+  }),
+});
+
+// Di dalam Server Action:
+const result = TaskSchema.safeParse({
+  title: formData.get("title"),
+  priority: formData.get("priority"),
+});
+
+if (!result.success) {
+  // Tangani error tanpa membuat server crash!
+  return { success: false, errors: result.error.flatten().fieldErrors };
+}`,
+              language: "tsx",
+              caption: "Validasi Defensif dengan safeParse Zod"
+            },
+            {
+              label: "Transformasi Tipe Data (z.coerce) & Validasi Logika (.refine())",
+              text: "FormData HTML selalu mengembalikan nilai bertipe string. Gunakan z.coerce untuk otomatis mengubah string ke number atau Date, dan .refine() untuk aturan validasi bisnis kustom:",
+              code: `export const CreateProjectSchema = z.object({
+  name: z.string().min(3),
+  // ⚡ Otomatis mengonversi string "25" menjadi number 25:
+  budget: z.coerce.number().positive("Budget harus lebih dari 0"),
+  deadline: z.coerce.date(),
+}).refine((data) => data.deadline > new Date(), {
+  message: "Deadline harus tanggal di masa depan!",
+  path: ["deadline"], // Tempelkan error ke field deadline
 });`,
-          language: "typescript"
+              language: "tsx",
+              caption: "Type Coercion & Validasi Bisnis Refinement"
+            },
+            {
+              label: "Format Error Ramah Pengguna (error.flatten().fieldErrors)",
+              text: "Objek ZodError bawaan berbentuk array bersarang yang sulit dibaca komponen UI. Gunakan metode .flatten() untuk meratakannya menjadi dictionary namaField -> string[]:",
+              code: `if (!result.success) {
+  const { fieldErrors } = result.error.flatten();
+  // Hasil: { title: ["Judul minimal 3 karakter"], budget: ["Budget harus > 0"] }
+  return {
+    success: false,
+    message: "Validasi formulir gagal",
+    errors: fieldErrors,
+  };
+}`,
+              language: "tsx",
+              caption: "Ekstraksi Dictionary Field Errors"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Aspek Validasi", "Validasi Browser (HTML5) 🌐", "Validasi Skema Zod (Server) 🛡️"],
+            rows: [
+              ["Lokasi Eksekusi", "Browser pengguna (Client-side)", "Server Node.js/Edge (Server-side)"],
+              ["Tingkat Keamanan", "Rendah (Dapat di-bypass lewat Inspect Element/Curl)", "Maksimal (Menjamin integritas database)"],
+              ["Tipe Data", "Semua nilai diperlakukan sebagai string", "Type coercion kuat (Number, Boolean, Date, Enum)"],
+              ["Logika Bisnis", "Terbatas pada regex dan atribut min/max", "Tak terbatas (.refine untuk cek ke database / cross-field)"],
+              ["Tujuan Utama", "Memberikan feedback instan saat mengetik", "Mencegah injeksi dan kerusakan integritas data"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Peringatan Keamanan: Jangan Gunakan Tipe 'any' pada Payload Input!",
+            text: "Mengabaikan validasi skema di Server Action dan langsung menyimpan input FormData ke database adalah celah keamanan kritis yang dapat merusak data atau memicu SQL injection."
+          }
+        },
+        {
+          title: "3. Ekosistem Hook Form React 19: useActionState, useFormStatus & useOptimistic",
+          badge: "Pilar 3: Modern React 19 State",
+          content: "React 19 memperkenalkan pembaruan revolusioner pada manajemen antarmuka formulir. Hook useActionState menyederhanakan pengelolaan loading state dan pesan error, useFormStatus meniadakan kebutuhan prop drilling, sedangkan useOptimistic memberikan ilusi responsivitas 0 milidetik.",
+          subpoints: [
+            {
+              label: "Pengelolaan State Form Modern dengan useActionState",
+              text: "Menggantikan hook usang useFormState dari react-dom. Hook useActionState diimpor langsung dari package 'react' dan mengembalikan [state, formAction, isPending]:",
+              code: `// src/components/tasks/create-task-form.tsx ('use client')
+"use client";
+
+import { useActionState } from "react";
+import { createTaskAction } from "@/actions/tasks";
+
+export function CreateTaskForm() {
+  // state: data return terakhir dari server
+  // formAction: fungsi yang disematkan ke tag <form action={...}>
+  // isPending: boolean true saat Server Action sedang berjalan
+  const [state, formAction, isPending] = useActionState(createTaskAction, null);
+
+  return (
+    <form action={formAction}>
+      <input name="title" disabled={isPending} />
+      {state?.errors?.title && <p className="text-red-500">{state.errors.title[0]}</p>}
+      <button disabled={isPending}>{isPending ? "Menyimpan..." : "Kirim"}</button>
+    </form>
+  );
+}`,
+              language: "tsx",
+              caption: "Penerapan Hook useActionState di React 19"
+            },
+            {
+              label: "Tombol Submit Sadar Status Form dengan useFormStatus",
+              text: "Hook useFormStatus (dari 'react-dom') dipanggil di dalam komponen anak tag <form>. Tombol ini otomatis mengetahui apakah form induk sedang memproses submit tanpa perlu passing prop boolean:",
+              code: `// src/components/ui/submit-button.tsx ('use client')
+"use client";
+
+import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
+
+export function SubmitButton({ children }: { children: React.ReactNode }) {
+  // pending: true jika form induk sedang proses kirim
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? "Memproses..." : children}
+    </Button>
+  );
+}`,
+              language: "tsx",
+              caption: "Komponen Tombol Mandiri dengan useFormStatus"
+            },
+            {
+              label: "Pembaruan Antarmuka Cepat dengan useOptimistic",
+              text: "Hook useOptimistic merender item baru seketika di layar sebelum server selesai menyimpan data. Jika server merespon gagal, antarmuka otomatis kembali ke data semula (*auto-rollback*):",
+              code: `const [optimisticTasks, setOptimisticTasks] = useOptimistic(
+  tasks,
+  (currentTasks, newTask: Task) => [...currentTasks, { ...newTask, isPending: true }]
+);
+
+async function handleAction(formData: FormData) {
+  const title = formData.get("title") as string;
+  // ⚡ Render instan di UI (0ms delay):
+  setOptimisticTasks({ id: "temp", title, status: "pending" });
+  // Simpan permanen ke server:
+  await createTaskAction(formData);
+}`,
+              language: "tsx",
+              caption: "Pola Optimistic UI dengan useOptimistic"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Fitur", "Pola Lama (React 18 / Next.js 14) 📦", "Pola Baru (React 19 / Next.js 16) 🚀"],
+            rows: [
+              ["Import Hook", "useFormState dari 'react-dom'", "useActionState dari 'react'"],
+              ["Status Loading", "Harus membuat state const [isPending, startTransition]", "isPending otomatis dikembalikan dari useActionState"],
+              ["Handling Pending", "Memerlukan pembungkus useTransition ganda", "Tersedia out-of-the-box pada tuple posisi ke-3"],
+              ["UI Optimistic", "Memerlukan custom state reducer yang rumit", "Disediakan native via hook useOptimistic()"],
+              ["Kompatibilitas", "Rentan hydration mismatch", "Terintegrasi penuh dengan Server Actions async"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Breaking Change React 19: Migrasi dari useFormState ke useActionState",
+            text: "Pada React 19, hook 'useFormState' dari package 'react-dom' telah deprecated. Anda WAJIB menggunakan 'useActionState' yang diimpor langsung dari package 'react'."
+          }
+        },
+        {
+          title: "4. Arsitektur Produksi: Standarisasi ActionState<T> & Integrasi Shadcn Form",
+          badge: "Pilar 4: Enterprise Production Standards",
+          content: "Membangun aplikasi skala besar memerlukan konsistensi kontrak pengembalian data dari Server Actions. Menggunakan interface ActionState generik dan mengintegrasikannya dengan komponen Shadcn UI menghasilkan pengalaman form kelas enterprise.",
+          subpoints: [
+            {
+              label: "Standarisasi Kontrak Respons: ActionState<T>",
+              text: "Definisikan tipe generik terpusat agar seluruh Server Actions di aplikasi Anda memiliki struktur pengembalian pesan, status sukses, dan pesan error yang seragam:",
+              code: `// src/types/actions.ts
+export type ActionState<T = unknown> = {
+  success: boolean;
+  message: string;
+  errors?: Record<string, string[]>;
+  data?: T;
+};
+
+// Penggunaan di Server Action:
+export async function addTask(
+  prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState<Task>> {
+  // Selalu return objek yang sesuai dengan ActionState
+  return { success: true, message: "Tugas disimpan!", data: newTask };
+}`,
+              language: "tsx",
+              caption: "Tipe Generik Kontrak ActionState"
+            },
+            {
+              label: "Integrasi Komponen Input & Feedback Error Shadcn UI",
+              text: "Gabungkan komponen <Label>, <Input>, penanda error border merah, dan notifikasi sukses untuk antarmuka yang ramah pengguna:",
+              code: `<div className="space-y-2">
+  <Label htmlFor="title">Judul Tugas</Label>
+  <Input
+    id="title"
+    name="title"
+    className={state?.errors?.title ? "border-destructive focus-visible:ring-destructive" : ""}
+  />
+  {state?.errors?.title && (
+    <p className="text-xs text-destructive font-medium">
+      {state.errors.title[0]}
+    </p>
+  )}
+</div>`,
+              language: "tsx",
+              caption: "Integrasi Input Shadcn dengan Feedback Validasi"
+            }
+          ],
+          callout: {
+            type: "tip",
+            title: "Tips Workflow AI: Pola 3 Berkas Modular untuk Form Mutasi Data",
+            text: "Saat membangun fitur mutasi data dengan bantuan AI, selalu bagi kode ke dalam 3 berkas terpisah: 1) Berkas skema validasi (schemas/task.ts), 2) Berkas Server Action ('use server' di actions/task.ts), dan 3) Komponen Client Form ('use client' di components/task-form.tsx)."
+          }
+        }
+      ]
+    },
+    references: [
+      { title: "Next.js Server Actions & Mutations", url: "https://nextjs.org/docs/app/building-your-application/data-mutation/server-actions-and-mutations", source: "Next.js" },
+      { title: "React 19 useActionState Documentation", url: "https://react.dev/reference/react/useActionState", source: "React" },
+      { title: "Zod: TypeScript-first Schema Validation", url: "https://zod.dev", source: "Zod" },
+      { title: "Shadcn UI Form & Input Documentation", url: "https://ui.shadcn.com/docs/components/form", source: "Shadcn UI" }
+    ],
+    lab: {
+      prerequisites: ["Proyek Minggu 2 yang telah berjalan di http://localhost:3000", "Komponen button, input, label Shadcn UI terpasang"],
+      steps: [
+        {
+          stepNumber: 1,
+          instruction: "Instalasi Pustaka Zod untuk Skema Validasi",
+          code: `npm install zod`,
+          language: "bash",
+          explanation: "Zod adalah pustaka validasi skema deklaratif berbasis TypeScript yang otomatis menghasilkan tipe data type-safe dari definisi skema Anda."
+        },
+        {
+          stepNumber: 2,
+          instruction: "Buat Definisi Skema Validasi & Tipe ActionState di src/lib/schemas.ts",
+          code: `import { z } from "zod";
+
+export const TaskSchema = z.object({
+  title: z.string().min(3, "Judul tugas minimal harus 3 karakter").max(100),
+  description: z.string().optional(),
+});
+
+export type TaskInput = z.infer<typeof TaskSchema>;
+
+export type ActionState<T = unknown> = {
+  success: boolean;
+  message: string;
+  errors?: Record<string, string[]>;
+  data?: T;
+};`,
+          language: "typescript",
+          explanation: "File ini mendefinisikan aturan validasi dan tipe data kontrak respons bersama yang akan digunakan oleh Server Action maupun Client Component."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Buat Berkas Server Action di src/actions/tasks.ts",
+          code: `"use server";
+
+import { revalidatePath } from "next/cache";
+import { TaskSchema, ActionState } from "@/lib/schemas";
+
+export async function createTaskAction(
+  prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  const rawData = {
+    title: formData.get("title"),
+    description: formData.get("description"),
+  };
+
+  const validation = TaskSchema.safeParse(rawData);
+
+  if (!validation.success) {
+    return {
+      success: false,
+      message: "Validasi formulir gagal. Periksa input Anda.",
+      errors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  // Simulasi mutasi database serverless (Supabase)
+  console.log("Menyimpan tugas baru:", validation.data);
+
+  revalidatePath("/tasks");
+
+  return {
+    success: true,
+    message: "Tugas berhasil dibuat dan disimpan ke database!",
+  };
+}`,
+          language: "typescript",
+          explanation: "Fungsi ini dieksekusi murni di server ('use server'), memvalidasi data dengan safeParse(), dan merevalidasi cache halaman secara instan."
+        },
+        {
+          stepNumber: 4,
+          instruction: "Rakit Komponen Client Form dengan useActionState di src/components/tasks/create-task-form.tsx",
+          code: `"use client";
+
+import { useActionState } from "react";
+import { createTaskAction } from "@/actions/tasks";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+export function CreateTaskForm() {
+  const [state, formAction, isPending] = useActionState(createTaskAction, null);
+
+  return (
+    <form action={formAction} className="space-y-4 max-w-md p-6 rounded-2xl border bg-card">
+      <div className="space-y-2">
+        <Label htmlFor="title">Judul Tugas</Label>
+        <Input id="title" name="title" disabled={isPending} />
+        {state?.errors?.title && (
+          <p className="text-xs text-destructive">{state.errors.title[0]}</p>
+        )}
+      </div>
+
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? "Menyimpan ke Server..." : "Tambah Tugas"}
+      </Button>
+
+      {state?.success && (
+        <p className="text-xs text-emerald-600 font-medium">{state.message}</p>
+      )}
+    </form>
+  );
+}`,
+          language: "tsx",
+          explanation: "Komponen interaktif 'use client' menggunakan hook useActionState dari React 19 untuk menangani loading state pending dan feedback validasi secara otomatis."
         }
       ],
       aiPromptTemplate: {
-        role: "Backend Architect",
-        prompt: "Buatkan Server Action di Next.js 16 untuk menangani submit form tugas. Validasi data FormData menggunakan Zod schema. Kembalikan state { success: boolean, errors?: any } yang kompatibel dengan hook useActionState di React 19.",
-        tip: "Gunakan useActionState dari react (bukan useFormState deprecated dari react-dom) untuk mengelola status loading dan validasi form."
+        role: "Senior Full-Stack Architect & React 19 Specialist",
+        prompt: `Bertindaklah sebagai Senior Full-Stack Architect & React 19 Specialist. 
+
+Konteks Proyek:
+Saya sedang membangun platform web full-stack modern menggunakan Next.js 16 (App Router), Supabase PostgreSQL, dan Shadcn UI untuk aplikasi [Sebutkan Tema Proyek Akhir Anda].
+
+Tugas:
+Buatkan modul mutasi data formulir entri data utama yang aman dan tervalidasi penuh menggunakan Server Actions dan Zod.
+
+Batasan Ketat (Explicit Constraints):
+1. DILARANG membuat API Route manual di /api/*. Wajib menggunakan Server Action dengan direktif 'use server'.
+2. Wajib menggunakan hook useActionState dari package 'react' (bukan useFormState deprecated dari 'react-dom').
+3. Validasi seluruh input FormData di server menggunakan schema.safeParse() dari Zod (tanpa tipe 'any').
+4. Pisahkan kode secara modular ke dalam 3 berkas terpisah:
+   - Berkas 1: src/lib/schemas/[entitas].ts (Definisi Zod Schema & interface ActionState<T>).
+   - Berkas 2: src/actions/[entitas].ts ('use server' Server Action dengan safeParse dan revalidatePath).
+   - Berkas 3: src/components/[entitas]/[entitas]-form.tsx ('use client' form dengan useActionState dan komponen Shadcn: Input, Label, Button, Alert).
+5. Tampilkan status loading pending pada tombol submit dan pesan error validasi di bawah field input yang bermasalah.
+
+Target Output Structure:
+Sajikan 3 berkas kode lengkap yang siap pakai (*copy-ready*) dengan panduan penempatan file yang jelas.`,
+        tip: "Pastikan menggunakan useActionState yang diimpor langsung dari 'react' agar kompatibel dengan React 19 dan Next.js 16."
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 3: Form Input Tervalidasi",
-      taskDesc: "Buat form input data pertama untuk entitas utama Proyek Akhir Anda yang diproses dengan Server Action dan Zod.",
+      taskTitle: "Misi Minggu 3: Form Entri Data Tervalidasi Zod & Server Actions",
+      taskDesc: "Lanjutkan repositori Proyek Akhir Anda. Bangun form entri data utama pertama yang diproses menggunakan Server Actions ('use server'), divalidasi dengan Zod, dan dikelola oleh React 19 useActionState.",
       definitionOfDone: [
-        "Skema Zod terdefinisi dengan pesan error ramah pengguna",
-        "Server Action berhasil membaca FormData",
-        "Pesan validasi muncul jika input tidak sesuai"
+        "Skema validasi Zod terdefinisi dengan pesan error ramah pengguna di src/lib/schemas.ts",
+        "Berkas Server Action di src/actions/* berhasil membaca FormData dan memvalidasi via safeParse()",
+        "Komponen form menggunakan hook useActionState dari React 19 dengan penanganan isPending",
+        "Pesan error validasi muncul secara inline di bawah input saat data tidak sesuai kriteria"
       ],
       gitBranchTask: "git checkout -b feature/server-actions-zod"
     }
@@ -914,33 +1395,320 @@ export const TaskSchema = z.object({
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 4,
     title: "Database Relasional PostgreSQL & Supabase",
-    subtitle: "Inisiasi Proyek Akhir resmi, merancang skema relasional 3 tabel di Supabase SQL Editor.",
-    cpmk: "Mahasiswa mampu merancang skema relasi PostgreSQL (1:N, M:N) dan mengonfigurasi klien Supabase SSR.",
+    subtitle: "Inisiasi Proyek Akhir resmi, merancang skema relasional 3 tabel di Supabase SQL Editor, dan mengonfigurasi klien Supabase SSR Next.js 16.",
+    cpmk: "Mahasiswa mampu merancang skema relasi PostgreSQL (1:N, M:N), mengonfigurasi klien Supabase SSR Next.js 16 dengan async cookies, serta mengotomasi tipe TypeScript via Supabase Typegen.",
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 300,
     concepts: {
-      summary: "Supabase menyediakan database PostgreSQL penuh. Minggu ini adalah Kick-off Resmi Proyek Akhir: Mahasiswa membuat repositori final dan merancang database.",
+      summary: "Supabase menyediakan database PostgreSQL kelas enterprise terkelola penuh. Minggu ini menandai Kick-off Resmi Proyek Akhir: Mahasiswa merancang skema relasional 3 tabel inti, mengimplementasikan foreign key cascading, serta menghubungkan Next.js 16 dengan Supabase SSR via adapter async cookies.",
       points: [
-        { title: "Relasi 1:N & Foreign Key", desc: "Menghubungkan tabel pengguna dengan tabel postingan/tugas menggunakan UUID sebagai kunci primer." },
-        { title: "Supabase SSR & Async Cookies (Next.js 16)", desc: "Next.js 16 mewajibkan penanganan asynchronous pada cookies (const cookieStore = await cookies()). Utilitas SSR menggunakan getAll() dan setAll() untuk mengelola sesi auth secara aman." }
+        { title: "Relasi 1:N & Foreign Key Cascade", desc: "Menghubungkan tabel pengguna dengan tabel proyek menggunakan UUID sebagai primary key dan aturan ON DELETE CASCADE untuk mencegah data yatim (orphaned records)." },
+        { title: "Relasi M:N & Junction Table", desc: "Memodelkan relasi banyak-ke-banyak (tugas dan label kategori) via pivot table dengan composite primary key (task_id, tag_id)." },
+        { title: "Integritas Data & B-Tree Indexing", desc: "Penegakan aturan validasi level database (NOT NULL, UNIQUE, CHECK) serta indexing B-Tree O(log N) untuk optimasi kecepatan query." },
+        { title: "Supabase SSR & Async Cookies (Next.js 16)", desc: "Adapter createServerClient dengan await cookies() memisahkan siklus hidup token autentikasi di lingkungan Server Component dan Server Actions secara aman." }
+      ],
+      diagramNote: "Next.js 16 (await cookies) ➔ @supabase/ssr ➔ Supabase Cloud (PostgreSQL 15 RLS Engine) ➔ 3-Tier Tables (Profiles ➔ Projects ➔ Tasks)",
+      deepDiveSections: [
+        {
+          title: "1. Arsitektur Relasional PostgreSQL & Supabase SQL Engine",
+          badge: "Pilar 1: Fondasi Relasional",
+          content: "PostgreSQL adalah sistem database objek-relasional paling canggih di dunia. Supabase membungkus PostgreSQL murni dengan API realtime dan isolasi Row Level Security (RLS). Memahami perancangan kunci dan relasi tabel adalah fondasi mutlak sebelum menulis kode aplikasi.",
+          subpoints: [
+            {
+              label: "UUID Primary Key (gen_random_uuid()) vs Serial ID",
+              text: "Hindari penggunaan auto-increment integer (SERIAL 1, 2, 3...) karena rawan diserang peretas via teknik ID Enumeration dan berisiko tabrakan data (collision) pada arsitektur multi-region. Selalu gunakan UUID v4 128-bit yang dihasilkan secara kriptografis oleh PostgreSQL:",
+              code: `-- 🔒 REKOMENDASI: UUID v4 Kriptografis
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+-- ⚠️ ANTI-PATTERN: Serial ID (Mudah ditebak di URL /api/projects/101)
+-- id SERIAL PRIMARY KEY`,
+              language: "sql",
+              caption: "Penerapan UUID v4 Kriptografis di PostgreSQL"
+            },
+            {
+              label: "Relasi 1:N (Foreign Key & ON DELETE CASCADE)",
+              text: "Relasi Satu-ke-Banyak (1:N) memodelkan satu entitas induk (misal: 1 User) yang memiliki banyak entitas anak (banyak Proyek). Gunakan klausa ON DELETE CASCADE agar saat akun pengguna dihapus, seluruh proyek miliknya otomatis dibersihkan oleh database tanpa meninggalkan orphaned records:",
+              code: `CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  
+  -- 🔗 Foreign Key ke tabel profiles dengan pembersihan otomatis
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);`,
+              language: "sql",
+              caption: "Relasi 1:N dengan Klausa ON DELETE CASCADE"
+            },
+            {
+              label: "Relasi M:N (Junction / Pivot Table & Composite Primary Key)",
+              text: "Relasi Banyak-ke-Banyak (M:N) menghubungkan dua entitas di mana 1 Tugas dapat memiliki banyak Tag, dan 1 Tag dapat ditempelkan ke banyak Tugas. Relasi ini WAJIB dipecah menggunakan tabel perantara (Junction Table) dengan Composite Primary Key:",
+              code: `CREATE TABLE task_tags (
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+
+  -- 🔒 Composite Primary Key: Mencegah duplikasi pasangan tag pada task yang sama
+  PRIMARY KEY (task_id, tag_id)
+);`,
+              language: "sql",
+              caption: "Junction Table M:N dengan Composite Primary Key"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Karakteristik Kunci", "Auto-Increment Serial ID (1, 2, 3...) 📦", "UUID v4 gen_random_uuid() ⚡"],
+            rows: [
+              ["Keamanan URL", "Rentan serangan enumerasi (/users/1 ➔ /users/2)", "Kebal enumerasi (2^122 kombinasi acak kriptografis)"],
+              ["Kerahasiaan Bisnis", "Membocorkan jumlah transaksi ke kompetitor", "Identitas acak tidak mencerminkan volume transaksi"],
+              ["Generasi Klien", "Harus query ke server (SELECT nextval)", "Bisa dibuat di client / Edge sebelum dikirim ke DB"],
+              ["Skalabilitas Cloud", "Rawan tabrakan ID saat merge database", "Zero Collision di seluruh node cloud global"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Prinsip Desain: Selalu Gunakan ON DELETE CASCADE untuk Data Anak",
+            text: "Ketiadaan klausa ON DELETE CASCADE memaksa developer menulis kode pembersihan manual berulang kali di aplikasi. Menyerahkan tugas referensial ke database menjamin integritas data selalu konsisten dan atomik."
+          }
+        },
+        {
+          title: "2. Integritas Skema, Constraints & Indexing",
+          badge: "Pilar 2: Optimasi & Pertahanan Database",
+          content: "Validasi form di frontend atau server actions hanyalah garis pertahanan awal. Garis pertahanan paling kokoh yang tidak pernah bisa ditembus adalah integritas skema di dalam PostgreSQL itu sendiri melalui constraints dan indexing performa tinggi.",
+          subpoints: [
+            {
+              label: "Integrity Constraints (NOT NULL, UNIQUE, CHECK)",
+              text: "Gunakan constraint SQL untuk menolak anomali data di tingkat kernel database. Constraint CHECK memastikan logika bisnis esensial (seperti saldo tidak boleh minus atau enum status) ditegakkan secara absolut:",
+              code: `CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  
+  -- 🛡️ CHECK Constraint: Memastikan budget selalu positif
+  budget NUMERIC(12, 2) NOT NULL CHECK (budget > 0),
+  
+  -- 🛡️ CHECK Constraint: Membatasi pilihan status tugas
+  status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'done')),
+  
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);`,
+              language: "sql",
+              caption: "Penegakan Aturan Bisnis via CHECK Constraints"
+            },
+            {
+              label: "B-Tree Indexing untuk Akses Cepat (CREATE INDEX)",
+              text: "Secara default, query WHERE pada kolom tanpa index akan memicu Sequential Scan (membaca jutaan baris satu per satu, O(N)). Memasang B-Tree Index mentransformasikan pencarian menjadi penelusuran pohon biner O(log N) yang 300x lebih cepat:",
+              code: `-- ⚡ Buat B-Tree Index pada kolom Foreign Key dan filter pencarian:
+CREATE INDEX idx_projects_user_id ON projects(user_id);
+CREATE INDEX idx_projects_status ON projects(status);
+CREATE INDEX idx_projects_created_at ON projects(created_at DESC);`,
+              language: "sql",
+              caption: "Optimasi Query Database dengan B-Tree Index"
+            },
+            {
+              label: "Otomasi Timestamp dengan PostgreSQL Triggers (updated_at)",
+              text: "Jangan mengandalkan kode frontend untuk memperbarui kolom updated_at. Pasang fungsi trigger di PostgreSQL sehingga setiap operasi UPDATE di tabel otomatis menyetel updated_at ke waktu saat ini:",
+              code: `-- 1. Buat fungsi trigger pembaruan timestamp
+CREATE OR REPLACE FUNCTION handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Pasang trigger ke tabel projects
+CREATE TRIGGER set_projects_updated_at
+BEFORE UPDATE ON projects
+FOR EACH ROW
+EXECUTE FUNCTION handle_updated_at();`,
+              language: "sql",
+              caption: "Otomasi updated_at via PostgreSQL Trigger"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Metode Pencarian", "Sequential Scan (Tanpa Index) ⏳", "B-Tree Index (CREATE INDEX) ⚡"],
+            rows: [
+              ["Kompleksitas Waktu", "O(N) — Linear sebanding jumlah baris", "O(log N) — Sangat cepat dan konstan"],
+              ["Kecepatan (100k Baris)", "200 ms – 500 ms (CPU intensive)", "0.5 ms – 2 ms (Instant Disk Seek)"],
+              ["Konsumsi Compute", "Membaca seluruh blok memori database", "Hanya membaca 3 - 4 blok node pohon"],
+              ["Kapan Wajib Dipakai", "Hanya pada tabel kecil (< 50 baris)", "Seluruh kolom foreign key, email, dan status filter"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Aturan Industri: Selalu Buat Index pada Kolom Foreign Key!",
+            text: "PostgreSQL tidak otomatis membuat index pada kolom foreign key (hanya primary key yang diindeks otomatis). Jika Anda tidak membuat CREATE INDEX pada user_id, operasi JOIN akan lambat saat data membesar."
+          }
+        },
+        {
+          title: "3. Integrasi Next.js 16 SSR & Async Cookies",
+          badge: "Pilar 3: Konektivitas Full-Stack",
+          content: "Next.js 16 App Router memperkenalkan perubahan besar pada cara pembacaan cookies peramban. Paket resmi @supabase/ssr menyediakan pola adapter yang memisahkan otentikasi browser dan server secara elegan.",
+          subpoints: [
+            {
+              label: "Arsitektur @supabase/ssr vs Legacy Auth Helpers",
+              text: "Paket lama @supabase/auth-helpers-nextjs telah deprecated karena mengikat framework secara kaku. Paket modern @supabase/ssr menggunakan pola Adapter fleksibel yang hanya membutuhkan fungsi getAll() dan setAll() untuk mengelola token sesi:",
+              code: `// Instalasi paket resmi terkini:
+npm install @supabase/supabase-js @supabase/ssr`,
+              language: "bash",
+              caption: "Pemasangan Paket @supabase/ssr Resmi"
+            },
+            {
+              label: "Breaking Change Next.js 16: await cookies() & Handler getAll() / setAll()",
+              text: "Pada Next.js 16, fungsi cookies() dari 'next/headers' bertipe Promise asinkron dan WAJIB diawali dengan 'await cookies()'. Handler setAll() dibungkus try/catch agar Server Component yang berjalan secara streaming tidak melempar crash:",
+              code: `// src/utils/supabase/server.ts
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  // ⚡ Breaking Change Next.js 16: Wajib di-await!
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Dipanggil dari Server Component (aman diabaikan)
+          }
+        },
+      },
+    }
+  )
+}`,
+              language: "typescript",
+              caption: "Utilitas Supabase Server dengan Async Cookies"
+            },
+            {
+              label: "Pemisahan Client vs Server Supabase Client",
+              text: "Gunakan createBrowserClient untuk Client Component interaktif (berjalan sebagai singleton di memori browser), dan createServerClient untuk Server Component dan Server Actions:",
+              code: `// src/utils/supabase/client.ts ('use client')
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}`,
+              language: "typescript",
+              caption: "Utilitas Supabase Browser Client"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Dimensi", "createBrowserClient (client.ts) 🌐", "createServerClient (server.ts) 🔒"],
+            rows: [
+              ["Lingkungan Eksekusi", "Browser Pengguna ('use client')", "Node.js / Edge Server (RSC & Server Actions)"],
+              ["Lifecycle Objek", "Singleton (Dibuat 1x di memori browser)", "Per-Request Instance (Setiap HTTP request)"],
+              ["Akses Cookies", "Membaca document.cookie peramban", "Membaca via await cookies() dari next/headers"],
+              ["Fitur Utama", "Realtime WebSockets, OAuth login button", "Data fetching 0 kB JS, Server Actions mutation"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Peringatan Arsitektur: Dilarang Mengimpor server.ts di Client Component!",
+            text: "Mengimpor createClient dari server.ts ke dalam berkas 'use client' akan memicu build error karena pustaka next/headers hanya tersedia di lingkungan server runtime."
+          }
+        },
+        {
+          title: "4. Kick-off Proyek Akhir & Kontrak Data Antar-Modul",
+          badge: "Pilar 4: Blueprint Proyek Akhir",
+          content: "Mulai Minggu 4, seluruh mahasiswa resmi menginisiasi repositori Proyek Akhir masing-masing. Membangun skema 3 tabel yang solid dan menghasilkan kontrak tipe TypeScript otomatis adalah langkah pertama menuju aplikasi full-stack kelas industri.",
+          subpoints: [
+            {
+              label: "Skema Inti 3 Tabel Berelasi Proyek Akhir",
+              text: "Proyek perkuliahan berpusat pada hierarki 3 tabel relasional bertingkat: profiles (terikat ke auth.users), projects (wadah kerja), dan tasks (item pekerjaan):",
+              code: `-- Skema Inti Proyek Akhir (The Serverless Odyssey)
+-- 1. profiles: Ekstensi data publik auth.users
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+-- 2. projects: Entitas utama proyek perkuliahan
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+-- 3. tasks: Item pekerjaan di dalam proyek
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'done')),
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);`,
+              language: "sql",
+              caption: "DDL 3 Tabel Berelasi Proyek Akhir"
+            },
+            {
+              label: "Pemetaan Tipe TypeScript Otomatis (Supabase CLI Typegen)",
+              text: "Jangan pernah menulis interface TypeScript secara manual untuk database. Gunakan Supabase CLI untuk men-generate tipe data otomatis langsung dari skema PostgreSQL Anda:",
+              code: `# Jalankan di terminal untuk membuat kontrak tipe:
+npx supabase gen types typescript --project-id <your-project-id> > src/types/database.types.ts
+
+// Di kode TypeScript Next.js 16:
+import { Database } from "@/types/database.types";
+const supabase = createClient<Database>();
+// ✨ Autocomplete kolom tabel aktif 100% dan bebas salah ketik!`,
+              language: "bash",
+              caption: "Generasi Tipe Data TypeScript Otomatis"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Pendekatan Definisi Tipe", "Mengetik Manual (Manual Interfaces) ❌", "Supabase CLI Typegen 🚀"],
+            rows: [
+              ["Sinkronisasi Schema", "Mudah desinkronisasi saat kolom DB diubah", "Otomatis 100% sinkron dengan skema PostgreSQL"],
+              ["Ketahanan Human Error", "Rentan salah ketik (typo) nama kolom", "Divalidasi langsung oleh TypeScript compiler"],
+              ["Autocomplete IntelliSense", "Terbatas pada interface buatan sendiri", "Mencakup tipe Insert, Update, Row, dan Enums"],
+              ["Efisiensi Pengembang", "Membuang waktu mengetik ulang DDL", "Selesai dalam 1 baris perintah CLI"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Aturan Proyek Bola Salju: Jaga Integritas Repositori!",
+            text: "Skema 3 tabel yang dibuat pada pertemuan ini akan terus digunakan, diperluas dengan fitur autentikasi di Minggu 5, filter pencarian di Minggu 6, dan upload media di Minggu 7. Kerjakan skema ini dengan presisi!"
+          }
+        }
       ]
     },
     references: [
       { title: "Supabase PostgreSQL Database Docs", url: "https://supabase.com/docs/guides/database", source: "Supabase" },
-      { title: "Supabase SSR Next.js Guide", url: "https://supabase.com/docs/guides/auth/server-side/nextjs", source: "Supabase" }
+      { title: "Supabase SSR Next.js Guide", url: "https://supabase.com/docs/guides/auth/server-side/nextjs", source: "Supabase" },
+      { title: "PostgreSQL Constraints Documentation", url: "https://www.postgresql.org/docs/current/ddl-constraints.html", source: "PostgreSQL" },
+      { title: "Supabase CLI Type Generation", url: "https://supabase.com/docs/guides/api/rest/generating-types", source: "Supabase CLI" }
     ],
     lab: {
-      prerequisites: ["Akun Supabase siap", "Paket @supabase/ssr terinstal"],
+      prerequisites: ["Akun Supabase siap & project baru dibuat", "Node.js v20+ LTS", "Repositori resmi Proyek Akhir aktif"],
       steps: [
         {
           stepNumber: 1,
-          instruction: "Instal library Supabase SSR terbaru",
+          instruction: "Instal SDK Supabase Resmi untuk Next.js 16 App Router",
           code: "npm install @supabase/supabase-js @supabase/ssr",
-          language: "bash"
+          language: "bash",
+          explanation: "Paket @supabase/ssr adalah pustaka generasi terbaru yang menggantikan @supabase/auth-helpers-nextjs dan mendukung penuh async cookies di Next.js 16."
         },
         {
           stepNumber: 2,
-          instruction: "Konfigurasi utilitas koneksi Supabase di src/utils/supabase/server.ts",
+          instruction: "Konfigurasi Utilitas Klien Server di src/utils/supabase/server.ts",
           code: `import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
@@ -961,7 +1729,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Dipanggil dari Server Component (diabaikan jika ada middleware pembaru sesi)
+            // Dipanggil dari Server Component (aman diabaikan)
           }
         },
       },
@@ -969,22 +1737,89 @@ export async function createClient() {
   )
 }`,
           language: "typescript",
-          explanation: "Pada Next.js 16, cookies() adalah fungsi asynchronous sehingga wajib diawali dengan 'await cookies()'."
+          explanation: "Perhatikan baris 'const cookieStore = await cookies()'. Pada Next.js 16, cookies() adalah Promise asinkron yang wajib di-await."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Konfigurasi Utilitas Klien Browser di src/utils/supabase/client.ts",
+          code: `import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}`,
+          language: "typescript",
+          explanation: "Fungsi ini digunakan di dalam Client Component ('use client') untuk operasi browser seperti interaktivitas tombol login atau channel realtime."
+        },
+        {
+          stepNumber: 4,
+          instruction: "Eksekusi Script SQL Skema 3 Tabel di Supabase SQL Editor",
+          code: `-- Buka Dashboard Supabase -> SQL Editor -> Tempel Script Ini:
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  budget NUMERIC(12,2) DEFAULT 0 CHECK (budget >= 0),
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'done')),
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+-- Buat B-Tree Index untuk performa query cepat:
+CREATE INDEX idx_projects_user_id ON projects(user_id);
+CREATE INDEX idx_tasks_project_id ON tasks(project_id);`,
+          language: "sql",
+          explanation: "Script SQL ini membangun fondasi 3 tabel relasional Proyek Akhir lengkap dengan UUID v4, relasi cascading, check constraints, dan B-Tree index."
         }
       ],
       aiPromptTemplate: {
-        role: "Database Administrator",
-        prompt: "Buatkan query SQL PostgreSQL untuk Supabase untuk membuat 3 tabel yang saling berelasi untuk aplikasi [TEMA APLIKASI ANDA]. Gunakan UUID sebagai primary key (gen_random_uuid()) dan sertakan kolom created_at timestamptz.",
-        tip: "Selalu sertakan kolom foreign key dengan klausa ON DELETE CASCADE untuk integritas data referensial."
+        role: "Formula Prompt AI Teruji (C-R-E-T Framework)",
+        prompt: `Bertindaklah sebagai Senior PostgreSQL Database Administrator & Supabase Specialist.
+
+Saya sedang menginisiasi repositori Proyek Akhir perkuliahan "The Serverless Odyssey" menggunakan Next.js 16 (App Router), Tailwind CSS v4, dan Supabase PostgreSQL.
+
+Tolong rancang skema SQL relasional PostgreSQL lengkap untuk tema aplikasi [SEBUTKAN TEMA APLIKASI ANDA, MISAL: APLIKASI MANAJEMEN EVENT KAMPUS].
+
+Batasan teknis ketat yang WAJIB dipatuhi:
+1. Buat minimal 3 tabel relasional yang saling terhubung dengan foreign key (1:N atau M:N).
+2. Gunakan UUID v4 (gen_random_uuid()) sebagai Primary Key untuk seluruh tabel (dilarang menggunakan auto-increment serial integer).
+3. Terapkan klausa ON DELETE CASCADE pada setiap Foreign Key untuk mencegah orphaned records.
+4. Tambahkan CHECK constraints untuk validasi logika bisnis (misal: nominal > 0 atau status enum) dan NOT NULL pada kolom esensial.
+5. Buat B-Tree index (CREATE INDEX) pada seluruh kolom foreign key dan kolom yang sering dicari.
+6. Sertakan fungsi trigger PostgreSQL untuk mengotomasi pembaruan kolom updated_at pada tabel utama.
+
+Target output: Berikan script SQL murni yang siap dieksekusi di Supabase SQL Editor beserta penjelasan relasi antar-tabelnya.`,
+        tip: "Salin formula C-R-E-T ini ke AI coding assistant pilihan Anda untuk merancang skema database PostgreSQL proyek akhir dengan standar industri."
+      },
+      warningZone: {
+        title: "Zona Bahaya: Menghapus Tabel Tanpa Backup di Supabase!",
+        desc: "Perintah DROP TABLE CASCADE akan menghapus seluruh data dan tabel yang berelasi secara permanen. Selalu lakukan perancangan skema secara hati-hati di SQL Editor sebelum memasukkan data nyata."
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 4: Inisiasi Repo Final & Migrasi Database",
-      taskDesc: "Inisiasi repositori resmi Proyek Akhir dan jalankan script SQL pembuatan minimal 3 tabel di Supabase SQL Editor.",
+      taskTitle: "Misi Minggu 4: Inisiasi Repositori Final & Migrasi Database Relasional",
+      taskDesc: "Inisiasi repositori resmi Proyek Akhir Anda, amankan kredensial Supabase di .env.local, dan jalankan migrasi 3 tabel relasional di Supabase SQL Editor.",
       definitionOfDone: [
-        "Tabel PostgreSQL berhasil dibuat di dashboard Supabase dengan minimal 3 tabel berelasi",
-        "File .env.local terisi URL dan Anon Key Supabase",
-        "Utilitas Supabase SSR terpasang di src/utils/supabase/"
+        "Langkah 1: Masuk ke branch fitur baru ('git checkout -b feature/supabase-database-schema')",
+        "Langkah 2: Konfigurasi utilitas Supabase SSR di src/utils/supabase/server.ts dan client.ts",
+        "Langkah 3: Eksekusi script DDL 3 tabel relasional di Supabase SQL Editor dan verifikasi di Table Editor",
+        "Langkah 4: Simpan commit dan gabungkan branch fitur ke main ('git merge feature/supabase-database-schema')"
       ],
       gitBranchTask: "git checkout -b feature/supabase-database-schema"
     }

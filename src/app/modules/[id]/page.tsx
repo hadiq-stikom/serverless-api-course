@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MODULES, ModuleData } from "@/data/curriculum";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CopyButton } from "@/components/copy-button";
-import { InteractiveTerm, FaasVsBaasVisualizer } from "@/components/interactive-term";
+import { InteractiveTerm } from "@/components/interactive-term";
 import { ServerClientAnimator } from "@/components/visualizers/server-client-animator";
 import { ClientHydrationAnimator } from "@/components/visualizers/client-hydration-animator";
 import { InterleavingCompositionAnimator } from "@/components/visualizers/interleaving-composition-animator";
@@ -22,6 +22,39 @@ import { CvaMergeAnimator } from "@/components/visualizers/cva-merge-animator";
 import { ShadcnArchitectureAnimator } from "@/components/visualizers/shadcn-architecture-animator";
 import { ContainerWidgetAnimator } from "@/components/visualizers/container-widget-animator";
 import { ResponsiveTokensAnimator } from "@/components/visualizers/responsive-tokens-animator";
+import { ServerActionsRpcAnimator } from "@/components/visualizers/server-actions-rpc-animator";
+import { ActionPlacementAnimator } from "@/components/visualizers/action-placement-animator";
+import { RevalidationCacheAnimator } from "@/components/visualizers/revalidation-cache-animator";
+import { ZodSafeParseAnimator } from "@/components/visualizers/zod-safe-parse-animator";
+import { ZodCoercionAnimator } from "@/components/visualizers/zod-coercion-animator";
+import { ZodErrorFormatterAnimator } from "@/components/visualizers/zod-error-formatter-animator";
+import { UseActionStateAnimator } from "@/components/visualizers/use-action-state-animator";
+import { UseFormStatusAnimator } from "@/components/visualizers/use-form-status-animator";
+import { UseOptimisticAnimator } from "@/components/visualizers/use-optimistic-animator";
+import { ActionStateContractAnimator } from "@/components/visualizers/action-state-contract-animator";
+import { ShadcnFormFeedbackAnimator } from "@/components/visualizers/shadcn-form-feedback-animator";
+import { FaasComputeAnimator } from "@/components/visualizers/faas-compute-animator";
+import { BaasArchitectureAnimator } from "@/components/visualizers/baas-architecture-animator";
+import { FourPillarsAnimator } from "@/components/visualizers/four-pillars-animator";
+import { GitThreeTreesAnimator } from "@/components/visualizers/git-three-trees-animator";
+import { GitIdentityAnimator } from "@/components/visualizers/git-identity-animator";
+import { GitBranchLifecycleAnimator } from "@/components/visualizers/git-branch-lifecycle-animator";
+import { GitignoreProtectionAnimator } from "@/components/visualizers/gitignore-protection-animator";
+import { GitSecretsLeakAnimator } from "@/components/visualizers/git-secrets-leak-animator";
+import { CretContextRoleAnimator } from "@/components/visualizers/cret-context-role-animator";
+import { CretConstraintsAnimator } from "@/components/visualizers/cret-constraints-animator";
+import { CretOutputReviewAnimator } from "@/components/visualizers/cret-output-review-animator";
+import { UuidVsSerialAnimator } from "@/components/visualizers/uuid-vs-serial-animator";
+import { OneToManyRelAnimator } from "@/components/visualizers/one-to-many-rel-animator";
+import { ManyToManyRelAnimator } from "@/components/visualizers/many-to-many-rel-animator";
+import { SqlConstraintsAnimator } from "@/components/visualizers/sql-constraints-animator";
+import { BtreeIndexAnimator } from "@/components/visualizers/btree-index-animator";
+import { PostgresTriggersAnimator } from "@/components/visualizers/postgres-triggers-animator";
+import { SupabaseSsrArchAnimator } from "@/components/visualizers/supabase-ssr-arch-animator";
+import { AsyncCookiesAnimator } from "@/components/visualizers/async-cookies-animator";
+import { ClientVsServerSupabaseAnimator } from "@/components/visualizers/client-vs-server-supabase-animator";
+import { ThreeTierSchemaAnimator } from "@/components/visualizers/three-tier-schema-animator";
+import { SupabaseTypegenAnimator } from "@/components/visualizers/supabase-typegen-animator";
 import { VsCodeSnippet } from "@/components/vscode-snippet";
 import { VsCodePrompt } from "@/components/vscode-prompt";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +159,237 @@ const MODULE_2_VISUALIZERS: Record<string, { key: string; title: string; subtitl
     title: "Simulasi Desain Responsif & Semantic Token Hierarchy",
     subtitle: "Uji kartu Shadcn pada ukuran Mobile (320px), Tablet (500px), dan Desktop dengan token semantic",
     component: <ResponsiveTokensAnimator />,
+  },
+};
+
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 11 Subpoin Konsep Pertemuan 3
+const MODULE_3_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur RPC Serverless & Server Actions
+  "0-0": {
+    key: "server-actions-rpc",
+    title: "Simulasi Alur RPC Server Actions ('use server')",
+    subtitle: "Lihat dispatch POST terenkripsi tanpa endpoint /api/* manual",
+    component: <ServerActionsRpcAnimator />,
+  },
+  "0-1": {
+    key: "action-placement",
+    title: "Simulasi Pola Penempatan Server Actions",
+    subtitle: "Perbedaan berkas terpisah (src/actions/*) vs inline di Server Component",
+    component: <ActionPlacementAnimator />,
+  },
+  "0-2": {
+    key: "revalidation-cache",
+    title: "Simulasi Revalidasi Cache Server (revalidatePath)",
+    subtitle: "Uji purge cache data server seketika untuk pembaruan UI instan",
+    component: <RevalidationCacheAnimator />,
+  },
+
+  // Pilar 2: Validasi Skema & Pertahanan Input Ketat dengan Zod
+  "1-0": {
+    key: "zod-safeparse",
+    title: "Simulator Zod safeParse() & Pertahanan Input",
+    subtitle: "Uji validasi skema tanpa melempar unhandled crash exception",
+    component: <ZodSafeParseAnimator />,
+  },
+  "1-1": {
+    key: "zod-coercion",
+    title: "Simulator Zod Type Coercion (z.coerce) & Refinement",
+    subtitle: "Konversi string FormData mentah ke typed JavaScript object",
+    component: <ZodCoercionAnimator />,
+  },
+  "1-2": {
+    key: "zod-error-format",
+    title: "Simulator Pemformatan ZodError (error.flatten)",
+    subtitle: "Transformasi Zod issues ke dictionary fieldErrors ramah UI",
+    component: <ZodErrorFormatterAnimator />,
+  },
+
+  // Pilar 3: Ekosistem Hook Form React 19
+  "2-0": {
+    key: "use-action-state",
+    title: "Simulator Siklus React 19 useActionState Hook",
+    subtitle: "Transisi state [state, formAction, isPending] native React 19",
+    component: <UseActionStateAnimator />,
+  },
+  "2-1": {
+    key: "use-form-status",
+    title: "Simulator useFormStatus (Tombol Daun Sadar Status)",
+    subtitle: "Deteksi pending state form induk tanpa prop drilling",
+    component: <UseFormStatusAnimator />,
+  },
+  "2-2": {
+    key: "use-optimistic",
+    title: "Simulator UI Optimistik: useOptimistic Hook (React 19)",
+    subtitle: "Bandingkan respons instan 0ms vs menunggu server 1500ms",
+    component: <UseOptimisticAnimator />,
+  },
+
+  // Pilar 4: Arsitektur Produksi & Shadcn Form
+  "3-0": {
+    key: "action-state-contract",
+    title: "Simulator Standar Kontrak Tipe ActionState<T>",
+    subtitle: "Konsistensi kontrak respons enterprise untuk seluruh Server Actions",
+    component: <ActionStateContractAnimator />,
+  },
+  "3-1": {
+    key: "shadcn-form-feedback",
+    title: "Simulator Integrasi Form Shadcn UI & Error Feedback",
+    subtitle: "Uji interaksi Input, Label, inline error alerts, dan status loading",
+    component: <ShadcnFormFeedbackAnimator />,
+  },
+};
+
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 11 Subpoin Konsep Pertemuan 1
+const MODULE_1_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Paradigma Komputasi Cloud Serverless
+  "0-0": {
+    key: "faas-compute",
+    title: "Simulasi Siklus Eksekusi FaaS vs VPS Monolith",
+    subtitle: "Uji coba scale-to-zero, lonjakan request, dan perbandingan biaya $0 saat idle",
+    component: <FaasComputeAnimator />,
+  },
+  "0-1": {
+    key: "baas-architecture",
+    title: "Simulasi Ekosistem BaaS: 4 Layanan Backend Siap Pakai",
+    subtitle: "Uji request SDK PostgreSQL RLS, Supabase Auth, WebSocket Realtime, dan Storage CDN",
+    component: <BaasArchitectureAnimator />,
+  },
+  "0-2": {
+    key: "four-pillars",
+    title: "Simulasi Alur Transaksi Data Melintasi 4 Pilar Komputasi",
+    subtitle: "Lihat alur sinergi Next.js 16 ➔ Vercel Edge ➔ Supabase DB ➔ Cloudinary Media",
+    component: <FourPillarsAnimator />,
+  },
+
+  // Pilar 2: Sistem Kontrol Versi Terdistribusi & Siklus Kerja Git
+  "1-0": {
+    key: "git-three-trees",
+    title: "Simulasi 3 Wilayah Kerja Git & Transmisi ke Remote GitHub",
+    subtitle: "Alur pergerakan file: Working Tree ➔ git add (Staging) ➔ git commit ➔ git push",
+    component: <GitThreeTreesAnimator />,
+  },
+  "1-1": {
+    key: "git-identity",
+    title: "Simulasi Multi-Akun: Resolusi Identitas Author (Global vs Local)",
+    subtitle: "Pahami cara memisahkan akun kampus dan pribadi menggunakan git config lokal",
+    component: <GitIdentityAnimator />,
+  },
+  "1-2": {
+    key: "git-branch-lifecycle",
+    title: "Simulasi Siklus 4 Langkah Git: Branching, Commit, Merge & Cleanup",
+    subtitle: "Visualisasi graf percabangan feature branch terisolasi hingga kembali ke main",
+    component: <GitBranchLifecycleAnimator />,
+  },
+
+  // Pilar 3: Keamanan Repositori & Higienitas Kredensial Rahasia
+  "2-0": {
+    key: "gitignore-protection",
+    title: "Simulasi Mekanisme Proteksi .gitignore Terhadap File .env.local",
+    subtitle: "Bandingkan status keamanan git status dengan .gitignore aktif vs tanpa proteksi",
+    component: <GitignoreProtectionAnimator />,
+  },
+  "2-1": {
+    key: "git-secrets-leak",
+    title: "Simulasi Kebocoran Secrets & Bahaya Git History Permanence",
+    subtitle: "Pahami kecepatan bot scraper GitHub dan mengapa hapus commit biasa tidak cukup",
+    component: <GitSecretsLeakAnimator />,
+  },
+
+  // Pilar 4: Metodologi Rekayasa AI Berkonteks Tinggi (Framework C-R-E-T)
+  "3-0": {
+    key: "cret-context-role",
+    title: "Simulasi Pengaruh C (Context) & R (Role) Terhadap Kualitas Output AI",
+    subtitle: "Bandingkan hasil prompt asal-asalan vs prompt dengan persona pakar & arsitektur jelas",
+    component: <CretContextRoleAnimator />,
+  },
+  "3-1": {
+    key: "cret-constraints",
+    title: "Simulasi Penguncian Batasan Teknis (Explicit Constraints) Menangkal Kode Usang",
+    subtitle: "Uji pengaruh batasan Next.js 16, React 19, dan zero-any terhadap respons AI",
+    component: <CretConstraintsAnimator />,
+  },
+  "3-2": {
+    key: "cret-output-review",
+    title: "Simulasi Target Output Modular & Checklist Review Mandiri Kode AI",
+    subtitle: "Inspeksi struktur berkas modular dan verifikasi checklist sebelum commit",
+    component: <CretOutputReviewAnimator />,
+  },
+};
+
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 11 Subpoin Konsep Pertemuan 4
+const MODULE_4_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur Relasional Database PostgreSQL Modern
+  "0-0": {
+    key: "uuid-vs-serial",
+    title: "Simulasi Identitas Entitas: UUID v4 vs Auto-Increment Serial",
+    subtitle: "Uji coba keamanan enumerasi ID, konkurensi skala terdistribusi, dan dampak storage",
+    component: <UuidVsSerialAnimator />,
+  },
+  "0-1": {
+    key: "one-to-many-rel",
+    title: "Simulasi Relasi 1:N & Integritas ON DELETE CASCADE",
+    subtitle: "Bandingkan CASCADE (pembersihan otomatis) vs RESTRICT (larangan hapus relasi yatim)",
+    component: <OneToManyRelAnimator />,
+  },
+  "0-2": {
+    key: "many-to-many-rel",
+    title: "Simulasi Relasi M:N & Junction Table (task_tags)",
+    subtitle: "Lihat dekonstruksi relasi banyak-ke-banyak dengan Composite Primary Key",
+    component: <ManyToManyRelAnimator />,
+  },
+
+  // Pilar 2: Integritas Data, Indeksasi, & Otomasi Triggers di PostgreSQL
+  "1-0": {
+    key: "sql-constraints",
+    title: "Simulasi Integritas Skema: NOT NULL, UNIQUE, & CHECK Constraint",
+    subtitle: "Uji pertahanan validasi lapis database terhadap serangan data anomali & bypass API",
+    component: <SqlConstraintsAnimator />,
+  },
+  "1-1": {
+    key: "btree-index",
+    title: "Simulasi Performa Indeksasi: B-Tree Index Scan vs Sequential Scan",
+    subtitle: "Bandingkan kecepatan pencarian O(log N) 0.8ms vs full table scan O(N) 240ms pada 100.000 row",
+    component: <BtreeIndexAnimator />,
+  },
+  "1-2": {
+    key: "postgres-triggers",
+    title: "Simulasi Otomasi PostgreSQL Triggers: updated_at Timestamp",
+    subtitle: "Lihat eksekusi otomatis BEFORE UPDATE trigger function tanpa intervensi manual server",
+    component: <PostgresTriggersAnimator />,
+  },
+
+  // Pilar 3: Arsitektur Klien Supabase SSR & Keamanan Kredensial
+  "2-0": {
+    key: "supabase-ssr-arch",
+    title: "Simulasi Arsitektur Adapter: @supabase/ssr vs Legacy auth-helpers",
+    subtitle: "Pahami pemisahan CookieAdapter dan mengapa auth-helpers resmi didepresiasi",
+    component: <SupabaseSsrArchAnimator />,
+  },
+  "2-1": {
+    key: "async-cookies",
+    title: "Simulasi Next.js 16 Async Cookies & Siklus get/set Cookie",
+    subtitle: "Uji coba breaking change await cookies(), getAll() di RSC dan setAll() di Server Actions/Proxy",
+    component: <AsyncCookiesAnimator />,
+  },
+  "2-2": {
+    key: "client-vs-server-supabase",
+    title: "Simulasi Supabase Client: Browser Singleton vs Server Per-Request",
+    subtitle: "Bandingkan client browser untuk Realtime vs client server aman bebas kebocoran sesi antar-user",
+    component: <ClientVsServerSupabaseAnimator />,
+  },
+
+  // Pilar 4: Blueprint Skema Proyek Akhir & Supabase Typegen
+  "3-0": {
+    key: "three-tier-schema",
+    title: "Simulasi Blueprint Skema 3 Tingkat: profiles ➔ projects ➔ tasks",
+    subtitle: "Inspeksi keterkaitan ERD enterprise, foreign keys, cascade rules, dan isolasi multi-tenant",
+    component: <ThreeTierSchemaAnimator />,
+  },
+  "3-1": {
+    key: "supabase-typegen",
+    title: "Simulasi Supabase CLI Typegen: Otomasi Type-Safe Database ke TS",
+    subtitle: "Saksikan migrasi skema SQL langsung di-generate menjadi file database.types.ts yang akurat",
+    component: <SupabaseTypegenAnimator />,
   },
 };
 
@@ -376,10 +640,7 @@ export default function ModuleDetailPage() {
                 )}
               </div>
 
-              {/* Interactive Visualizers */}
-              {currentModule.id === 1 && (
-                <FaasVsBaasVisualizer />
-              )}
+
 
               {/* Point-by-point breakdowns */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -469,9 +730,11 @@ export default function ModuleDetailPage() {
                                   </div>
                                 )}
 
-                                {/* Interactive Simulation Accordions for All Module 2 Concepts (Option 2: Smooth Accordion Unfold) */}
-                                {currentModule.id === 2 && MODULE_2_VISUALIZERS[`${sIdx}-${subIdx}`] && (() => {
-                                  const viz = MODULE_2_VISUALIZERS[`${sIdx}-${subIdx}`];
+                                {/* Interactive Simulation Accordions for Module Concepts (Option 2: Smooth Accordion Unfold) */}
+                                {(() => {
+                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : null;
+                                  const viz = activeVizMap ? activeVizMap[`${sIdx}-${subIdx}`] : null;
+                                  if (!viz) return null;
                                   const isExpanded = !!expandedVisualizers[viz.key];
 
                                   return (
