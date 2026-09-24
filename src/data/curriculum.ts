@@ -393,14 +393,30 @@ gh repo create my-serverless-app --public --source=. --remote=origin --push
       ],
       aiPromptTemplate: {
         role: "Formula Prompt AI Teruji (C-R-E-T Framework)",
-        prompt: `Bertindaklah sebagai Senior Cloud Software Engineer & Next.js 16 Specialist.
+        prompt: `Bertindaklah sebagai Senior Cloud Software Engineer & DevSecOps Specialist.
 
-Saya sedang menginisialisasi repositori proyek perkuliahan "The Serverless Odyssey" menggunakan Next.js 16 (App Router), Tailwind CSS v4, dan TypeScript strict.
+[CONTEXT]
+Saya sedang menginisialisasi repositori proyek perkuliahan "The Serverless Odyssey" berbasis Full-Stack Serverless (Next.js 16 App Router, Supabase Cloud PostgreSQL, Cloudinary CDN, dan Vercel Edge). Repositori ini akan dipublikasikan ke GitHub publik, sehingga memerlukan standar fondasi keamanan kredensial dan dokumentasi repositori yang profesional.
 
-Tolong berikan konfigurasi berkas .gitignore paling komprehensif untuk memastikan seluruh environment variables (.env*.local), file log, cache Turbopack (.next/), dan node_modules tidak akan pernah bocor ke GitHub publik.
+[EXPLICIT CONSTRAINTS]
+1. DETEKSI INSTALASI NEXT.JS 16:
+   - Jika direktori proyek ini belum memiliki Next.js (belum ada file package.json), EKSEKUSI (jika memiliki tool terminal) atau BERIKAN instruksi perintah CLI resmi berikut untuk inisialisasi:
+     npx -y create-next-app@latest ./ --typescript --tailwind --eslint --app --src-dir --yes
+2. HIGIENITAS DEVSECOPS & SECRETS:
+   - Dilarang keras membocorkan file kredensial rahasia (.env, .env.local, .env*.local), cache Turbopack (.next/), log error, dan folder dependensi (node_modules).
+3. TEMPLATE PUBLIK:
+   - Buatkan file .env.example yang AMAN untuk di-commit publik (hanya menyertakan key variabel tanpa nilai/token asli).
+4. DOKUMENTASI RESMI:
+   - Buatkan file README.md bergaya profesional standar industri menggunakan Markdown dengan tech stack badges (Next.js 16, Supabase, Cloudinary, Vercel), ringkasan arsitektur 4 pilar, panduan setup lokal (.env.example -> .env.local), dan aturan 4 langkah Git branch.
 
-Sertakan pula panduan perintah CLI git untuk memeriksa apakah file .env.local berstatus aman (ignored) sebelum saya menjalankan commit pertama.`,
-        tip: "Salin formula C-R-E-T ini ke AI coding assistant pilihan Anda untuk memverifikasi proteksi secrets sebelum commit pertama."
+[TARGET OUTPUT STRUCTURE]
+Hasilkan luaran yang terstruktur dan lengkap:
+1. Inisialisasi: Perintah terminal Next.js 16 (eksekusi atau panduan jika belum diinstal)
+2. Berkas 1: .gitignore (Konfigurasi pengabaian komprehensif untuk Next.js 16, Supabase, OS temporary files, dan secrets)
+3. Berkas 2: .env.example (Template variabel lingkungan publik aman untuk Supabase & Cloudinary)
+4. Berkas 3: README.md (Dokumentasi resmi proyek The Serverless Odyssey lengkap dengan badges dan panduan instalasi)
+5. CLI Script: Perintah terminal bash 1 baris untuk menguji proteksi gitignore sebelum commit pertama.`,
+        tip: "Salin formula C-R-E-T ini ke Antigravity, OpenCode, atau AI coding assistant pilihan Anda untuk otomatisasi setup proyek atau panduan instalasi lengkap."
       },
       warningZone: {
         title: "Zona Bahaya: Kebocoran API Key!",

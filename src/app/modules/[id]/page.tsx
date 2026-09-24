@@ -61,7 +61,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
-  ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
+  ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
   Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
   Info, Lightbulb, ShieldAlert, Code
@@ -506,6 +506,19 @@ export default function ModuleDetailPage() {
     setExpandedVisualizers((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleTabChange = (tab: "concept" | "lab" | "mission") => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const anchor = document.getElementById("tab-navigation-bar");
+      if (anchor) {
+        const topOffset = anchor.getBoundingClientRect().top + window.scrollY - 70;
+        if (window.scrollY > topOffset) {
+          window.scrollTo({ top: topOffset, behavior: "smooth" });
+        }
+      }
+    }
+  };
+
   if (!currentModule) {
     return notFound();
   }
@@ -651,43 +664,51 @@ export default function ModuleDetailPage() {
             </div>
           </div>
 
-          {/* 3 Pillars Tabs Navigation */}
-          <div className="flex items-center gap-2 p-1.5 bg-zinc-200/70 dark:bg-zinc-900 border border-zinc-300/80 dark:border-zinc-800 rounded-2xl">
-            <button
-              onClick={() => setActiveTab("concept")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all ${
-                activeTab === "concept"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <BookOpen className="w-4 h-4 text-cyan-500" />
-              1. Konsep & Teori
-            </button>
+          {/* 3 Pillars Tabs Navigation (Sticky Sub-Header) */}
+          <div
+            id="tab-navigation-bar"
+            className="sticky top-[57px] z-20 -mx-6 md:-mx-10 lg:-mx-12 px-6 md:px-10 lg:px-12 py-3 bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 transition-all shadow-xs"
+          >
+            <div className="flex items-center gap-2 p-1.5 bg-zinc-200/80 dark:bg-zinc-900 border border-zinc-300/80 dark:border-zinc-800 rounded-2xl shadow-inner max-w-5xl mx-auto">
+              <button
+                type="button"
+                onClick={() => handleTabChange("concept")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer ${
+                  activeTab === "concept"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                <BookOpen className="w-4 h-4 text-cyan-500" />
+                <span>1. Konsep &amp; Teori</span>
+              </button>
 
-            <button
-              onClick={() => setActiveTab("lab")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all ${
-                activeTab === "lab"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <Terminal className="w-4 h-4 text-indigo-500" />
-              2. Lab & Prompt AI
-            </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange("lab")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer ${
+                  activeTab === "lab"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                <Terminal className="w-4 h-4 text-indigo-500" />
+                <span>2. Lab &amp; Prompt AI</span>
+              </button>
 
-            <button
-              onClick={() => setActiveTab("mission")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all ${
-                activeTab === "mission"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <Target className="w-4 h-4 text-emerald-500" />
-              3. Misi Proyek
-            </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange("mission")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer ${
+                  activeTab === "mission"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                <Target className="w-4 h-4 text-emerald-500" />
+                <span>3. Misi Proyek</span>
+              </button>
+            </div>
           </div>
 
           {/* TAB 1: KONSEP & TEORI */}
@@ -996,6 +1017,32 @@ export default function ModuleDetailPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Bottom Flow CTA: Proceed to Lab */}
+              <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="p-5 md:p-6 rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Langkah Selanjutnya
+                    </span>
+                    <h4 className="text-base font-bold text-zinc-900 dark:text-white">
+                      Selesai Mempelajari Teori?
+                    </h4>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      Uji kode &amp; jalankan eksperimen langsung di tab Lab Praktikum serta Formula Prompt AI.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => handleTabChange("lab")}
+                    className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-10 px-5 rounded-xl shrink-0 shadow-sm cursor-pointer"
+                  >
+                    <span>Lanjut ke Lab &amp; Prompt AI</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -1072,11 +1119,65 @@ export default function ModuleDetailPage() {
                   <span className="text-xs text-zinc-500 hidden sm:inline">Format Editor Prompt VS Code</span>
                 </div>
 
+                {/* Panduan Alur Kerja AI Tool */}
+                {currentModule.id === 1 && (
+                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
+                    <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
+                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Prompt ini dirancang <strong>All-in-One</strong>. Jika dijalankan di folder proyek kosong, AI Agent akan otomatis mendeteksi dan mengeksekusi instalasi Next.js 16 via CLI terminal, lalu langsung melengkapi berkas <code className="font-mono text-indigo-600 dark:text-indigo-400">.gitignore</code>, <code className="font-mono text-indigo-600 dark:text-indigo-400">.env.example</code>, dan <code className="font-mono text-indigo-600 dark:text-indigo-400">README.md</code>.
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
+                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx create-next-app@latest</code>) untuk mengunduh engine Next.js. Setelah proyek terpasang, salin respons 3 berkas dari prompt ini ke dalam proyek Anda.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <VsCodePrompt
                   role={currentModule.lab.aiPromptTemplate.role}
                   prompt={currentModule.lab.aiPromptTemplate.prompt}
                   tip={currentModule.lab.aiPromptTemplate.tip}
                 />
+              </div>
+
+              {/* Bottom Flow CTA: Proceed to Mission */}
+              <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="p-5 md:p-6 rounded-2xl border border-emerald-200 dark:border-emerald-900/60 bg-gradient-to-r from-emerald-50/80 via-white to-teal-50/80 dark:from-zinc-900 dark:via-zinc-900 dark:to-emerald-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5" />
+                      Langkah Selanjutnya
+                    </span>
+                    <h4 className="text-base font-bold text-zinc-900 dark:text-white">
+                      Kunci &amp; Kode Lab Sudah Teruji?
+                    </h4>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      Terapkan hasil kode langsung ke repositori proyek akhir Anda pada branch mingguan.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => handleTabChange("mission")}
+                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 px-5 rounded-xl shrink-0 shadow-sm cursor-pointer"
+                  >
+                    <span>Lanjut ke Misi Proyek</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}

@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export function CretOutputReviewAnimator() {
+  const [packageType, setPackageType] = useState<"week1" | "feature">("week1");
   const [checklist, setChecklist] = useState({
     modular: true,
     noSecrets: true,
@@ -65,38 +66,96 @@ export function CretOutputReviewAnimator() {
           <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300">
             <span className="flex items-center gap-1.5">
               <FolderTree className="w-4 h-4 text-purple-500" />
-              Target Output Terstruktur (3 Berkas Terpisah):
+              Target Output Terstruktur (3 Berkas):
             </span>
+
+            {/* Toggle Package Scenario */}
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+              <button
+                type="button"
+                onClick={() => setPackageType("week1")}
+                className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${
+                  packageType === "week1"
+                    ? "bg-purple-600 text-white shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                }`}
+              >
+                Minggu 1 (Fondasi)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPackageType("feature")}
+                className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${
+                  packageType === "feature"
+                    ? "bg-purple-600 text-white shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                }`}
+              >
+                Minggu 2+ (Fitur UI)
+              </button>
+            </div>
           </div>
 
           <div className="space-y-2 text-xs font-mono">
-            <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-              <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                <FileCode className="w-3.5 h-3.5" />
-                src/app/tasks/page.tsx
-              </span>
-              <Badge variant="outline" className="text-[10px]">Server Component</Badge>
-            </div>
+            {packageType === "week1" ? (
+              <>
+                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <FileCode className="w-3.5 h-3.5" />
+                    .gitignore
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-sans">Secrets &amp; Build Shield</Badge>
+                </div>
 
-            <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-              <span className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                <FileCode className="w-3.5 h-3.5" />
-                src/components/task-filter.tsx
-              </span>
-              <Badge variant="outline" className="text-[10px]">&apos;use client&apos; Leaf</Badge>
-            </div>
+                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                    <FileCode className="w-3.5 h-3.5" />
+                    .env.example
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-sans">Public Template</Badge>
+                </div>
 
-            <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-              <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                <FileCode className="w-3.5 h-3.5" />
-                src/actions/tasks.ts
-              </span>
-              <Badge variant="outline" className="text-[10px]">&apos;use server&apos; Action</Badge>
-            </div>
+                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                    <FileCode className="w-3.5 h-3.5" />
+                    README.md
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-sans">Architecture Docs</Badge>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                    <FileCode className="w-3.5 h-3.5" />
+                    src/app/tasks/page.tsx
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-sans">Server Component</Badge>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                    <FileCode className="w-3.5 h-3.5" />
+                    src/components/task-filter.tsx
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-sans">&apos;use client&apos; Leaf</Badge>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                    <FileCode className="w-3.5 h-3.5" />
+                    src/actions/tasks.ts
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-sans">&apos;use server&apos; Action</Badge>
+                </div>
+              </>
+            )}
           </div>
 
           <p className="text-[11px] text-zinc-500 leading-relaxed">
-            Menghindari berkas monolitik 500 baris yang mencampurkan data fetching, interaksi UI, dan mutasi database ke dalam satu tempat.
+            {packageType === "week1"
+              ? "Menghasilkan paket fondasi repositori lengkap: pelindung gitignore, template env publik, dan dokumentasi 4 pilar."
+              : "Menghindari berkas monolitik 500 baris yang mencampurkan data fetching, interaksi UI, dan mutasi database ke dalam satu tempat."}
           </p>
         </div>
 
