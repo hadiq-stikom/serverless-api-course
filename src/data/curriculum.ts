@@ -997,17 +997,26 @@ export default async function TaskDetailPage({
         role: "Senior Frontend UI/UX Engineer & Next.js 16 Specialist",
         prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer & Next.js 16 Specialist.
 
-Saya sedang membangun antarmuka dashboard manajemen tugas di Next.js 16 App Router dengan Shadcn UI dan Tailwind CSS v4.
+Saya sedang membangun kerangka antarmuka (Dashboard & Shell UI) untuk aplikasi "The Serverless Odyssey" menggunakan Next.js 16 App Router, Tailwind CSS v4, dan Shadcn UI.
 
-Tolong buatkan arsitektur 2 file terpisah:
-1. 'src/app/(dashboard)/tasks/page.tsx' sebagai Server Component (RSC) yang merender data list tugas statis, kartu metrik ringkasan, dan layout grid responsif (1 kolom mobile, 3 kolom desktop) menggunakan komponen Card, Badge, dan Button dari Shadcn UI (@/components/ui/*).
-2. 'src/components/task-status-filter.tsx' sebagai Client Component ('use client') yang menyediakan tombol tab filter status (Semua, Berjalan, Selesai) menggunakan hook useState.
+Instruksi Pengerjaan:
+1. Periksa apakah Shadcn UI sudah terpasang (cek keberadaan berkas 'components.json'). Jika belum ada, jalankan perintah terminal berikut secara otomatis:
+   npx -y shadcn@latest init -d
+   npx -y shadcn@latest add button card badge input label separator
+
+2. Setelah dependensi dan komponen siap, buatkan 4 berkas antarmuka modular yang saling terhubung:
+   - Berkas 1: 'src/app/(dashboard)/layout.tsx' (Server Component) sebagai shell layout dashboard utama dengan header navigasi, judul "CloudTask Pro", navigasi link ke /tasks, dan ThemeToggle.
+   - Berkas 2: 'src/app/(dashboard)/tasks/page.tsx' (Server Component) yang merender kartu metrik ringkasan tugas (Total, Berjalan, Selesai), pemanggil Client Component filter, dan grid daftar tugas statis dengan tautan link ke detail tugas.
+   - Berkas 3: 'src/components/task-status-filter.tsx' (Client Component 'use client') yang menyediakan tombol tab filter status interaktif (Semua, Berjalan, Selesai) menggunakan hook useState.
+   - Berkas 4: 'src/app/(dashboard)/tasks/[id]/page.tsx' (Server Component) untuk rute dinamis detail tugas dengan penanganan async params Next.js 16 dan tombol kembali ke /tasks.
 
 Batasan Teknis Wajib:
-- Dilarang menambahkan 'use client' di file page.tsx utama.
-- Gunakan class semantic Tailwind Shadcn (bg-background, text-muted-foreground, border-border, bg-card).
-- Pastikan seluruh tipe TypeScript didefinisikan secara eksplisit dan bebas dari tipe any.`,
-        tip: "Selalu instruksikan AI secara eksplisit untuk memisahkan file Server Page dari Client Component agar AI tidak menggabungkan seluruh kode menjadi satu file Client Component raksasa."
+- DILARANG menambahkan 'use client' di file page.tsx atau layout.tsx utama (React Server Components by default).
+- Di Next.js 16, wajib menggunakan 'const { id } = await params;' karena params bersifat Promise asinkron.
+- Gunakan semantic Tailwind tokens Shadcn (bg-background, text-muted-foreground, border-border, bg-card).
+- Pastikan seluruh tipe TypeScript didefinisikan secara eksplisit dan bebas dari tipe any.
+- Kode yang dihasilkan harus utuh, fungsional, dan siap pakai tanpa placeholder komentar singkatan.`,
+        tip: "Formula prompt All-in-One ini otomatis menginisialisasi komponen Shadcn UI via CLI jika belum terpasang, lalu merakit 4 berkas modular yang menuntaskan 100% kriteria Definition of Done Misi Minggu 2."
       },
       warningZone: {
         title: "Zona Bahaya: Menjadikan Seluruh Halaman 'use client'!",

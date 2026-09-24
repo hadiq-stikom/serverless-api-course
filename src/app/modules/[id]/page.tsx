@@ -509,12 +509,14 @@ export default function ModuleDetailPage() {
   const handleTabChange = (tab: "concept" | "lab" | "mission") => {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
-      const anchor = document.getElementById("tab-navigation-bar");
-      if (anchor) {
-        const topOffset = anchor.getBoundingClientRect().top + window.scrollY - 70;
-        if (window.scrollY > topOffset) {
-          window.scrollTo({ top: topOffset, behavior: "smooth" });
-        }
+      const hero = document.getElementById("module-hero-banner");
+      if (hero) {
+        // Scroll tepat hingga sticky tab bar menempel di atas (di bawah navbar 57px)
+        const heroBottomInDoc = hero.getBoundingClientRect().bottom + window.scrollY;
+        const targetY = heroBottomInDoc + 32 - 57;
+        window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
   };
@@ -632,7 +634,10 @@ export default function ModuleDetailPage() {
         {/* Right Content Area: Hero + 3 Pillars */}
         <main className="flex-1 p-6 md:p-10 lg:p-12 space-y-8 max-w-5xl">
           {/* Module Hero Banner */}
-          <div className="space-y-4 pb-6 border-b border-zinc-200 dark:border-zinc-800">
+          <div
+            id="module-hero-banner"
+            className="space-y-4 pb-6 border-b border-zinc-200 dark:border-zinc-800"
+          >
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 text-xs font-semibold">
                 {currentModule.worldTitle}
@@ -1119,7 +1124,7 @@ export default function ModuleDetailPage() {
                   <span className="text-xs text-zinc-500 hidden sm:inline">Format Editor Prompt VS Code</span>
                 </div>
 
-                {/* Panduan Alur Kerja AI Tool */}
+                {/* Panduan Alur Kerja AI Tool Modul 1 */}
                 {currentModule.id === 1 && (
                   <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
                     <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
@@ -1141,6 +1146,34 @@ export default function ModuleDetailPage() {
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Jalankan terlebih dahulu perintah terminal di <strong>Langkah 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx create-next-app@latest</code>) untuk mengunduh engine Next.js. Setelah proyek terpasang, salin respons 3 berkas dari prompt ini ke dalam proyek Anda.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Panduan Alur Kerja AI Tool Modul 2 */}
+                {currentModule.id === 2 && (
+                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
+                    <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
+                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mendeteksi apakah Shadcn UI sudah ada; jika belum, Agent akan menjalankan instalasi CLI (<code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn init</code> &amp; <code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn add</code>) lalu merakit 4 berkas antarmuka ke workspace Anda.
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
+                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 &amp; 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest init</code> dan <code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest add ...</code>) agar dependensi terpasang di proyek Anda sebelum menyalin 4 berkas kode yang dihasilkan AI.
                         </p>
                       </div>
                     </div>
