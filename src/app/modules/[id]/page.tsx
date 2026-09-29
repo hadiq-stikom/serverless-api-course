@@ -55,6 +55,18 @@ import { AsyncCookiesAnimator } from "@/components/visualizers/async-cookies-ani
 import { ClientVsServerSupabaseAnimator } from "@/components/visualizers/client-vs-server-supabase-animator";
 import { ThreeTierSchemaAnimator } from "@/components/visualizers/three-tier-schema-animator";
 import { SupabaseTypegenAnimator } from "@/components/visualizers/supabase-typegen-animator";
+import { JwtLifecycleAnimator } from "@/components/visualizers/jwt-lifecycle-animator";
+import { OauthFlowAnimator } from "@/components/visualizers/oauth-flow-animator";
+import { MagicLinkAnimator } from "@/components/visualizers/magic-link-animator";
+import { MiddlewareInterceptionAnimator } from "@/components/visualizers/middleware-interception-animator";
+import { SessionRefresherAnimator } from "@/components/visualizers/session-refresher-animator";
+import { RouteProtectionMatrixAnimator } from "@/components/visualizers/route-protection-matrix-animator";
+import { ServerSessionReaderAnimator } from "@/components/visualizers/server-session-reader-animator";
+import { AuthActionsFlowAnimator } from "@/components/visualizers/auth-actions-flow-animator";
+import { AuthCallbackRouteAnimator } from "@/components/visualizers/auth-callback-route-animator";
+import { AuthUsersVsProfilesAnimator } from "@/components/visualizers/auth-users-vs-profiles-animator";
+import { AutoProfileTriggerAnimator } from "@/components/visualizers/auto-profile-trigger-animator";
+import { ModuleQuizPanel } from "@/components/quiz/module-quiz-panel";
 import { VsCodeSnippet } from "@/components/vscode-snippet";
 import { VsCodePrompt } from "@/components/vscode-prompt";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +76,7 @@ import {
   ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
   Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
-  Info, Lightbulb, ShieldAlert, Code
+  Info, Lightbulb, ShieldAlert, Code, Brain
 } from "lucide-react";
 
 // Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 14 Subpoin Konsep Pertemuan 2
@@ -393,6 +405,83 @@ const MODULE_4_VISUALIZERS: Record<string, { key: string; title: string; subtitl
   },
 };
 
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 11 Subpoin Konsep Pertemuan 5
+const MODULE_5_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur Autentikasi Serverless & Supabase Auth Engine
+  "0-0": {
+    key: "jwt-lifecycle",
+    title: "Simulasi Siklus Hidup Stateless JWT: Header, Payload & Rotasi Kriptografis",
+    subtitle: "Uji coba integritas tanda tangan HMAC-SHA256, deteksi manipulasi payload, dan silent token rotation",
+    component: <JwtLifecycleAnimator />,
+  },
+  "0-1": {
+    key: "oauth-flow",
+    title: "Simulasi 6 Langkah Alur Pertukaran Token GitHub OAuth 2.0",
+    subtitle: "Lihat pergerakan kode otorisasi sementara, pertukaran backend-to-backend, dan penanaman kuki sesi",
+    component: <OauthFlowAnimator />,
+  },
+  "0-2": {
+    key: "magic-link",
+    title: "Simulasi Otentikasi Passwordless: Magic Link & One-Time Token (OTP)",
+    subtitle: "Bandingkan kerentanan kata sandi tradisional vs token kriptografis berumur 15 menit",
+    component: <MagicLinkAnimator />,
+  },
+
+  // Pilar 2: Proteksi Rute di Next.js 16 (Middleware Session Refresher)
+  "1-0": {
+    key: "middleware-interception",
+    title: "Simulasi Next.js 16 Middleware: Intersepsi Edge & Matcher Filtering",
+    subtitle: "Uji matcher regex untuk rute privat vs bypass aset statis demi performa zero-latency",
+    component: <MiddlewareInterceptionAnimator />,
+  },
+  "1-1": {
+    key: "session-refresher",
+    title: "Simulasi Keamanan Sesi di Middleware: Mengapa getSession() Dilarang Keras",
+    subtitle: "Bandingkan auth.getUser() server-validated vs getSession() client-only yang buta status akun",
+    component: <SessionRefresherAnimator />,
+  },
+  "1-2": {
+    key: "route-protection-matrix",
+    title: "Simulator Matriks Hak Akses Rute: Tamu vs User Terotentikasi",
+    subtitle: "Uji coba respon 200 OK vs 307 Redirect pada rute publik, rute auth, dan dashboard privat",
+    component: <RouteProtectionMatrixAnimator />,
+  },
+
+  // Pilar 3: Session Management di Server Components & Server Actions
+  "2-0": {
+    key: "server-session-reader",
+    title: "Simulasi Pembacaan Sesi di Server Component: Zero Bundle & Secrets Isolation",
+    subtitle: "Alur autentikasi aman di RSC dengan async cookies tanpa mengirim SDK token ke browser",
+    component: <ServerSessionReaderAnimator />,
+  },
+  "2-1": {
+    key: "auth-actions-flow",
+    title: "Simulator Alur Auth Server Actions ('use server'): Login, Signup & Logout",
+    subtitle: "Uji siklus validasi Zod, panggilan API Supabase, mutasi cookie Set-Cookie, dan error handling",
+    component: <AuthActionsFlowAnimator />,
+  },
+  "2-2": {
+    key: "auth-callback-route",
+    title: "Simulasi Route Handler OAuth Callback: Pertukaran Kode ke Sesi Kuki",
+    subtitle: "Inspeksi parameter URL callback, eksekusi exchangeCodeForSession, dan proteksi fallback error",
+    component: <AuthCallbackRouteAnimator />,
+  },
+
+  // Pilar 4: Sinkronisasi Profil Pengguna (User Profiles & DB Triggers)
+  "3-0": {
+    key: "auth-users-vs-profiles",
+    title: "Simulasi Arsitektur Skema: auth.users (Sistem) vs public.profiles (Aplikasi)",
+    subtitle: "Pahami pemisahan skema PostgreSQL terisolasi dan relasi FK dengan ON DELETE CASCADE",
+    component: <AuthUsersVsProfilesAnimator />,
+  },
+  "3-1": {
+    key: "auto-profile-trigger",
+    title: "Simulasi Trigger PostgreSQL: Otomasi Pembuatan Profil Pengguna",
+    subtitle: "Saksikan eksekusi otomatis fungsi handle_new_user() saat event AFTER INSERT auth.users",
+    component: <AutoProfileTriggerAnimator />,
+  },
+};
+
 function FormattedSubpointText({ text }: { text: string }) {
   if (!text) return null;
 
@@ -497,7 +586,7 @@ export default function ModuleDetailPage() {
   const moduleId = Number(params.id) || 1;
   const currentModule = MODULES.find((m) => m.id === moduleId);
 
-  const [activeTab, setActiveTab] = useState<"concept" | "lab" | "mission">("concept");
+  const [activeTab, setActiveTab] = useState<"concept" | "lab" | "mission" | "quiz">("concept");
   const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
   const [mergeStrategy, setMergeStrategy] = useState<"terminal" | "pr">("terminal");
   const [expandedVisualizers, setExpandedVisualizers] = useState<Record<string, boolean>>({});
@@ -506,7 +595,7 @@ export default function ModuleDetailPage() {
     setExpandedVisualizers((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleTabChange = (tab: "concept" | "lab" | "mission") => {
+  const handleTabChange = (tab: "concept" | "lab" | "mission" | "quiz") => {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const hero = document.getElementById("module-hero-banner");
@@ -713,6 +802,19 @@ export default function ModuleDetailPage() {
                 <Target className="w-4 h-4 text-emerald-500" />
                 <span>3. Misi Proyek</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange("quiz")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer ${
+                  activeTab === "quiz"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                <Brain className="w-4 h-4 text-amber-500" />
+                <span>4. Uji Pemahaman</span>
+              </button>
             </div>
           </div>
 
@@ -787,6 +889,24 @@ export default function ModuleDetailPage() {
                       menegakkan integritas referensial dan keamanan baris{" "}
                       <InteractiveTerm term="rls">Row Level Security (RLS)</InteractiveTerm>,{" "}
                       serta mengintegrasikan klien Next.js 16 SSR melalui adapter async cookies.
+                    </div>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                      <span>💡</span>
+                      <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
+                    </p>
+                  </div>
+                ) : currentModule.id === 5 ? (
+                  <div className="space-y-2">
+                    <div className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
+                      Sistem autentikasi modern serverless mengombinasikan integrasi multi-provider{" "}
+                      <InteractiveTerm term="supabase-auth">Supabase Auth</InteractiveTerm>{" "}
+                      dengan protokol standar industri{" "}
+                      <InteractiveTerm term="oauth">OAuth 2.0 (GitHub)</InteractiveTerm>{" "}
+                      dan penerbitan token sesi{" "}
+                      <InteractiveTerm term="jwt">Stateless JWT</InteractiveTerm>.{" "}
+                      Proteksi rute ditegakkan di layer Edge melalui{" "}
+                      <InteractiveTerm term="middleware">Next.js 16 Middleware</InteractiveTerm>{" "}
+                      yang me-refresh token secara transparan via updateSession() serta mengisolasi profil pengguna di tabel PostgreSQL dengan trigger otomatis.
                     </div>
                     <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
                       <span>💡</span>
@@ -890,7 +1010,7 @@ export default function ModuleDetailPage() {
 
                                 {/* Interactive Simulation Accordions for Module Concepts (Option 2: Smooth Accordion Unfold) */}
                                 {(() => {
-                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : null;
+                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : null;
                                   const viz = activeVizMap ? activeVizMap[`${sIdx}-${subIdx}`] : null;
                                   if (!viz) return null;
                                   const isExpanded = !!expandedVisualizers[viz.key];
@@ -1620,9 +1740,64 @@ export default function ModuleDetailPage() {
                         );
                       })}
                     </div>
+
+                    {/* Bottom CTA Sequential Flow: Lanjut ke Uji Pemahaman */}
+                    <div className="pt-6">
+                      <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border-2 border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="space-y-1 text-center sm:text-left">
+                          <div className="flex items-center justify-center sm:justify-start gap-2">
+                            <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] uppercase font-bold">
+                              Langkah Terakhir: Evaluasi Pemahaman
+                            </Badge>
+                          </div>
+                          <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                            Siap Menguji Penguasaan Konsep Arsitektur?
+                          </h4>
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            Kerjakan kuis esai interaktif untuk mengukur pemahaman konsep dengan ambang kelulusan &ge; 80.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => handleTabChange("quiz")}
+                          className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md shadow-amber-600/20 gap-2 px-5 py-2.5 rounded-xl cursor-pointer"
+                        >
+                          <span>Lanjut ke Uji Pemahaman</span>
+                          <Sparkles className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
+            </motion.div>
+          )}
+
+          {/* TAB 4: UJI PEMAHAMAN */}
+          {activeTab === "quiz" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {currentModule.quiz ? (
+                <ModuleQuizPanel
+                  moduleId={currentModule.id}
+                  moduleTitle={currentModule.title}
+                  questions={currentModule.quiz.questions}
+                  passingScore={currentModule.quiz.passingScore}
+                />
+              ) : (
+                <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                    <Award className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-base text-foreground">Kuis Belum Tersedia</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Modul ini sedang dalam tahap perakitan soal evaluasi AI.
+                  </p>
+                </div>
+              )}
             </motion.div>
           )}
 

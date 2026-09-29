@@ -66,6 +66,20 @@ export interface ModuleData {
     definitionOfDone: string[];
     gitBranchTask: string;
   };
+
+  // Pilar 4: Uji Pemahaman Konsep AI (Mastery Learning)
+  quiz?: {
+    totalQuestions: number;
+    passingScore: number; // default: 80
+    questions: {
+      id: number;
+      question: string;
+      rubric: string;
+      keyConcepts: string[];
+      weight: number;
+      socraticHint: string;
+    }[];
+  };
 }
 
 export const MODULES: ModuleData[] = [
@@ -433,6 +447,52 @@ Hasilkan luaran yang terstruktur dan lengkap:
         "Langkah 4: Gabungkan ke branch main dan push ke repositori GitHub publik"
       ],
       gitBranchTask: "git checkout -b feature/sandbox-init"
+    },
+    quiz: {
+      totalQuestions: 5,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Jelaskan perbedaan mendasar antara Function-as-a-Service (FaaS) dan Backend-as-a-Service (BaaS) dalam arsitektur serverless, serta sebutkan layanan konkret yang mewakili masing-masing pilar dalam perkuliahan ini!",
+          rubric: "Mahasiswa harus menjelaskan FaaS sebagai komputasi on-demand per event (Vercel Functions / Next.js Server Actions) dan BaaS sebagai penyedia infrastruktur backend siap pakai via API/SDK (Supabase untuk DB, Auth, Realtime).",
+          keyConcepts: ["FaaS", "BaaS", "on-demand event", "Supabase", "Vercel"],
+          weight: 20,
+          socraticHint: "Coba renungkan siapa yang bertugas mengeksekusi logika fungsi komputasi vs siapa yang menyimpan data dan otentikasi. Layanan apa di teknologi kuliah kita yang mewakili masing-masing pilar tersebut?"
+        },
+        {
+          id: 2,
+          question: "Mengapa model scale-to-zero pada arsitektur FaaS jauh lebih menguntungkan dari sisi efisiensi biaya dibanding menyewa server Virtual Private Server (VPS) tradisional?",
+          rubric: "Mahasiswa harus membandingkan biaya $0 saat idle pada FaaS dengan biaya sewa flat bulanan 24/7 pada VPS tradisional meskipun tidak ada request pengunjung yang masuk.",
+          keyConcepts: ["scale-to-zero", "idle $0", "VPS flat cost", "bayar per eksekusi"],
+          weight: 20,
+          socraticHint: "Pikirkan apa yang terjadi dengan tagihan listrik atau biaya sewa server saat aplikasi Anda tidak ada pengunjung sama sekali di tengah malam. Mengapa FaaS tidak menagih biaya pada kondisi tersebut?"
+        },
+        {
+          id: 3,
+          question: "Uraikan alur perpindahan berkas pada arsitektur 3 area Git (Working Tree, Staging Area, Local Repository), dan jelaskan mengapa pemisahan Staging Area sangat penting sebelum melakukan commit!",
+          rubric: "Mahasiswa harus menjelaskan fungsi Working Tree (tempat edit), Staging Area (seleksi snapshot berkas via git add), dan Local Repo (snapshot permanen via git commit), serta pentingnya menyusun commit yang atomik dan rapi.",
+          keyConcepts: ["Working Tree", "Staging Area", "Local Repository", "git add", "git commit", "atomik"],
+          weight: 20,
+          socraticHint: "Mengapa developer tidak langsung meng-commit seluruh file yang diubah sekaligus? Apa peran penting staging area dalam memilih file mana yang siap dipotret ke riwayat?"
+        },
+        {
+          id: 4,
+          question: "Mengapa file .env.local DILARANG KERAS di-commit ke repositori publik GitHub, dan apa bahaya yang dapat terjadi jika kunci rahasia (secrets) di dalamnya bocor ke publik?",
+          rubric: "Mahasiswa harus menjelaskan bahaya kebocoran kredensial rahasia (seperti Supabase Service Role Key) yang dapat dieksploitasi oleh bot scraper peretas untuk mencuri, merusak, atau menghapus database.",
+          keyConcepts: [".env.local", ".gitignore", "service_role key", "bot scraper", "eksploitasi database"],
+          weight: 20,
+          socraticHint: "Apa yang tersimpan di dalam file .env.local yang tidak boleh diketahui orang lain? Apa dampak terburuk bagi database Anda jika orang tak dikenal memegang token service role?"
+        },
+        {
+          id: 5,
+          question: "Jelaskan peran masing-masing 4 komponen dalam framework prompting C-R-E-T (Context, Role, Explicit Constraints, Target Output) dalam memandu AI coding assistant menghasilkan kode yang berkualitas produksi!",
+          rubric: "Mahasiswa harus menjelaskan C (konteks domain aplikasi), R (persona pakar), E (batasan teknologi dan dependensi tegas), dan T (struktur berkas target yang modular dan siap pakai).",
+          keyConcepts: ["Context", "Role", "Explicit Constraints", "Target Output", "C-R-E-T"],
+          weight: 20,
+          socraticHint: "Bagaimana cara Anda mencegah AI memberikan solusi usang atau potongan kode komentar singkatan yang belum selesai? Elemen C-R-E-T mana yang bertugas mengunci aturan tersebut?"
+        }
+      ]
     }
   },
   {
@@ -1043,6 +1103,60 @@ Batasan Teknis Wajib:
         "Tampilan responsif di mobile & desktop serta mendukung Dark/Light mode"
       ],
       gitBranchTask: "git checkout -b feature/ui-scaffolding-shadcn"
+    },
+    quiz: {
+      totalQuestions: 6,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Jelaskan perbedaan mendasar antara React Server Component (RSC) dan Client Component ('use client') dari sisi tempat eksekusi dan dampaknya terhadap ukuran bundle JavaScript yang dikirim ke browser pengguna!",
+          rubric: "Mahasiswa harus menjelaskan RSC dieksekusi 100% di server dengan bundle 0 kB JS ke browser, sedangkan Client Component mengirim JavaScript ke browser untuk proses hydration dan interaktivitas event listener.",
+          keyConcepts: ["React Server Component", "Client Component", "0 kB bundle", "hydration", "use client"],
+          weight: 15,
+          socraticHint: "Pikirkan apa yang terjadi saat browser mengunduh halaman. Mana komponen yang mengirim kode JS untuk dijalankan di HP/laptop pengguna, dan mana yang hanya mengirim HTML murni hasil render dapur server?"
+        },
+        {
+          id: 2,
+          question: "Apa yang dimaksud dengan proses Hydration pada Client Component, dan mengapa arsitektur Next.js 16 mewajibkan kita membatasi penggunaan direktif 'use client' hanya pada komponen daun terluar (leaf components)?",
+          rubric: "Mahasiswa harus menjelaskan hydration sebagai proses pemasangan event listener ke HTML statis, dan pentingnya leaf component untuk menjaga performa loading dan mempertahankan manfaat 0 kB JS RSC pada sisa halaman.",
+          keyConcepts: ["Hydration", "leaf components", "event listener", "performa loading", "bundle size"],
+          weight: 15,
+          socraticHint: "Jika Anda meletakkan 'use client' di layout.tsx atau page.tsx teratas, apa dampaknya terhadap seluruh komponen anak di bawahnya? Mengapa kita sebaiknya hanya menaruhnya di tombol atau form interaktif saja?"
+        },
+        {
+          id: 3,
+          question: "Mengapa Server Component DILARANG diimpor secara langsung di dalam Client Component, dan bagaimana cara mengatasi batasan tersebut menggunakan pola komposisi (Interleaving Pattern / children prop)?",
+          rubric: "Mahasiswa harus menjelaskan bahwa mengimpor RSC ke dalam file 'use client' otomatis mengubah RSC menjadi Client Component. Solusinya adalah melewatkan RSC sebagai prop children dari parent Server Component.",
+          keyConcepts: ["Interleaving Pattern", "children prop", "larangan import RSC di Client", "komposisi komponen"],
+          weight: 20,
+          socraticHint: "Ingat kembali analogi donat dan selai. Bagaimana cara kita memasukkan selai server ke dalam donat klien tanpa merusak adonan donatnya?"
+        },
+        {
+          id: 4,
+          question: "Bandingkan skenario penggunaan komponen <Link>, hook useRouter(), dan fungsi redirect() di Next.js 16. Kapan Anda wajib memilih masing-masing metode navigasi tersebut?",
+          rubric: "Mahasiswa harus menjelaskan <Link> untuk navigasi deklaratif SEO-friendly dengan prefetching, useRouter() untuk navigasi programatik berbasis event di Client Component, dan redirect() untuk server-side guard dan pasca-mutasi Server Action.",
+          keyConcepts: ["<Link>", "useRouter()", "redirect()", "prefetching", "server guard"],
+          weight: 20,
+          socraticHint: "Kapan Anda membutuhkan navigasi yang bisa diindeks Google vs navigasi setelah menekan tombol submit form vs pengecekan auth di server sebelum halaman dirender?"
+        },
+        {
+          id: 5,
+          question: "Jelaskan breaking change terkait pembacaan parameter rute dinamis (params dan searchParams) di Server Component Next.js 16 dibanding versi sebelumnya, serta tunjukkan cara penulisan sintaksnya yang benar!",
+          rubric: "Mahasiswa harus menjelaskan bahwa params dan searchParams sekarang berupa Promise asinkron dan wajib di-await ('const { id } = await params;').",
+          keyConcepts: ["Promise asinkron", "await params", "await searchParams", "Next.js 16 breaking change"],
+          weight: 15,
+          socraticHint: "Mengapa kode lama 'const id = params.id' sekarang memunculkan error atau warning di Next.js 16? Kata kunci apa yang wajib ditambahkan sebelum membaca properti params?"
+        },
+        {
+          id: 6,
+          question: "Mengapa Shadcn UI tidak didistribusikan sebagai pustaka komponen monolitik via NPM (seperti Material UI atau Bootstrap), dan apa keuntungan arsitektur kepemilikan kode sumber lokal (code ownership) bagi pengembang?",
+          rubric: "Mahasiswa harus menjelaskan filosofi Shadcn UI yang menyalin kode komponen (Radix UI + Tailwind) langsung ke folder proyek, memberikan 100% kendali kustomisasi tanpa ketergantungan versi dependensi tertutup.",
+          keyConcepts: ["Code Ownership", "Radix UI Primitives", "Tailwind CSS", "kustomisasi bebas", "non-monolithic"],
+          weight: 15,
+          socraticHint: "Apa bedanya jika kode tombol ada langsung di folder components/ui/button.tsx proyek Anda dibanding terkunci di dalam folder node_modules?"
+        }
+      ]
     }
   },
   {
@@ -1596,6 +1710,60 @@ Batasan Teknis Wajib:
         "Tampilan form responsif, memiliki indikator loading tombol submit, serta mendukung Dark/Light mode"
       ],
       gitBranchTask: "git checkout -b feature/server-actions-zod"
+    },
+    quiz: {
+      totalQuestions: 6,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Jelaskan bagaimana paradigma Server Actions ('use server') di Next.js 16 menyederhanakan mutasi data dibanding metode tradisional membuat API Route (/api/*), serta jelaskan mengapa kredensial database lebih aman!",
+          rubric: "Mahasiswa harus menjelaskan Server Actions sebagai Remote Procedure Call (RPC) otomatis langsung dari form JSX tanpa file route.ts manual, dan keamanan terjamin karena kode dieksekusi murni di runtime server sehingga secret keys tidak pernah dikirim ke browser.",
+          keyConcepts: ["Server Actions", "RPC", "use server", "tanpa API route manual", "proteksi credentials"],
+          weight: 15,
+          socraticHint: "Bandingkan berapa banyak file dan baris fetch() manual yang harus Anda tulis di metode lama vs langsung menyematkan fungsi ke prop action={formAction}."
+        },
+        {
+          id: 2,
+          question: "Mengapa validasi form atribut HTML5 di browser tidak dapat diandalkan untuk keamanan database, dan bagaimana method schema.safeParse() pada Zod mencegah terjadinya unhandled runtime crash di server?",
+          rubric: "Mahasiswa harus menjelaskan bahwa validasi browser mudah di-bypass via cURL/Postman, dan safeParse() mengembalikan objek diskriminatif { success, data/error } yang aman tanpa melempar exception fatal.",
+          keyConcepts: ["Never Trust Client Input", "bypass HTML5 validation", "safeParse()", "unhandled crash prevention", "Zod"],
+          weight: 15,
+          socraticHint: "Apa yang terjadi pada server Node.js Anda jika pengguna mengirim payload JSON anomali dan Anda menggunakan schema.parse() tanpa blok try/catch vs menggunakan safeParse()?"
+        },
+        {
+          id: 3,
+          question: "Mengapa fungsi z.coerce sangat krusial saat memvalidasi data yang bersumber dari FormData formulir HTML, dan pada skenario apa kita wajib menerapkan method .refine()?",
+          rubric: "Mahasiswa harus menjelaskan FormData selalu bernilai string sehingga perlu dikonversi ke number/Date via z.coerce, dan .refine() digunakan untuk aturan bisnis kustom (seperti tanggal deadline harus di masa depan).",
+          keyConcepts: ["FormData string", "z.coerce", "type coercion", ".refine()", "validasi logika bisnis"],
+          weight: 15,
+          socraticHint: "Ketika pengguna mengisi input type='number', tipe data apa yang sebenarnya diterima server dari formData.get('angka')? Bagaimana Zod mengubahnya menjadi number murni?"
+        },
+        {
+          id: 4,
+          question: "Uraikan fungsi masing-masing elemen pada tuple kembalian hook React 19 useActionState: [state, formAction, isPending], dan jelaskan mengapa hook ini mengeliminasi kebutuhan useState loading manual!",
+          rubric: "Mahasiswa harus menjelaskan state (data return server terakhir), formAction (handler untuk atribut form), dan isPending (boolean status transmisi otomatis), mengeliminasi boilerplate useState(false) dan useTransition ganda.",
+          keyConcepts: ["useActionState", "tuple [state, formAction, isPending]", "React 19 native", "eliminasi useState loading"],
+          weight: 20,
+          socraticHint: "Bagaimana cara komponen form mengetahui bahwa Server Action sedang berjalan di server tanpa Anda membuat state const [isLoading, setIsLoading] = useState(false)?"
+        },
+        {
+          id: 5,
+          question: "Bagaimana hook useFormStatus dari 'react-dom' memungkinkan pembuatan komponen tombol submit mandiri tanpa mengalami masalah prop drilling dari formulir induk?",
+          rubric: "Mahasiswa harus menjelaskan useFormStatus mendeteksi context status pending dari tag <form> induk terdekat secara otomatis sehingga tombol submit tahu kapan harus mengunci diri (disabled).",
+          keyConcepts: ["useFormStatus", "zero prop drilling", "form context", "disabled pending", "anti-double-submit"],
+          weight: 15,
+          socraticHint: "Di mana hook useFormStatus harus dipanggil? Apakah di dalam tag <form> atau di luarnya? Mengapa kita tidak perlu mengoper prop isLoading ke tombol tersebut?"
+        },
+        {
+          id: 6,
+          question: "Bagaimana hook useOptimistic memberikan responsivitas antarmuka 0 milidetik pada aplikasi web, dan bagaimana mekanisme auto-rollback bekerja jika server gagal menyimpan data?",
+          rubric: "Mahasiswa harus menjelaskan useOptimistic merender data prediksi secara instan sebelum respons server tiba, dan jika Server Action gagal/error, React otomatis memulihkan UI ke state riil dari server tanpa glitch.",
+          keyConcepts: ["useOptimistic", "0ms responsivitas", "state reducer sementara", "auto-rollback", "resilient UI"],
+          weight: 20,
+          socraticHint: "Bayangkan Anda menekan tombol 'Like' di media sosial. Mengapa ikon hati langsung merah seketika? Apa yang terjadi jika koneksi internet Anda tiba-tiba terputus saat request dikirim?"
+        }
+      ]
     }
   },
   {
@@ -2087,6 +2255,68 @@ Batasan Teknis Wajib:
         "Berkas kontrak tipe src/types/database.types.ts siap pakai dan halaman landing root / memiliki kartu navigasi arsitektur database"
       ],
       gitBranchTask: "git checkout -b feature/supabase-database-schema"
+    },
+    quiz: {
+      totalQuestions: 7,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Jelaskan mengapa sistem cloud terdistribusi dan aplikasi modern seperti 'The Serverless Odyssey' lebih memilih UUID v4 (gen_random_uuid()) sebagai Primary Key daripada serial integer (SERIAL 1, 2, 3...)! Sebutkan minimal 2 implikasi keamanannya!",
+          rubric: "Mahasiswa harus menjelaskan mitigasi serangan ID enumeration (mencegah perayapan ID berurutan), pencegahan tabrakan ID (zero collision) di arsitektur multi-node/edge, dan perlindungan kerahasiaan metrik volume bisnis.",
+          keyConcepts: ["UUID v4", "anti-enumeration attack", "zero collision terdistribusi", "gen_random_uuid()", "business metrics privacy"],
+          weight: 15,
+          socraticHint: "Apa yang terjadi jika peretas melihat URL /api/orders/100? Apakah peretas bisa menebak bahwa order nomor 99 dan 101 ada? Bagaimana UUID mencegah tebakan tersebut?"
+        },
+        {
+          id: 2,
+          question: "Dalam perancangan relasi 1:N (One-to-Many) antara tabel projects dan tasks, jelaskan perbedaan mendasar perilaku sistem jika Anda menggunakan ON DELETE CASCADE dibandingkan ON DELETE RESTRICT saat entitas induk (project) dihapus!",
+          rubric: "Mahasiswa harus menjelaskan bahwa ON DELETE CASCADE otomatis menghapus data anak (child tasks) untuk mencegah data yatim (orphan records), sedangkan RESTRICT memblokir penghapusan entitas induk jika masih ada relasi aktif demi mencegah kehilangan data tidak sengaja.",
+          keyConcepts: ["ON DELETE CASCADE", "ON DELETE RESTRICT", "referential integrity", "orphan data prevention", "foreign key constraint"],
+          weight: 15,
+          socraticHint: "Jika seorang manajer menghapus sebuah proyek, apa yang terjadi pada 50 tugas di dalamnya jika tidak ada aturan CASCADE? Kapan kita justru ingin database menolak penghapusan proyek?"
+        },
+        {
+          id: 3,
+          question: "Mengapa relasi Many-to-Many (M:N) antara tasks dan tags tidak boleh disimpan sebagai kolom array/string di tabel tasks? Jelaskan peran junction table dan alasan penggunaan Composite Primary Key PRIMARY KEY (task_id, tag_id)!",
+          rubric: "Mahasiswa harus menjelaskan pelanggaran 1NF pada kolom array, peran junction table memecah relasi M:N menjadi dua relasi 1:N yang ternormalisasi, dan peran Composite PK menjamin tidak ada duplikasi tag ganda pada satu task di level storage engine.",
+          keyConcepts: ["relasi M:N", "junction table", "composite primary key", "1NF normalisasi", "anti-duplikasi tag"],
+          weight: 15,
+          socraticHint: "Bagaimana Anda mencegah seorang pengguna menambahkan label 'Bug' dua kali pada tugas yang sama langsung dari level integritas database tanpa mengandalkan validasi if-else di backend?"
+        },
+        {
+          id: 4,
+          question: "Jika aplikasi Anda sudah memvalidasi input formulir menggunakan Zod di Server Action, mengapa Anda tetap wajib mendefinisikan constraint CHECK (seperti CHECK (priority IN ('low', 'medium', 'high'))) di level skema PostgreSQL?",
+          rubric: "Mahasiswa harus menjelaskan prinsip 'Defense in Depth': Zod memvalidasi input aplikasi web, sedangkan constraint CHECK di database menjamin integritas data absolut dari sumber manapun (Direct SQL, script migrasi, background worker, API service lain).",
+          keyConcepts: ["defense in depth", "CHECK constraint", "integritas data absolut", "multi-client consistency", "storage engine enforcement"],
+          weight: 15,
+          socraticHint: "Bayangkan rekan tim Anda memasukkan data langsung lewat Supabase SQL Editor atau DBeaver tanpa melalui form Next.js. Apa yang menjamin kolom priority tidak terisi nilai sembarangan seperti 'urgent_banget'?"
+        },
+        {
+          id: 5,
+          question: "Secara default, PostgreSQL tidak otomatis membuat index pada kolom Foreign Key (misal: tasks.project_id). Jelaskan dampak ketiadaan index ini terhadap performa query saat tabel memiliki ratusan ribu baris, dan bagaimana B-Tree Index mengubah kompleksitas pencariannya!",
+          rubric: "Mahasiswa harus menjelaskan bahwa ketiadaan index memaksa Sequential Scan O(N) yang membaca seluruh disk block. B-Tree Index memangkas kompleksitas menjadi O(log N), mempercepat operasi JOIN dan klausul WHERE secara drastis.",
+          keyConcepts: ["B-Tree index", "sequential scan O(N)", "O(log N)", "foreign key index", "optimasi JOIN"],
+          weight: 15,
+          socraticHint: "Berapa banyak operasi baca yang dibutuhkan database untuk mencari task milik proyek tertentu dalam tabel 1 juta baris jika harus membaca satu per satu (Sequential) dibanding struktur pohon seimbang (B-Tree)?"
+        },
+        {
+          id: 6,
+          question: "Mengapa otomatisasi kolom updated_at lebih baik ditangani menggunakan PostgreSQL Trigger dan Stored Procedure daripada mengandalkan kode backend JavaScript (new Date().toISOString()) pada setiap operasi UPDATE?",
+          rubric: "Mahasiswa harus menjelaskan konsistensi waktu tunggal (single source of truth dari database clock), eliminasi human error lupa memperbarui timestamp di backend, dan penegakan audit trail universal untuk semua jalur mutasi data.",
+          keyConcepts: ["PostgreSQL triggers", "stored procedure", "clock skew consistency", "single source of truth", "audit trail otomatis"],
+          weight: 10,
+          socraticHint: "Apa yang terjadi jika ada 5 developer berbeda membuat fungsi update data, dan salah satu developer lupa menuliskan baris pembaruan waktu di kodenya?"
+        },
+        {
+          id: 7,
+          question: "Mengapa Next.js 16 mewajibkan await cookies() saat menginisialisasi Supabase Server Client di src/utils/supabase/server.ts, dan bagaimana arsitektur @supabase/ssr mengelola token sesi JWT secara aman di lingkungan Server Component vs Server Action?",
+          rubric: "Mahasiswa harus menjelaskan perubahan async cookies pada Next.js 16 untuk streaming/concurrent rendering, serta pemisahan hak akses: Server Component bersifat read-only untuk membaca token httpOnly, sedangkan Server Action/Middleware memiliki hak modifikasi cookie untuk refresh token, melindungi JWT dari pencurian via XSS.",
+          keyConcepts: ["Next.js 16 await cookies()", "@supabase/ssr", "httpOnly cookies", "Server Component vs Server Action", "anti-XSS JWT"],
+          weight: 15,
+          socraticHint: "Mengapa menyimpan token JWT login di localStorage browser dianggap berbahaya terhadap serangan XSS? Mengapa Server Component di App Router hanya boleh membaca (get) cookie dan tidak boleh mengubah (set) cookie?"
+        }
+      ]
     }
   },
   {
@@ -2094,56 +2324,619 @@ Batasan Teknis Wajib:
     worldId: "world-1",
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 5,
-    title: "Autentikasi & Otorisasi Pengguna (GitHub OAuth)",
-    subtitle: "Implementasi sistem login aman, integrasi GitHub OAuth, dan proteksi rute dengan Middleware.",
-    cpmk: "Mahasiswa mampu mengimplementasikan alur login/register via Supabase Auth serta memproteksi rute privat dengan Next.js Middleware.",
+    title: "Autentikasi & Otorisasi Pengguna (GitHub OAuth & Email Auth)",
+    subtitle: "Implementasi Supabase Auth modern (@supabase/ssr), GitHub OAuth 2.0, Next.js 16 Middleware Session Refresher, dan Sinkronisasi User Profiles.",
+    cpmk: "Mahasiswa mampu merancang sistem autentikasi multi-provider (GitHub OAuth & Email/Password), memproteksi rute privat menggunakan Next.js 16 Middleware berbasis session refresher, serta mengotomasi sinkronisasi profil pengguna menggunakan PostgreSQL Triggers.",
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 350,
     concepts: {
-      summary: "Autentikasi mengidentifikasi siapa pengguna, sedangkan Otorisasi menentukan apa yang boleh dilakukan pengguna tersebut.",
+      summary: "Sistem autentikasi modern serverless mengombinasikan multi-provider Supabase Auth dengan protokol OAuth 2.0 (GitHub) dan token sesi Stateless JWT. Proteksi rute ditegakkan di layer Edge melalui Next.js 16 Middleware yang me-refresh token secara transparan via updateSession() serta mengisolasi profil pengguna di tabel PostgreSQL dengan trigger otomatis.",
       points: [
-        { title: "OAuth 2.0 Flow with GitHub", desc: "Pengguna login menggunakan akun GitHub mereka tanpa perlu membagikan kata sandi ke aplikasi kita." },
-        { title: "Next.js Middleware Interceptor", desc: "Memeriksa token sesi pada setiap request sebelum halaman dirender. Jika belum login, redirect otomatis ke /login." }
-      ]
-    },
-    references: [
-      { title: "Supabase Next.js Auth Guide", url: "https://supabase.com/docs/guides/auth/server-side/nextjs", source: "Supabase" },
-      { title: "GitHub OAuth Apps Configuration", url: "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app", source: "GitHub" }
-    ],
-    lab: {
-      prerequisites: ["Supabase Client siap di Minggu 4"],
-      steps: [
+        { title: "Stateless JWT & Rotasi Token Kriptografis", desc: "Verifikasi identitas pengguna menggunakan token bertanda tangan digital (HMAC-SHA256) tanpa lookup database berulang, diperbarui otomatis via Refresh Token." },
+        { title: "GitHub OAuth 2.0 Authorization Code Flow", desc: "Pertukaran kode otorisasi sementara 6 langkah antara browser, Next.js Route Handler serverless, GitHub API, dan Supabase Auth Engine." },
+        { title: "Next.js 16 Middleware & Dual-Cookie Session Sync", desc: "Intersepsi rute di Edge Network menggunakan getUser() resmi untuk menangkal token basi, menyinkronkan request.cookies dan response.cookies secara simultan." },
+        { title: "Pemisahan Skema auth.users vs public.profiles", desc: "Isolasi kredensial internal Supabase dengan data domain aplikasi, disinkronkan secara atomik via PostgreSQL BEFORE/AFTER INSERT Triggers." }
+      ],
+      diagramNote: "Browser (GitHub Consent) ➔ Route Handler (/auth/callback) ➔ Supabase Auth (Exchange Code to JWT) ➔ Next.js 16 Middleware (getUser() Refresher) ➔ PostgreSQL Trigger (public.profiles Sync)",
+      deepDiveSections: [
         {
-          stepNumber: 1,
-          instruction: "Buat Middleware penangan sesi di src/middleware.ts",
-          code: `import { type NextRequest } from 'next/request'
-import { updateSession } from '@/utils/supabase/middleware'
+          title: "1. Arsitektur Autentikasi Serverless & Supabase Auth Engine",
+          badge: "Pilar 1: Fondasi Autentikasi",
+          content: "Autentikasi adalah pembuktian 'Siapa Anda', sedangkan Otorisasi adalah 'Apa yang boleh Anda akses'. Pada arsitektur Serverless yang scale-to-zero, sistem autentikasi berbasis sesi stateful tradisional (menyimpan session ID di RAM server) tidak dapat digunakan. Kita memanfaatkan Supabase GoTrue Engine yang menerbitkan token Stateless JWT.",
+          subpoints: [
+            {
+              label: "Stateful Session vs Stateless JWT (JSON Web Tokens)",
+              text: "1. Keterbatasan Arsitektur Serverless: Pada server monolith (Express/Rails), session ID disimpan di memori RAM atau Redis. Ketika serverless function menyala dan mati dalam milidetik, tidak ada memori persisten bersama antar-eksekusi (*shared memory*).\n\n" +
+                    "2. Dekonstruksi Kriptografis RFC 7519: JWT memuat data klaim pengguna langsung di dalam string token (`Header.Payload.Signature`). Serverless Function memverifikasi keaslian token secara instan hanya dengan menghitung ulang signature menggunakan `JWT_SECRET` rahasia tanpa membebani database dengan kueri tabel sesi.\n\n" +
+                    "3. Masa Aktif Pendek & Refresh Token Rotation: Access Token hanya berumur 3600 detik (1 jam) untuk meminimalisasi risiko penyalahgunaan token yang dicuri. Ketika habis, klien mengirim Refresh Token satu kali pakai (*single-use*) untuk memperoleh pasangan token baru.",
+              code: `// Anatomi JSON Web Token (Base64URL Decoded):
+// 1. HEADER (Algoritma & Tipe)
+{ "alg": "HS256", "typ": "JWT" }
+
+// 2. PAYLOAD (Klaim Identitas Pengguna - auth.uid())
+{
+  "sub": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+  "email": "mahasiswa@kampus.ac.id",
+  "role": "authenticated",
+  "exp": 1716986000
+}
+
+// 3. SIGNATURE (Integritas Kriptografis Anti-Manipulasi)
+// HMACSHA256(base64(header) + "." + base64(payload), JWT_SECRET)`,
+              language: "typescript",
+              caption: "Anatomi Tiga Bagian Kriptografis JSON Web Token (JWT)"
+            },
+            {
+              label: "Protokol OAuth 2.0 Authorization Code Flow (GitHub Provider)",
+              text: "1. Eliminasi Liabilitas Kata Sandi (*Zero Password Liability*): Aplikasi kita tidak pernah menyentuh atau menyimpan kata sandi akun GitHub pengguna. Seluruh verifikasi kredensial dikerjakan oleh server GitHub yang aman.\n\n" +
+                    "2. Pertukaran Kode Sementara (*Authorization Code Grant*): GitHub tidak mengirimkan access token langsung ke browser (mencegah penyerangan URL hash leakage). GitHub hanya mengirimkan kode acak sementara yang berumur 10 menit ke Route Handler `/auth/callback`.\n\n" +
+                    "3. Pertukaran Aman Server-to-Server: Route Handler backend menukarkan kode tersebut ke Supabase Auth Gateway menggunakan `Client Secret` rahasia melalui saluran HTTPS terenkripsi.",
+              code: `// Inisiasi Login OAuth GitHub dari Client Component
+"use client";
+
+import { createClient } from "@/utils/supabase/client";
+
+export function LoginGithubButton() {
+  const handleGithubLogin = async () => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        // Callback URL yang menangani penukaran kode sementara
+        redirectTo: \`\${window.location.origin}/auth/callback\`
+      }
+    });
+  };
+
+  return <button onClick={handleGithubLogin}>Masuk dengan GitHub</button>;
+}`,
+              language: "typescript",
+              caption: "Inisiasi GitHub OAuth Flow via Supabase Browser Client"
+            },
+            {
+              label: "Email Magic Link & Passwordless Authentication",
+              text: "1. Eliminasi Serangan Kamus & Credential Stuffing: 80% insiden keamanan data berasal dari kata sandi pengguna yang lemah atau dipakai berulang di berbagai situs web. Passwordless authentication sepenuhnya meniadakan vektor serangan ini.\n\n" +
+                    "2. One-Time Token Kriptografis (OTP): Supabase Auth membuat token acak kriptografis berumur 15 menit dan mengirimkannya ke kotak masuk email pengguna dalam wujud tautan sekali klik (*magic link*).\n\n" +
+                    "3. Pembuktian Kepemilikan Email Riil: Mengklik tautan ajaib sekaligus memvalidasi bahwa email tersebut aktif dan benar-benar milik pengguna yang bersangkutan tanpa perlu alur aktivasi terpisah.",
+              code: `// Mengirimkan Tautan Ajaib (Magic Link) via Server Action
+import { createClient } from "@/utils/supabase/server";
+
+export async function sendMagicLinkAction(email: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: \`\${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback\`
+    }
+  });
+
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: "Tautan login telah dikirim ke email Anda!" };
+}`,
+              language: "typescript",
+              caption: "Pengiriman Passwordless Magic Link via Server Action"
+            }
+          ]
+        },
+        {
+          title: "2. Proteksi Rute di Next.js 16 (Middleware Session Refresher)",
+          badge: "Pilar 2: Proteksi Akses & Edge",
+          content: "Next.js Middleware beroperasi di layer Vercel Edge Network, mencegat setiap request HTTP sebelum Server Component atau Route Handler dirender. Di sinilah garis pertahanan pertama didirikan untuk memeriksa status sesi dan me-refresh token yang kedaluwarsa.",
+          subpoints: [
+            {
+              label: "Arsitektur Next.js 16 Middleware & Edge Request Interception",
+              text: "1. Intersepsi Pra-Render Tanpa Latensi: Middleware berjalan di Edge yang paling dekat dengan lokasi fisik pengguna, mengevaluasi hak akses sebelum server pusat merender Server Component sehingga mencegah insiden kedipan halaman (*flash of unauthenticated content*).\n\n" +
+                    "2. Filter Regex Matcher: Diharuskan menggunakan negative lookahead regex agar aset statis (`/_next/static`, `favicon.ico`, gambar) dilewati secara langsung tanpa memicu eksekusi kode middleware yang boros CPU.\n\n" +
+                    "3. Kontrak Eksekusi Tunggal: Seluruh aplikasi Next.js hanya memiliki satu berkas `src/middleware.ts` di level root direktori proyek.",
+              code: `// src/middleware.ts (Root Interceptor)
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/utils/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  // Jalankan refresher sesi dan evaluasi proteksi rute
+  return await updateSession(request);
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  // Filter ketat: Hanya rute aplikasi yang dicegat, lewati aset statis
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
+  ]
+};`,
+              language: "typescript",
+              caption: "Konfigurasi src/middleware.ts dan Regex Matcher di Next.js 16"
+            },
+            {
+              label: "Sinkronisasi & Rotasi Token Sesi di Middleware (updateSession)",
+              text: "1. Larangan Mutlak getSession(): Jangan pernah menggunakan `supabase.auth.getSession()` di Middleware! Metode ini hanya membaca payload cookie lokal tanpa memvalidasi ke server Supabase; akun yang sudah diblokir atau kata sandinya diubah tetap dianggap valid!\n\n" +
+                    "2. Wajib Menggunakan auth.getUser(): Metode `supabase.auth.getUser()` mengirim token ke auth server Supabase untuk verifikasi kriptografis resmi dan otomatis me-refresh token jika masa aktif habis.\n\n" +
+                    "3. Dual Cookie Synchronization: Ketika token baru diterbitkan, middleware wajib menyalin cookies ke `request.cookies` (agar RSC menerima token mutakhir) dan ke `response.cookies` (agar browser menyimpan Set-Cookie).",
+              code: `// src/utils/supabase/middleware.ts
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll(); },
+        setAll(cookiesToSet) {
+          // 1. Tulis ke request agar RSC membaca token baru
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({ request });
+          // 2. Tulis ke response agar browser menyimpan Set-Cookie
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        }
+      }
+    }
+  );
+
+  // ⚠️ WAJIB: getUser() menghubungi server Supabase, BUKAN getSession()
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Proteksi rute privat /dashboard
+  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Jika user sudah login mencoba buka /login, lempar ke /dashboard
+  if (user && request.nextUrl.pathname.startsWith("/login")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  return supabaseResponse;
 }`,
-          language: "typescript"
+              language: "typescript",
+              caption: "Implementasi Fungsi Helper updateSession() dengan Dual Cookie Sync"
+            },
+            {
+              label: "Proteksi Rute Dinamis: Public vs Private vs Auth Routes",
+              text: "1. Pemisahan Kategori Rute: Aplikasi dibagi menjadi Rute Publik (`/`), Rute Khusus Auth (`/login`, `/register`), dan Rute Privat (`/dashboard`, `/tasks`).\n\n" +
+                    "2. Mekanisme State Preservation (?next=): Saat tamu mencoba mengakses `/dashboard/projects/101`, middleware menyematkan query parameter `?next=/dashboard/projects/101` ke URL login sehingga setelah login berhasil, user otomatis dikembalikan ke halaman tujuannya.\n\n" +
+                    "3. HTTP 307 Temporary Redirect: Menggunakan kode status 307 untuk menjamin metode HTTP (GET/POST) dan body payload tetap dipertahankan selama pengalihan rute.",
+              code: `// Logika Seleksi Matriks Rute di updateSession:
+const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
+const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard");
+
+if (!user && isProtectedRoute) {
+  // Tamu mengakses rute privat ➔ Lempar ke login + query next
+  const loginUrl = new URL("/login", request.url);
+  loginUrl.searchParams.set("next", request.nextUrl.pathname);
+  return NextResponse.redirect(loginUrl);
+}
+
+if (user && isAuthRoute) {
+  // Pengguna login mengakses rute login ➔ Lempar langsung ke dashboard
+  return NextResponse.redirect(new URL("/dashboard", request.url));
+}`,
+              language: "typescript",
+              caption: "Matriks Evaluasi Hak Akses dan Pengalihan Rute Dinamis"
+            }
+          ]
+        },
+        {
+          title: "3. Session Management di Server Components & Server Actions",
+          badge: "Pilar 3: Akses Sesi Server",
+          content: "Setelah request lolos dari Middleware, Server Component (RSC) dan Server Actions dapat membaca sesi pengguna secara aman tanpa risiko membocorkan kredensial rahasia ke peramban peretas.",
+          subpoints: [
+            {
+              label: "Membaca Sesi di Server Component (createClient + await cookies())",
+              text: "1. Kompatibilitas Async Cookies Next.js 16: Pembacaan cookie di App Router wajib asinkron (`const cookieStore = await cookies()`).\n\n" +
+                    "2. Isolasi Zero Client Bundle: Komponen Server Component dieksekusi 100% di server. Objek sesi pengguna dibaca untuk data fetching dan dirender menjadi HTML murni tanpa mengirimkan 1 byte pun token JWT atau SDK Supabase ke browser.\n\n" +
+                    "3. Validasi Sekunder di RSC: Memanggil `supabase.auth.getUser()` di Server Component memastikan bahwa sesi tidak hanya valid di kuki, tetapi juga sah di database Supabase sebelum data privat diambil.",
+              code: `// src/app/(dashboard)/dashboard/page.tsx (Server Component)
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Fetch data proyek milik user yang sedang aktif secara aman
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("user_id", user.id);
+
+  return (
+    <div className="p-8">
+      <h1>Selamat Datang, {user.email}</h1>
+      <p>Total Proyek: {projects?.length ?? 0}</p>
+    </div>
+  );
+}`,
+              language: "typescript",
+              caption: "Pembacaan Sesi Aman di React Server Component (Next.js 16)"
+            },
+            {
+              label: "Server Actions untuk Login, Register & Logout ('use server')",
+              text: "1. Mutasi Terproteksi Lapis Pertama: Server Actions memvalidasi payload email dan password menggunakan Zod sebelum diteruskan ke Supabase Auth.\n\n" +
+                    "2. Penanaman Kuki Otomatis: Fungsi `signInWithPassword()` di Server Action otomatis menanamkan cookie sesi terenkripsi ke peramban pengguna melalui adapter `@supabase/ssr`.\n\n" +
+                    "3. Pembersihan Sesi Saat SignOut: Memanggil `supabase.auth.signOut()` menghapus token di database server Supabase dan membersihkan seluruh kuki otentikasi sebelum mengeksekusi `redirect('/login')`.",
+              code: `// src/actions/auth.ts
+"use server";
+
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
+export async function loginWithEmailAction(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
+export async function signOutAction() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect("/login");
+}`,
+              language: "typescript",
+              caption: "Implementasi Server Actions untuk Autentikasi Pengguna"
+            },
+            {
+              label: "OAuth Callback Route Handler (/auth/callback/route.ts)",
+              text: "1. Endpoint Penerima Redirect GitHub: Setelah user menyetujui izin login di GitHub, GitHub mengarahkan browser ke endpoint `/auth/callback?code=...`.\n\n" +
+                    "2. Pertukaran Kode Resmi (exchangeCodeForSession): Route Handler mengekstrak parameter `code` dari URL dan menyerahkannya ke SDK Supabase untuk ditukarkan dengan pasangan token JWT resmi.\n\n" +
+                    "3. Penanganan Fallback Rute Error: Jika parameter kode kosong atau penukaran gagal, Route Handler mengarahkan pengguna ke halaman peringatan ramah pengguna `/auth/auth-code-error`.",
+              code: `// src/app/auth/callback/route.ts
+import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
+
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/dashboard";
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      return NextResponse.redirect(\`\${origin}\${next}\`);
+    }
+  }
+
+  // Jika penukaran gagal, arahkan ke halaman error
+  return NextResponse.redirect(\`\${origin}/auth/auth-code-error\`);
+}`,
+              language: "typescript",
+              caption: "Next.js Route Handler Penukar Kode Otorisasi OAuth"
+            }
+          ]
+        },
+        {
+          title: "4. Sinkronisasi Profil Pengguna (User Profiles & DB Triggers)",
+          badge: "Pilar 4: Data Profil Pengguna",
+          content: "Sistem aplikasi web memerlukan tabel profil pengguna tersendiri untuk menyimpan nama lengkap, foto avatar, dan peran (role). Di Supabase, data ini dipisahkan dari skema internal sistem dan disinkronkan secara atomik via Trigger PostgreSQL.",
+          subpoints: [
+            {
+              label: "Pemisahan auth.users (Sistem) dan public.profiles (Aplikasi)",
+              text: "1. Batas Isolasi Sistem vs Domain: Skema `auth.users` dikelola eksklusif oleh daemon GoTrue Supabase. Menambahkan kolom kustom ke `auth.users` adalah pelanggaran arsitektur berat yang dapat merusak update Supabase.\n\n" +
+                    "2. Tabel public.profiles: Dibuat di skema `public` dengan primary key `id UUID REFERENCES auth.users(id) ON DELETE CASCADE`. Setiap kali baris di `auth.users` dihapus, profil di `public.profiles` otomatis terhapus bersih.\n\n" +
+                    "3. Proteksi Mandiri Row Level Security: Tabel `public.profiles` dilindungi RLS sehingga semua pengguna publik boleh membaca nama/avatar (SELECT), tetapi hanya pemilik ID yang boleh mengubah datanya sendiri (`auth.uid() = id`).",
+              code: `-- Skema Tabel Profil Pengguna (public.profiles)
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL DEFAULT 'Explorer',
+  avatar_url TEXT DEFAULT '',
+  role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'lecturer', 'admin')),
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+-- Aktifkan Row Level Security (RLS)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Siapa pun boleh membaca profil publik
+CREATE POLICY "Public profiles are viewable by everyone."
+  ON public.profiles FOR SELECT USING (true);
+
+-- Pengguna hanya boleh memperbarui profilnya sendiri
+CREATE POLICY "Users can update their own profile."
+  ON public.profiles FOR UPDATE USING (auth.uid() = id);`,
+              language: "sql",
+              caption: "DDL Skema public.profiles dengan Foreign Key Cascade & RLS"
+            },
+            {
+              label: "PostgreSQL Trigger Otomatis: on_auth_user_created",
+              text: "1. Eliminasi Kegagalan Sinkronisasi Aplikasi: Jika pembuatan profil ditulis manual di kode aplikasi, pengguna yang mendaftar via GitHub OAuth atau Magic Link bisa gagal memiliki baris profil jika koneksi internet terputus saat redirect.\n\n" +
+                    "2. Penegakan di Tingkat Kernel Database: Trigger PostgreSQL `AFTER INSERT ON auth.users` menjamin bahwa setiap kali ada akun baru yang tercipta, fungsi stored procedure `handle_new_user()` otomatis dieksekusi secara transaksional.\n\n" +
+                    "3. Ekstraksi Metadata OAuth: Fungsi trigger mengekstrak nama dan avatar yang dikirimkan oleh GitHub dari kolom JSONB `raw_user_meta_data` dan menyalinnya ke kolom `public.profiles`.",
+              code: `-- Fungsi Trigger Otomasi Profil Pengguna
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, avatar_url)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', 'Explorer'),
+    COALESCE(new.raw_user_meta_data->>'avatar_url', '')
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Pemasangan Trigger AFTER INSERT pada auth.users
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();`,
+              language: "sql",
+              caption: "Fungsi Trigger PL/pgSQL untuk Otomasi Pembuatan Profil Pengguna"
+            }
+          ]
+        }
+      ]
+    },
+    references: [
+      { title: "Supabase Next.js Auth Server-Side Guide", url: "https://supabase.com/docs/guides/auth/server-side/nextjs", source: "Supabase Docs" },
+      { title: "GitHub OAuth Apps Configuration Manual", url: "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app", source: "GitHub Docs" },
+      { title: "Next.js 16 Middleware & Edge Routing", url: "https://nextjs.org/docs/app/building-your-application/routing/middleware", source: "Next.js Docs" },
+      { title: "Supabase Managing User Data & Triggers", url: "https://supabase.com/docs/guides/auth/managing-user-data", source: "Supabase Docs" }
+    ],
+    lab: {
+      prerequisites: [
+        "Proyek Next.js 16 dari Pertemuan 4 telah aktif dan terhubung ke Supabase Cloud",
+        "Akun GitHub aktif untuk membuat GitHub OAuth App di Developer Settings",
+        "Paket dependensi @supabase/ssr dan @supabase/supabase-js telah terinstal"
+      ],
+      steps: [
+        {
+          stepNumber: 1,
+          instruction: "Konfigurasi GitHub OAuth App di GitHub Developer Settings & Supabase Dashboard",
+          code: `# 1. Buka GitHub ➔ Settings ➔ Developer Settings ➔ OAuth Apps ➔ New OAuth App
+# - Application Name: The Serverless Odyssey Dev
+# - Homepage URL: http://localhost:3000
+# - Authorization callback URL: https://<PROJECT-REF>.supabase.co/auth/v1/callback
+
+# 2. Salin Client ID dan Generate Client Secret baru
+# 3. Buka Supabase Dashboard ➔ Authentication ➔ Providers ➔ GitHub
+# - Aktifkan sakelar GitHub Enabled
+# - Tempel Client ID dan Client Secret
+# - Klik Save`,
+          language: "bash",
+          explanation: "Menghubungkan gateway autentikasi Supabase Cloud dengan akun OAuth provider GitHub resmi."
+        },
+        {
+          stepNumber: 2,
+          instruction: "Buat Helper Middleware Supabase di src/utils/supabase/middleware.ts dan pasang di src/middleware.ts",
+          code: `// src/middleware.ts
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/utils/supabase/middleware";
+
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
+}
+
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
+  ]
+};`,
+          language: "typescript",
+          explanation: "Mencegat seluruh request aplikasi untuk memperbarui token sesi JWT dan melindungi rute /dashboard dari akses unauthenticated."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Buat Auth Route Handler Callback di src/app/auth/callback/route.ts",
+          code: `import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
+
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/dashboard";
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      return NextResponse.redirect(\`\${origin}\${next}\`);
+    }
+  }
+
+  return NextResponse.redirect(\`\${origin}/auth/auth-code-error\`);
+}`,
+          language: "typescript",
+          explanation: "Menerima kode otorisasi sementara dari GitHub dan menukarkannya dengan sesi kuki HTTP-Only resmi Supabase."
+        },
+        {
+          stepNumber: 4,
+          instruction: "Buat Auth Server Actions di src/actions/auth.ts untuk Email & GitHub Login",
+          code: `// src/actions/auth.ts
+"use server";
+
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
+export async function loginWithEmailAction(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
+export async function signOutAction() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect("/login");
+}`,
+          language: "typescript",
+          explanation: "Mengeksekusi mutasi autentikasi di server, memvalidasi kredensial, dan mengatur penulisan atau pembersihan cookie sesi."
+        },
+        {
+          stepNumber: 5,
+          instruction: "Eksekusi DDL Migration di Supabase SQL Editor untuk public.profiles dan Trigger Otomatis",
+          code: `-- Eksekusi di Supabase Cloud SQL Editor
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL DEFAULT 'Explorer',
+  avatar_url TEXT DEFAULT '',
+  role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'lecturer', 'admin')),
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public profiles are viewable by everyone."
+  ON public.profiles FOR SELECT USING (true);
+
+CREATE POLICY "Users can update their own profile."
+  ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+-- Fungsi & Trigger
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, avatar_url)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', 'Explorer'),
+    COALESCE(new.raw_user_meta_data->>'avatar_url', '')
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();`,
+          language: "sql",
+          explanation: "Menciptakan tabel profil aplikasi ber-RLS dan memasang trigger AFTER INSERT auth.users untuk sinkronisasi atomik data profil."
         }
       ],
       aiPromptTemplate: {
-        role: "Security Engineer",
-        prompt: "Buatkan Server Action untuk login menggunakan Supabase Auth OAuth provider GitHub. Sertakan fungsi redirect ke callback URL yang tepat di Next.js App Router.",
-        tip: "Pastikan callback URL diizinkan di tab Authentication -> URL Configuration pada dashboard Supabase."
+        role: "Senior Full-Stack Security & Next.js 16 Specialist",
+        prompt: `Bertindaklah sebagai Senior Full-Stack Security & Next.js 16 Specialist.
+Tugas Anda adalah mengimplementasikan sistem autentikasi multi-provider lengkap (GitHub OAuth & Email/Password) menggunakan @supabase/ssr, memproteksi rute privat dengan Next.js 16 Middleware, dan menyinkronkan profil pengguna di proyek "The Serverless Odyssey".
+
+LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
+1. Periksa ketersediaan paket @supabase/ssr dan @supabase/supabase-js di package.json. Jika belum ada, eksekusi perintah terminal:
+   npm install @supabase/ssr @supabase/supabase-js
+2. Periksa ketersediaan komponen Shadcn UI yang dibutuhkan (Button, Card, Input, Label, Badge). Jika belum ada, jalankan:
+   npx shadcn@latest add button card input label badge
+
+BATASAN ARSITEKTUR KETAT:
+1. Wajib Next.js 16 App Router: Gunakan async cookies (const cookieStore = await cookies()) pada klien server.
+2. Dilarang keras menaruh 'use client' di page.tsx atau layout.tsx. Seluruh halaman adalah Server Component (RSC). Direktif 'use client' HANYA di leaf component interaktif (seperti LoginForm).
+3. Keamanan Sesi: Wajib menggunakan supabase.auth.getUser() di Middleware dan Server Component. DILARANG KERAS menggunakan getSession() yang rentan session hijacking.
+4. UI/UX Estetika Premium: Gunakan glassmorphism (backdrop-blur-md), micro-interactions (hover:-translate-y-0.5), dan adaptabilitas Dark/Light mode penuh berbasis semantic tokens Tailwind.
+5. Zero any types di TypeScript.
+
+STRUKTUR BERKAS YANG WAJIB DIBUAT/DIPERBARUI (SIAP JALAN 100%):
+1. src/utils/supabase/middleware.ts: Helper updateSession() dengan siklus dual-cookie synchronization (request.cookies & response.cookies).
+2. src/middleware.ts: Konfigurasi Next.js Edge Middleware dengan filter matcher ketat pengecualian aset statis.
+3. src/app/auth/callback/route.ts: Next.js Route Handler penukar kode otorisasi sementara (exchangeCodeForSession).
+4. src/actions/auth.ts: Server Actions terpadu untuk loginWithEmailAction, signupWithEmailAction, dan signOutAction.
+5. src/app/(auth)/login/page.tsx & src/components/auth/login-form.tsx: Halaman login responsif dengan tombol GitHub OAuth 1-klik dan form email/password.
+6. src/app/page.tsx (ROOT NAVIGATION RULE): Perbarui Hero Landing Page root agar secara cerdas mendeteksi sesi pengguna: tampilkan tombol "Buka Dashboard Tugas ➔" jika sudah login, atau tombol "Masuk / Daftar Akun ➔" jika berstatus tamu.`,
+        tip: "Pastikan URL Callback http://localhost:3000/auth/callback dan domain produksi Vercel telah didaftarkan pada menu Authentication ➔ URL Configuration di dashboard Supabase!"
+      },
+      warningZone: {
+        title: "Perhatian Kritis: Bahaya Redirect URL Mismatch di Supabase",
+        desc: "Jika Anda tidak mendaftarkan http://localhost:3000/auth/callback ke tab Authentication ➔ URL Configuration ➔ Redirect URLs pada Supabase Dashboard, GitHub OAuth akan menolak login dan melempar error 'redirect_uri_mismatch'!"
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 5: Implementasi Sistem Login Proyek",
-      taskDesc: "Pasang fitur login/register di Proyek Akhir Anda dan proteksi halaman dashboard sehingga hanya bisa diakses user yang sudah login.",
+      taskTitle: "Misi Minggu 5: Implementasi Sistem Autentikasi Multi-Provider & Proteksi Rute",
+      taskDesc: "Lanjutkan pengerjaan Proyek Akhir resmi Anda dari branch feature/supabase-database-schema. Pasang sistem login multi-provider (GitHub OAuth & Email), buat Middleware session refresher, amankan rute dashboard, dan tampilkan profil pengguna di antarmuka.",
       definitionOfDone: [
-        "Halaman /login berfungsi dan berhasil mengarahkan ke dashboard setelah autentikasi",
-        "Middleware berhasil menendang pengguna yang belum login jika mencoba mengakses rute privat",
-        "Terdapat tombol Logout yang membersihkan sesi pengguna"
+        "Fitur Login Multi-Provider: Pengguna dapat masuk menggunakan akun GitHub (OAuth) atau Email/Password melalui form login modern.",
+        "Auth Callback Handler: Rute /auth/callback berhasil menukar authorization code menjadi session cookies yang aman tanpa error.",
+        "Middleware Route Guard: Pengguna yang belum login otomatis dialihkan (307) saat mengakses /dashboard, dan pengguna yang sudah login dialihkan dari /login ke /dashboard.",
+        "User Profile Synchronization: Trigger PostgreSQL on_auth_user_created otomatis membuat data profil di tabel public.profiles saat pendaftaran akun.",
+        "Logout Action & Header Profile: Header aplikasi menampilkan avatar/nama pengguna yang sedang login dan tombol Logout yang membersihkan sesi."
       ],
       gitBranchTask: "git checkout -b feature/auth-and-middleware"
+    },
+    quiz: {
+      totalQuestions: 6,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Mengapa arsitektur komputasi Serverless yang bersifat stateless (scale-to-zero) mewajibkan penggunaan Stateless JWT dan bukannya sistem sesi stateful tradisional di memori server?",
+          rubric: "Mahasiswa harus menjelaskan bahwa serverless function menyala dan mati secara independen tanpa memori RAM bersama (shared memory), sehingga JWT yang memuat identitas dan ditandatangani secara kriptografis memungkinkan verifikasi instan tanpa lookup database terpusat.",
+          keyConcepts: ["Stateless", "scale-to-zero", "ketiadaan shared memory RAM", "verifikasi kriptografis signature", "RFC 7519 JWT"],
+          weight: 15,
+          socraticHint: "Apa yang terjadi pada data sesi yang tersimpan di memori server Express/Node.js ketika instance serverless dimatikan ke 0 instance saat tidak ada pengunjung?"
+        },
+        {
+          id: 2,
+          question: "Uraikan 6 langkah alur kerja Authorization Code Grant pada GitHub OAuth 2.0, dan jelaskan mengapa GitHub mengirimkan 'authorization code' sementara ke Route Handler alih-alih langsung memberikan access token ke browser pengguna!",
+          rubric: "Mahasiswa harus merinci 6 tahap pertukaran (Browser ➔ GitHub consent ➔ Redirect membawa code ➔ Route Handler menukar code ➔ Supabase kontak GitHub API ➔ Set-Cookie sesi), serta menjelaskan risiko kebocoran token di peramban jika token dikirim langsung (URL leakage/XSS).",
+          keyConcepts: ["Authorization Code Flow", "6 langkah pertukaran", "pencegahan token leakage", "Route Handler /auth/callback", "exchangeCodeForSession"],
+          weight: 20,
+          socraticHint: "Jika GitHub langsung menaruh access token rahasia di URL hash browser pengguna (#access_token=...), apa bahaya yang mengintai jika halaman tersebut memiliki script pelacak atau ekstensi peramban pihak ketiga?"
+        },
+        {
+          id: 3,
+          question: "Mengapa dokumentasi resmi Supabase melarang keras penggunaan 'supabase.auth.getSession()' di Next.js Middleware dan mewajibkan 'supabase.auth.getUser()'? Jelaskan celah keamanan apa yang dapat terjadi!",
+          rubric: "Mahasiswa harus menjelaskan getSession() hanya membaca dan mendecode JWT dari cookie lokal tanpa menghubungi auth server Supabase sehingga buta terhadap akun yang diblokir/password yang diubah, sedangkan getUser() memvalidasi integritas sesi langsung ke server Supabase secara real-time.",
+          keyConcepts: ["getSession anti-pattern", "getUser server-validated", "session revocation", "akun terblokir", "integritas sesi real-time"],
+          weight: 20,
+          socraticHint: "Jika seorang karyawan dipecat dan akunnya dinonaktifkan di database Supabase oleh admin, apa yang terjadi jika aplikasi hanya memeriksa cookie lokal menggunakan getSession()?"
+        },
+        {
+          id: 4,
+          question: "Mengapa fungsi pembantu 'updateSession' di Next.js 16 Middleware wajib menuliskan token yang diperbarui ke 'request.cookies' sekaligus 'response.cookies' secara simultan?",
+          rubric: "Mahasiswa harus menjelaskan bahwa request.cookies perlu diperbarui agar Server Component (RSC) yang akan dirender langsung membaca token baru, sedangkan response.cookies perlu diperbarui agar browser pengguna menyimpan header Set-Cookie untuk request selanjutnya.",
+          keyConcepts: ["updateSession", "dual-cookie sync", "request.cookies untuk RSC", "response.cookies untuk browser", "Set-Cookie header"],
+          weight: 15,
+          socraticHint: "Jika middleware memperbarui token sesi tetapi hanya menuliskannya ke objek NextResponse, apa yang dibaca oleh Server Component (RSC) yang dieksekusi tepat setelah middleware selesai?"
+        },
+        {
+          id: 5,
+          question: "Jelaskan alasan arsitektural di balik pemisahan skema 'auth.users' dan 'public.profiles', serta mengapa pembuatan baris profil pengguna wajib didelegasikan ke Database Trigger PostgreSQL daripada ditulis di kode aplikasi web!",
+          rubric: "Mahasiswa harus menjelaskan isolasi keamanan skema auth internal dari modifikasi sembarangan, relasi FK ON DELETE CASCADE, serta jaminan atomik Database Trigger yang pasti berjalan pada semua metode pendaftaran (OAuth, Magic Link) tanpa risiko kegagalan koneksi di aplikasi.",
+          keyConcepts: ["Pemisahan skema auth vs public", "ON DELETE CASCADE", "Database Trigger AFTER INSERT", "SECURITY DEFINER", "inkonsistensi pendaftaran OAuth"],
+          weight: 15,
+          socraticHint: "Jika pengguna mendaftar via GitHub OAuth dan koneksi internet pengguna terputus saat peramban diarahkan kembali ke aplikasi Anda, apa yang terjadi pada profilnya jika kodenya ditulis di Server Action vs jika ditangani oleh PostgreSQL Trigger?"
+        },
+        {
+          id: 6,
+          question: "Bagaimana cara kerja Route Handler '/auth/callback/route.ts' dalam menjaga alur otentikasi yang aman di Next.js 16 App Router, dan bagaimana parameter 'next' dimanfaatkan untuk preservasi rute tujuan pengguna?",
+          rubric: "Mahasiswa harus menjelaskan ekstraksi searchParams (?code & ?next), pemanggilan exchangeCodeForSession(code) di sisi server, penanganan fallback jika kode tidak valid, dan pengalihan dinamis ke target halaman semula via parameter next.",
+          keyConcepts: ["Route Handler /auth/callback", "exchangeCodeForSession", "searchParams ?code dan ?next", "state preservation", "fallback error handling"],
+          weight: 15,
+          socraticHint: "Bayangkan pengguna mengklik link '/dashboard/tasks/42' saat belum login. Bagaimana parameter 'next' memastikan bahwa setelah sukses login dengan GitHub, pengguna langsung mendarat di halaman tugas 42 tersebut?"
+        }
+      ]
     }
   },
   {

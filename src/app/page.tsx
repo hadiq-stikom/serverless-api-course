@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,10 +11,22 @@ import {
   Rocket, Map, Target, Award, Code2, ShieldCheck, Zap,
   Flame, Sparkles, ChevronRight, ChevronDown, BookOpen, Layers,
   Layout, Database, LockKeyhole, Image as ImageIcon, CheckCircle2,
-  SlidersHorizontal, Eye, EyeOff
+  SlidersHorizontal, Eye, EyeOff, LogIn, LogOut, GraduationCap,
+  ArrowRight, TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { MODULES } from "@/data/curriculum";
+import {
+  getStudentSessionAction,
+  logoutStudentAction,
+  StudentSession,
+} from "@/actions/student-auth";
+import {
+  getLecturerSessionAction,
+  logoutLecturerAction,
+  LecturerSession,
+} from "@/actions/lecturer-auth";
+import { LoginDialog } from "@/components/auth/login-dialog";
 
 // Definisi Warna & Ikon Spesifik untuk Setiap Minggu
 const WEEK_DETAILS: Record<number, {
@@ -174,8 +186,49 @@ const SECTIONS = [
 ];
 
 export default function Home() {
-  const currentLevel = "Serverless Novice";
-  const xp = 150;
+  const [studentSession, setStudentSession] = useState<StudentSession | null>(null);
+  const [lecturerSession, setLecturerSession] = useState<LecturerSession | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const refreshSessions = async () => {
+    try {
+      const [stuRes, lecRes] = await Promise.all([
+        getStudentSessionAction(),
+        getLecturerSessionAction(),
+      ]);
+      if (stuRes.isAuthenticated && stuRes.student) {
+        setStudentSession(stuRes.student);
+      } else {
+        setStudentSession(null);
+      }
+      if (lecRes.isAuthenticated && lecRes.lecturer) {
+        setLecturerSession(lecRes.lecturer);
+      } else {
+        setLecturerSession(null);
+      }
+    } catch (e) {
+      console.warn("Auth check error:", e);
+    }
+  };
+
+  useEffect(() => {
+    refreshSessions();
+  }, []);
+
+  const handleStudentLogout = async () => {
+    await logoutStudentAction();
+    setStudentSession(null);
+  };
+
+  const handleLecturerLogout = async () => {
+    await logoutLecturerAction();
+    setLecturerSession(null);
+  };
+
+  const currentLevel = studentSession
+    ? `Mahasiswa Aktif (${studentSession.classGroup})`
+    : "Serverless Novice";
+  const xp = studentSession ? 350 : 150;
   const nextLevelXp = 1500;
   const progressPercent = (xp / nextLevelXp) * 100;
   const streakWeeks = 1;
@@ -216,12 +269,36 @@ export default function Home() {
       {/* Top Navbar / Stats Banner */}
       <header className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-zinc-200 dark:border-zinc-800/80 relative z-10">
         <div className="space-y-2.5 max-w-3xl">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold tracking-wide uppercase">
               <Map className="w-3.5 h-3.5" />
               Buku Rancangan Pembelajaran (RPS)
             </div>
-            <div className="lg:hidden">
+
+            {/* Mobile Auth Button */}
+            <div className="lg:hidden flex items-center gap-2">
+              {studentSession ? (
+                <Link href="/dashboard">
+                  <Button size="sm" className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-2.5">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : lecturerSession ? (
+                <Link href="/dosen">
+                  <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-2.5">
+                    Portal Dosen
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => setShowLoginModal(true)}
+                  className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-2.5 gap-1"
+                >
+                  <LogIn className="w-3 h-3" />
+                  Masuk
+                </Button>
+              )}
               <ThemeToggle />
             </div>
           </div>
@@ -249,10 +326,68 @@ export default function Home() {
           </motion.p>
         </div>
 
-        {/* Student Progress Card & Theme Switcher */}
+        {/* Student Progress Card & Auth Controls */}
         <div className="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col items-end gap-3">
-          <div className="hidden lg:flex items-center gap-2 self-end mb-1">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Tema Tampilan</span>
+          {/* Desktop Auth Navigation Bar */}
+          <div className="hidden lg:flex items-center gap-2.5 self-end mb-1">
+            {studentSession ? (
+              <div className="flex items-center gap-2 p-1 pl-2.5 bg-white dark:bg-zinc-900 border border-indigo-500/30 rounded-xl shadow-xs">
+                <div className="flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 font-medium">
+                  <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="font-semibold max-w-[140px] truncate">{studentSession.fullName}</span>
+                  <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 font-mono">
+                    {studentSession.classGroup}
+                  </Badge>
+                </div>
+                <Link href="/dashboard">
+                  <Button size="sm" className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-2.5 gap-1 shadow-xs">
+                    <span>Dashboard Saya</span>
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleStudentLogout}
+                  className="h-7 w-7 p-0 text-zinc-400 hover:text-rose-500 rounded-lg"
+                  title="Keluar Akun"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : lecturerSession ? (
+              <div className="flex items-center gap-2 p-1 pl-2.5 bg-white dark:bg-zinc-900 border border-amber-500/30 rounded-xl shadow-xs">
+                <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium">
+                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="font-semibold max-w-[140px] truncate">{lecturerSession.fullName}</span>
+                </div>
+                <Link href="/dosen">
+                  <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg px-2.5 gap-1 shadow-xs">
+                    <span>Portal Dosen</span>
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLecturerLogout}
+                  className="h-7 w-7 p-0 text-zinc-400 hover:text-rose-500 rounded-lg"
+                  title="Keluar Akun"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => setShowLoginModal(true)}
+                className="gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white h-8 font-semibold shadow-xs rounded-xl"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Masuk / Login</span>
+              </Button>
+            )}
+            <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 mx-0.5" />
             <ThemeToggle />
           </div>
 
@@ -264,12 +399,24 @@ export default function Home() {
           >
             <div className="flex items-center justify-between gap-4 mb-3">
               <div>
-                <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">Status Anda</p>
-                <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 mt-0.5">
-                  <Rocket className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {currentLevel}
+                <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
+                  {studentSession ? `Akun: ${studentSession.nim}` : "Status Anda"}
+                </p>
+                <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 mt-0.5 truncate max-w-[180px]">
+                  {studentSession ? (
+                    <>
+                      <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span className="truncate">{studentSession.fullName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span>{currentLevel}</span>
+                    </>
+                  )}
                 </h2>
               </div>
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold text-[11px]">
                   <Flame className="w-3 h-3 fill-amber-500 dark:fill-amber-400 text-amber-500 dark:text-amber-400" /> {streakWeeks} Mg
                 </span>
@@ -277,12 +424,31 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex justify-between text-[11px] text-zinc-600 dark:text-zinc-300 font-medium">
                 <span>Progress Milestone 1</span>
                 <span>{Math.round(progressPercent)}%</span>
               </div>
               <Progress value={progressPercent} className="h-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50" />
+
+              {studentSession ? (
+                <Link href="/dashboard" className="block pt-1">
+                  <Button size="sm" variant="secondary" className="w-full text-xs h-7.5 font-semibold gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded-xl">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Buka Dashboard Nilai & Capaian</span>
+                    <ArrowRight className="w-3 h-3 ml-auto" />
+                  </Button>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowLoginModal(true)}
+                  className="w-full text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline pt-1 font-semibold flex items-center justify-center gap-1"
+                >
+                  <LogIn className="w-3 h-3" />
+                  <span>Masuk untuk rekam nilai kuis Anda</span>
+                </button>
+              )}
             </div>
           </motion.div>
         </div>
@@ -463,6 +629,13 @@ export default function Home() {
           })}
         </div>
       </section>
+
+      {/* Modal Dialog Login Terpadu */}
+      <LoginDialog
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={refreshSessions}
+      />
     </div>
   );
 }

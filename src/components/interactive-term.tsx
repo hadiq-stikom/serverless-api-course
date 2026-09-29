@@ -27,10 +27,11 @@ import {
   Check,
   FileCode,
   Compass,
-  Workflow
+  Workflow,
+  KeyRound
 } from "lucide-react";
 
-export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid";
+export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "jwt" | "supabase-auth";
 
 interface TermData {
   title: string;
@@ -236,6 +237,66 @@ const TERMS_DATA: Record<TermKey, TermData> = {
       "🚀 Zero Collision: Memiliki 2^122 kombinasi acak kriptografis yang mustahil bertabrakan"
     ],
     courseRole: "Di kuliah ini: Primary Key standar untuk seluruh tabel relasional (profiles, projects, tasks)."
+  },
+  oauth: {
+    title: "OAuth 2.0",
+    fullName: "Open Authorization 2.0 Framework (GitHub Provider)",
+    badgeColor: "from-purple-500 to-indigo-600",
+    icon: ShieldCheck,
+    type: "general",
+    summary: "Standar protokol industri untuk otorisasi aman yang memungkinkan pengguna masuk ke aplikasi kita menggunakan kredensial pihak ketiga (seperti akun GitHub) tanpa pernah membagikan kata sandi mereka kepada aplikasi kita.",
+    analogy: "💡 Analogi: Seperti kunci kartu kamar hotel (keycard). Hotel (GitHub) menerbitkan kartu sementara untuk tamu, tanpa perlu memberikan kunci master gedung atau master password.",
+    keyPoints: [
+      "🛡️ Zero Password Liability: Bebas dari risiko membocorkan kata sandi pengguna",
+      "⚡ 1-Click Onboarding: Konversi pendaftaran pengguna instan melalui akun developer GitHub",
+      "🔐 Authorization Code Grant: Pertukaran kode sementara via Route Handler serverless yang aman dari intersepsi"
+    ],
+    courseRole: "Di kuliah ini: Autentikasi utama Proyek Akhir via Supabase GitHub OAuth Provider."
+  },
+  middleware: {
+    title: "Next.js Middleware",
+    fullName: "Next.js 16 Edge Request Interceptor",
+    badgeColor: "from-indigo-500 to-blue-600",
+    icon: Workflow,
+    type: "general",
+    summary: "Fungsi intersepsi di layer Edge (Vercel Edge Network) yang berjalan sebelum request mencapai halaman Server Component atau Route Handler. Berfungsi untuk me-refresh token sesi dan memproteksi rute privat dari akses tidak sah.",
+    analogy: "💡 Analogi: Seperti petugas gerbang keamanan bandara (Security Gate). Setiap penumpang diperiksa paspor dan tiketnya sebelum diperbolehkan melangkah ke ruang tunggu penerbangan (Dashboard).",
+    keyPoints: [
+      "⚡ Edge Execution: Berjalan dekat dengan lokasi geografis pengguna dengan latensi ultra-rendah",
+      "🛡️ Route Guard: Menendang pengguna yang belum login (307 Redirect) sebelum halaman privat dirender",
+      "🔄 Dual Cookie Sync: Menuliskan token yang di-refresh ke request.cookies dan response.cookies secara simultan"
+    ],
+    courseRole: "Di kuliah ini: src/middleware.ts & updateSession() untuk perlindungan rute privat /dashboard."
+  },
+  jwt: {
+    title: "Stateless JWT",
+    fullName: "JSON Web Token (RFC 7519 Cryptographic Claims)",
+    badgeColor: "from-cyan-500 to-teal-600",
+    icon: KeyRound,
+    type: "general",
+    summary: "Standar representasi klaim data digital berbasis JSON yang ditandatangani secara kriptografis (HMAC-SHA256). Bersifat stateless sehingga serverless functions dapat memvalidasi identitas user tanpa membebani database dengan session table lookup.",
+    analogy: "💡 Analogi: Seperti tiket kereta bertanda tangan hologram resmi kondektur. Setiap petugas dapat memastikan tiket itu sah cukup dengan memeriksa hologramnya, tanpa perlu menelpon kantor pusat.",
+    keyPoints: [
+      "⚡ Stateless Scalability: Server tidak memerlukan memori atau tabel sesi terpusat",
+      "🔒 Tamper-Proof: Upaya manipulasi isi payload akan merusak tanda tangan digital secara instan",
+      "⏳ Short-Lived Access: Token akses berumur 1 jam, di-refresh otomatis via Refresh Token rotation"
+    ],
+    courseRole: "Di kuliah ini: Format token sesi yang diterbitkan oleh Supabase Auth dan disimpan di HTTP-Only Cookie."
+  },
+  "supabase-auth": {
+    title: "Supabase Auth",
+    fullName: "Supabase GoTrue Authentication & User Management Engine",
+    badgeColor: "from-emerald-500 to-teal-600",
+    icon: Database,
+    type: "baas",
+    summary: "Layanan manajemen pengguna BaaS lengkap yang terintegrasi langsung dengan mesin database PostgreSQL. Menyediakan isolasi skema auth.users, integrasi provider OAuth, Magic Link OTP, dan integrasi native dengan Row Level Security (RLS).",
+    analogy: "💡 Analogi: Seperti sistem kependudukan digital instan sebuah kota modern yang langsung terhubung ke gerbang imigrasi, catatan sipil, dan izin kepemilikan gedung secara otomatis.",
+    keyPoints: [
+      "🗄️ Native PostgreSQL Engine: Terhubung ke auth.uid() pada setiap kebijakan Row Level Security (RLS)",
+      "🔐 Multi-Provider: Mendukung Email/Password, Passwordless Magic Link, GitHub, Google, dan SAML",
+      "⚡ Event Triggers: Memungkinkan trigger AFTER INSERT auth.users untuk otomasi sinkronisasi profil"
+    ],
+    courseRole: "Di kuliah ini: Mesin autentikasi dan manajemen akun terpusat untuk seluruh aplikasi web."
   }
 };
 
