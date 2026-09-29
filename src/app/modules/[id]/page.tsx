@@ -591,6 +591,21 @@ export default function ModuleDetailPage() {
   const [mergeStrategy, setMergeStrategy] = useState<"terminal" | "pr">("terminal");
   const [expandedVisualizers, setExpandedVisualizers] = useState<Record<string, boolean>>({});
 
+  // State untuk Floating Timer Mode Open-Book (sinkronisasi dari ModuleQuizPanel)
+  const [quizTimerSeconds, setQuizTimerSeconds] = useState<number>(0);
+  const [quizTimerRunning, setQuizTimerRunning] = useState<boolean>(false);
+
+  const handleQuizTimeUpdate = (secondsLeft: number, isRunning: boolean) => {
+    setQuizTimerSeconds(secondsLeft);
+    setQuizTimerRunning(isRunning);
+  };
+
+  const formatTimerDisplay = (totalSec: number): string => {
+    const m = Math.floor(Math.max(0, totalSec) / 60);
+    const s = Math.max(0, totalSec) % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
   const toggleVisualizer = (key: string) => {
     setExpandedVisualizers((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -1773,21 +1788,18 @@ export default function ModuleDetailPage() {
             </motion.div>
           )}
 
-          {/* TAB 4: UJI PEMAHAMAN */}
-          {activeTab === "quiz" && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
-            >
-              {currentModule.quiz ? (
-                <ModuleQuizPanel
-                  moduleId={currentModule.id}
-                  moduleTitle={currentModule.title}
-                  questions={currentModule.quiz.questions}
-                  passingScore={currentModule.quiz.passingScore}
-                />
-              ) : (
+          {/* TAB 4: UJI PEMAHAMAN — Selalu di-mount (hidden saat tab lain) agar timer tidak reset */}
+          <div className={activeTab === "quiz" ? "space-y-6" : "hidden"}>
+            {currentModule.quiz ? (
+              <ModuleQuizPanel
+                moduleId={currentModule.id}
+                moduleTitle={currentModule.title}
+                questions={currentModule.quiz.questions}
+                passingScore={currentModule.quiz.passingScore}
+                onTimeUpdate={handleQuizTimeUpdate}
+              />
+            ) : (
+              activeTab === "quiz" && (
                 <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
                     <Award className="w-6 h-6" />
@@ -1797,9 +1809,39 @@ export default function ModuleDetailPage() {
                     Modul ini sedang dalam tahap perakitan soal evaluasi AI.
                   </p>
                 </div>
-              )}
-            </motion.div>
-          )}
+              )
+            )}
+          </div>
+
+          {/* Floating Timer Badge (Mode Open-Book) — muncul saat quiz timer berjalan & tab bukan quiz */}
+          <AnimatePresence>
+            {quizTimerRunning && activeTab !== "quiz" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.85, y: 16 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="fixed bottom-6 right-6 z-50"
+              >
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("quiz")}
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-2xl font-bold text-sm border transition-all ${
+                    quizTimerSeconds <= 60
+                      ? "bg-red-600 border-red-500 text-white animate-pulse shadow-red-500/40"
+                      : quizTimerSeconds <= 120
+                      ? "bg-amber-500 border-amber-400 text-white shadow-amber-500/30"
+                      : "bg-zinc-900 dark:bg-zinc-100 border-zinc-700 dark:border-zinc-300 text-white dark:text-zinc-900 shadow-zinc-900/30"
+                  }`}
+                  title="Kembali ke Tab Uji Pemahaman"
+                >
+                  <Clock className="w-4 h-4 shrink-0" />
+                  <span className="font-mono tracking-wider text-base">{formatTimerDisplay(quizTimerSeconds)}</span>
+                  <span className="text-[10px] font-semibold opacity-80 hidden sm:inline">▶ Kembali Ujian</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Footer Navigation (Previous / Next Week) */}
           <div className="pt-8 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4">

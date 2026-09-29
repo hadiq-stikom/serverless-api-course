@@ -63,6 +63,7 @@ interface ModuleQuizPanelProps {
   moduleTitle: string;
   questions: QuizQuestion[];
   passingScore?: number;
+  onTimeUpdate?: (secondsLeft: number, isRunning: boolean) => void;
 }
 
 // Helper: Menghitung Alokasi Waktu Dasar per Bobot Soal
@@ -86,6 +87,7 @@ export function ModuleQuizPanel({
   moduleTitle,
   questions,
   passingScore = 80,
+  onTimeUpdate,
 }: ModuleQuizPanelProps) {
   // State Autentikasi
   const [session, setSession] = useState<StudentSession | null>(null);
@@ -261,6 +263,19 @@ export function ModuleQuizPanel({
     };
   }, [session, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, handleTimeout]);
 
+  // Sinkronisasi status timer kuis ke komponen induk (agar floating timer di Tab Teori/Lab aktif)
+  useEffect(() => {
+    if (onTimeUpdate) {
+      const isRunning =
+        !!session &&
+        !quizProgress?.isCompleted &&
+        !isEvaluating &&
+        !evaluation?.isPassed &&
+        timeLeft > 0;
+      onTimeUpdate(timeLeft, isRunning);
+    }
+  }, [timeLeft, session, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, onTimeUpdate]);
+
   // Pasang listener Anti-Cheat di browser
   useEffect(() => {
     if (!session || quizProgress?.isCompleted) return;
@@ -324,8 +339,14 @@ export function ModuleQuizPanel({
     }
   };
 
-  // Handler Anti-Paste pada textarea
-  const handlePastePrevent = (e: React.ClipboardEvent) => {
+  // Handler Anti-Copy & Anti-Paste
+  const handlePastePrevent = (e: React.ClipboardEvent | React.DragEvent) => {
+    e.preventDefault();
+    setPasteWarning(true);
+    setTimeout(() => setPasteWarning(false), 4000);
+  };
+
+  const handleCopyCutPrevent = (e: React.ClipboardEvent) => {
     e.preventDefault();
     setPasteWarning(true);
     setTimeout(() => setPasteWarning(false), 4000);
@@ -628,11 +649,12 @@ export function ModuleQuizPanel({
 
   return (
     <div
-      className={
+      onContextMenu={(e) => e.preventDefault()}
+      className={`select-none ${
         isFullscreen
           ? "fixed inset-0 z-50 bg-background/95 backdrop-blur-xl p-3 md:p-6 overflow-y-auto flex flex-col justify-start"
           : "max-w-4xl mx-auto my-3 space-y-3"
-      }
+      }`}
     >
       {/* Baris Status Mahasiswa & Kontrol Sesi */}
       <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-card border border-border/80 shadow-sm backdrop-blur-md">
@@ -707,6 +729,18 @@ export function ModuleQuizPanel({
         </div>
       </div>
 
+      {/* Banner Mode Open-Book & Waktu Berjalan */}
+      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
+        <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400 animate-pulse" />
+        <div className="space-y-0.5">
+          <p className="font-bold">Mode Open-Book Aktif: Waktu Terus Berjalan</p>
+          <p className="text-[11px] leading-relaxed text-amber-700/90 dark:text-amber-300/90">
+            Anda diperbolehkan membuka Tab 1 (Teori) &amp; Tab 2 (Lab) untuk memverifikasi konsep. 
+            Namun, <strong>waktu pengerjaan tidak akan berhenti dan terus berkurang</strong> di latar belakang. Fitur blok dan salin-tempel dinonaktifkan sehingga seluruh jawaban wajib diketik secara mandiri.
+          </p>
+        </div>
+      </div>
+
       {/* Banner Peringatan Pelanggaran Reset (Jika Terjadi) */}
       <AnimatePresence>
         {resetAlert && (
@@ -737,18 +771,18 @@ export function ModuleQuizPanel({
         )}
       </AnimatePresence>
 
-      {/* Banner Peringatan Anti-Paste */}
+      {/* Banner Peringatan Anti-Paste & Anti-Copy */}
       <AnimatePresence>
         {pasteWarning && (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium flex items-center gap-2 shadow-sm"
+            className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2 shadow-sm"
           >
-            <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-500" />
             <span>
-              <strong>Fitur Salin-Tempel Dinonaktifkan:</strong> Ketikkan pemahaman konsep Anda secara mandiri.
+              <strong>Fitur Blok &amp; Salin-Tempel Dinonaktifkan:</strong> Teks soal tidak dapat disalin dan jawaban esai wajib diketikkan secara mandiri demi integritas ujian.
             </span>
           </motion.div>
         )}
@@ -913,9 +947,21 @@ export function ModuleQuizPanel({
                 if (networkError) setNetworkError(null);
               }}
               onPaste={handlePastePrevent}
-              onCopy={(e) => e.preventDefault()}
-              onDrop={(e) => e.preventDefault()}
-              placeholder="Ketikkan uraian pemikiran arsitektur Anda di sini... Jelaskan mekanisme, implikasi teknis, dan alasan arsitekturnya. (Salin-tempel dinonaktifkan demi integritas ujian)"
+              onCopy={handleCopyCutPrevent}
+              onCut={handleCopyCutPrevent}
+              onDrop={handlePastePrevent}
+              onContextMenu={(e) => e.preventDefault()}
+              onKeyDown={(e) => {
+                if (
+                  (e.ctrlKey || e.metaKey) &&
+                  (e.key === "v" || e.key === "V" || e.key === "c" || e.key === "C" || e.key === "x" || e.key === "X")
+                ) {
+                  e.preventDefault();
+                  setPasteWarning(true);
+                  setTimeout(() => setPasteWarning(false), 4000);
+                }
+              }}
+              placeholder="Ketikkan uraian pemikiran arsitektur Anda di sini... Jelaskan mekanisme, implikasi teknis, dan alasan arsitekturnya. (Fitur blok dan salin-tempel dinonaktifkan demi integritas ujian)"
               className="w-full p-3 rounded-xl border border-input bg-background text-xs md:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all resize-y font-sans disabled:opacity-75 disabled:bg-muted/40 min-h-[95px] max-h-[160px]"
             />
           </div>
