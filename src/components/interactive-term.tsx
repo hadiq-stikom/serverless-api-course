@@ -30,7 +30,7 @@ import {
   Workflow
 } from "lucide-react";
 
-export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router";
+export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid";
 
 interface TermData {
   title: string;
@@ -176,6 +176,66 @@ const TERMS_DATA: Record<TermKey, TermData> = {
       "⚡ Streaming & Fallback: Dukungan otomatis loading.tsx dan error.tsx per rute"
     ],
     courseRole: "Di kuliah ini: Pondasi arsitektur routing dan navigasi seluruh halaman aplikasi."
+  },
+  zod: {
+    title: "Zod",
+    fullName: "TypeScript-first Schema Declaration & Validation",
+    badgeColor: "from-blue-600 to-cyan-600",
+    icon: ShieldCheck,
+    type: "general",
+    summary: "Pustaka deklarasi dan validasi skema berbasis TypeScript. Memvalidasi payload input dari formulir atau request jaringan secara defensif di server, mengonversi tipe data (coercion), dan menghasilkan tipe data TypeScript otomatis tanpa duplikasi kode.",
+    analogy: "💡 Analogi: Seperti pos pemeriksaan imigrasi bandara. Setiap penumpang (input data) harus lolos verifikasi paspor dan pemindaian barang sebelum diizinkan masuk ke ruang tunggu (database).",
+    keyPoints: [
+      "🛡️ Never Trust Client: Menghentikan data anomali sebelum menyentuh logika database",
+      "⚡ safeParse() Resilient: Menangani kegagalan validasi tanpa memicu unhandled runtime crash",
+      "🔄 Type Coercion: Mengonversi string FormData ke number, boolean, atau Date secara aman"
+    ],
+    courseRole: "Di kuliah ini: Validasi input Server Actions di Next.js 16 sebelum disimpan ke Supabase."
+  },
+  "use-action-state": {
+    title: "useActionState",
+    fullName: "React 19 Form Lifecycle Hook",
+    badgeColor: "from-emerald-500 to-teal-600",
+    icon: Cpu,
+    type: "general",
+    summary: "Hook bawaan React 19 yang menyatukan siklus hidup pengiriman form, pengelolaan status loading (isPending), dan nilai kembalian (state) dari Server Action dalam satu fungsi terpadu tanpa memerlukan useState manual.",
+    analogy: "💡 Analogi: Seperti tanda terima pesanan dengan nomor antrean digital. Layar otomatis menampilkan status 'Sedang Diproses' dan menampilkan hasilnya begitu pesanan selesai.",
+    keyPoints: [
+      "🚀 Pengganti useFormState: Diimpor langsung dari package 'react' (React 19 native)",
+      "⏳ Auto Loading State: Tuple posisi ke-3 [isPending] otomatis aktif selama mutasi server berjalan",
+      "🔄 Resilient Feedback: Mempermudah penayangan error validasi dan pesan sukses di UI"
+    ],
+    courseRole: "Di kuliah ini: Pengelolaan status form entri data dan loading state tombol di Client Component."
+  },
+  postgresql: {
+    title: "PostgreSQL",
+    fullName: "PostgreSQL Object-Relational Database Engine",
+    badgeColor: "from-blue-600 to-indigo-700",
+    icon: Database,
+    type: "baas",
+    summary: "Sistem database objek-relasional terkemuka di dunia dengan kepatuhan ACID penuh. Mendukung tipe data canggih (UUID, JSONB, Timestamptz), integritas referensial (Foreign Key, Cascade), indexing B-Tree, stored procedure PL/pgSQL, dan Row Level Security (RLS).",
+    analogy: "💡 Analogi: Seperti brankas arsip bersertifikasi bank internasional dengan loker berpaspor, indeks pencarian kilat, dan aturan integritas yang memastikan catatan tidak pernah hilang atau korup.",
+    keyPoints: [
+      "🏛️ ACID Compliant: Menjamin setiap transaksi database atomik, konsisten, terisolasi, dan tahan crash",
+      "🔗 Integritas Referensial: Foreign Key dengan ON DELETE CASCADE mencegah data yatim (orphaned records)",
+      "⚡ B-Tree Indexing: Pencarian data O(log N) hingga 300x lebih cepat dibanding Sequential Scan"
+    ],
+    courseRole: "Di kuliah ini: Database utama di Supabase Cloud untuk menyimpan seluruh data Proyek Akhir."
+  },
+  uuid: {
+    title: "UUID v4",
+    fullName: "Universally Unique Identifier (128-bit Cryptographic Key)",
+    badgeColor: "from-violet-500 to-purple-600",
+    icon: ShieldCheck,
+    type: "general",
+    summary: "Format pengenal unik 128-bit (gen_random_uuid()) berupa 36 karakter acak yang menjamin ketiadaan tabrakan data (zero collision) di arsitektur cloud terdistribusi dan kebal terhadap serangan tebakan ID Enumeration.",
+    analogy: "💡 Analogi: Seperti nomor paspor biometrik global. Tidak ada dua orang yang memiliki nomor paspor sama di dunia, dan nomor tersebut tidak bisa ditebak dari nomor orang lain.",
+    keyPoints: [
+      "🛡️ Anti-Enumeration: Mencegah peretas menjelajahi URL sensitif (/users/1 ➔ /users/2)",
+      "🌐 Cloud Distributed: Dapat dibuat secara independen di client, Edge, maupun server tanpa koordinasi",
+      "🚀 Zero Collision: Memiliki 2^122 kombinasi acak kriptografis yang mustahil bertabrakan"
+    ],
+    courseRole: "Di kuliah ini: Primary Key standar untuk seluruh tabel relasional (profiles, projects, tasks)."
   }
 };
 

@@ -758,6 +758,41 @@ export default function ModuleDetailPage() {
                       <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
                     </p>
                   </div>
+                ) : currentModule.id === 3 ? (
+                  <div className="space-y-2">
+                    <div className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
+                      Server Actions merevolusi mutasi data di Next.js 16 melalui pemanggilan fungsi server langsung via{" "}
+                      <InteractiveTerm term="server-actions">Server Actions (&apos;use server&apos;)</InteractiveTerm>,{" "}
+                      pertahanan input berlapis dengan skema deklaratif{" "}
+                      <InteractiveTerm term="zod">Zod</InteractiveTerm>,{" "}
+                      serta orkestrasi siklus hidup formulir menggunakan hook native{" "}
+                      <InteractiveTerm term="use-action-state">React 19 useActionState</InteractiveTerm>{" "}
+                      dan komponen terstandarisasi{" "}
+                      <InteractiveTerm term="shadcn">Shadcn UI</InteractiveTerm>.
+                    </div>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                      <span>💡</span>
+                      <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
+                    </p>
+                  </div>
+                ) : currentModule.id === 4 ? (
+                  <div className="space-y-2">
+                    <div className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
+                      Supabase menyediakan fondasi database relasional modern berbasis{" "}
+                      <InteractiveTerm term="postgresql">PostgreSQL</InteractiveTerm>{" "}
+                      terkelola penuh dalam arsitektur{" "}
+                      <InteractiveTerm term="baas">Backend as a Service (BaaS)</InteractiveTerm>.{" "}
+                      Minggu ini menandai Kick-off Resmi Proyek Akhir: merancang entitas dengan kunci kriptografis{" "}
+                      <InteractiveTerm term="uuid">UUID v4</InteractiveTerm>,{" "}
+                      menegakkan integritas referensial dan keamanan baris{" "}
+                      <InteractiveTerm term="rls">Row Level Security (RLS)</InteractiveTerm>,{" "}
+                      serta mengintegrasikan klien Next.js 16 SSR melalui adapter async cookies.
+                    </div>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                      <span>💡</span>
+                      <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
                     {currentModule.concepts.summary}
@@ -1165,7 +1200,7 @@ export default function ModuleDetailPage() {
                           <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mendeteksi apakah Shadcn UI sudah ada; jika belum, Agent akan menjalankan instalasi CLI (<code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn init</code> &amp; <code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn add</code>) lalu merakit 4 berkas antarmuka ke workspace Anda.
+                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mendeteksi apakah Shadcn UI sudah ada; jika belum, Agent akan menjalankan instalasi CLI (<code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn init</code> &amp; <code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn add</code>) lalu merakit 5 berkas antarmuka premium (termasuk halaman landing di root <code className="font-mono text-indigo-600 dark:text-indigo-400">/</code> yang menghubungkan ke <code className="font-mono text-indigo-600 dark:text-indigo-400">/tasks</code>) ke workspace Anda.
                         </p>
                       </div>
                       <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
@@ -1173,7 +1208,63 @@ export default function ModuleDetailPage() {
                           <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 &amp; 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest init</code> dan <code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest add ...</code>) agar dependensi terpasang di proyek Anda sebelum menyalin 4 berkas kode yang dihasilkan AI.
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 &amp; 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest init</code> dan <code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest add ...</code>) agar dependensi terpasang di proyek Anda sebelum menyalin 5 berkas kode yang dihasilkan AI.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Panduan Alur Kerja AI Tool Modul 3 */}
+                {currentModule.id === 3 && (
+                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
+                    <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
+                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-indigo-600 dark:text-indigo-400">zod</code> dan komponen form Shadcn UI; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit 5 berkas arsitektur form mutasi data ke workspace Anda.
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
+                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install zod</code> dan komponen form Shadcn UI) agar dependensi terpasang sebelum menyalin 5 berkas kode yang dihasilkan AI.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Panduan Alur Kerja AI Tool Modul 4 */}
+                {currentModule.id === 4 && (
+                  <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs space-y-2.5">
+                    <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-emerald-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs">
+                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-emerald-600 dark:text-emerald-400">@supabase/supabase-js</code> dan <code className="font-mono text-emerald-600 dark:text-emerald-400">@supabase/ssr</code> via terminal, lalu menyusun 5 berkas arsitektur database Supabase SSR (utilitas server dengan async cookies Next.js 16, utilitas client, skema DDL SQL 3 tabel, tipe TypeScript, dan landing page root) langsung ke workspace Anda.
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-emerald-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
+                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install @supabase/supabase-js @supabase/ssr</code>), eksekusi script DDL SQL di Supabase SQL Editor, lalu salin berkas kode TypeScript yang dihasilkan AI ke proyek Anda.
                         </p>
                       </div>
                     </div>
