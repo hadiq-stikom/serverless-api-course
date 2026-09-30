@@ -504,6 +504,264 @@ export function InteractiveTerm({ term, children, showIcon = true }: Interactive
                   </p>
                 </div>
               )}
+
+              {/* Server Actions Animated RPC Pipeline */}
+              {term === "server-actions" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <Laptop className="w-4 h-4 text-sky-400 mb-1" />
+                      <span className="font-semibold text-zinc-200">1. Form Submit</span>
+                      <span className="text-[9px] text-zinc-500">action={"{fn}"}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <Lock className="w-4 h-4 text-indigo-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-indigo-300">2. RPC POST</span>
+                      <span className="text-[9px] text-indigo-400/80">__rsc/a8f9c1</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <Server className="w-4 h-4 text-amber-400 mb-1" />
+                      <span className="font-semibold text-amber-300">3. Server Exec</span>
+                      <span className="text-[9px] text-zinc-400">'use server'</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <Database className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">4. DB + Cache</span>
+                      <span className="text-[9px] text-zinc-400">revalidatePath()</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-indigo-300/90 text-center font-mono">
+                    Form ➔ POST Terenkripsi ➔ Node.js Server ➔ Supabase DB ✅
+                  </p>
+                  <p className="text-[10px] text-zinc-500 text-center">
+                    Tanpa endpoint /api/... manual — Next.js menangani routing RPC otomatis
+                  </p>
+                </div>
+              )}
+
+              {/* RSC Animated Pipeline */}
+              {term === "rsc" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-blue-950/40 border border-blue-500/40 flex flex-col items-center justify-center">
+                      <Server className="w-4 h-4 text-blue-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-blue-300">Server Render</span>
+                      <span className="text-[9px] text-zinc-400">Fetch DB + Render</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-700 flex flex-col items-center justify-center">
+                      <ArrowRight className="w-4 h-4 text-zinc-400 mb-1" />
+                      <span className="font-semibold text-zinc-300">Stream HTML</span>
+                      <span className="text-[9px] text-zinc-500">0 kB JS Bundle</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <Laptop className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">Browser</span>
+                      <span className="text-[9px] text-zinc-400">Tampil Instan</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-blue-300/90 text-center font-mono">
+                    RSC = HTML murni dari server, tanpa pengiriman JavaScript ke browser
+                  </p>
+                </div>
+              )}
+
+              {/* Client Component Pipeline */}
+              {term === "client-component" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 flex flex-col items-center justify-center">
+                      <FileCode className="w-4 h-4 text-purple-400 mb-1" />
+                      <span className="font-semibold text-purple-300">'use client'</span>
+                      <span className="text-[9px] text-zinc-400">Bundle dikirim</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-pink-950/40 border border-pink-500/40 flex flex-col items-center justify-center">
+                      <Zap className="w-4 h-4 text-pink-400 mb-1 animate-bounce" />
+                      <span className="font-semibold text-pink-300">Hydration</span>
+                      <span className="text-[9px] text-zinc-400">JS dieksekusi</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-700 flex flex-col items-center justify-center">
+                      <Cpu className="w-4 h-4 text-zinc-400 mb-1" />
+                      <span className="font-semibold text-zinc-300">useState/Effect</span>
+                      <span className="text-[9px] text-zinc-500">Interaksi aktif</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-purple-300/90 text-center font-mono">
+                    Gunakan seminimal mungkin — hanya untuk komponen interaktif
+                  </p>
+                </div>
+              )}
+
+              {/* Zod Pipeline */}
+              {term === "zod" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <Laptop className="w-4 h-4 text-zinc-400 mb-1" />
+                      <span className="font-semibold text-zinc-300">FormData</span>
+                      <span className="text-[9px] text-zinc-500">Input mentah</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-amber-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-amber-300">Zod Parse</span>
+                      <span className="text-[9px] text-zinc-400">safeParse()</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Valid ✅</span>
+                      <span className="text-[9px] text-zinc-400">Ke database</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-rose-950/40 border border-rose-500/40 flex flex-col items-center justify-center">
+                      <X className="w-4 h-4 text-rose-400 mb-1" />
+                      <span className="font-semibold text-rose-300">Error ❌</span>
+                      <span className="text-[9px] text-zinc-400">fieldErrors</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-amber-300/90 text-center font-mono">
+                    Validasi TypeScript runtime — tolak input berbahaya sebelum sentuh DB
+                  </p>
+                </div>
+              )}
+
+              {/* Middleware Pipeline */}
+              {term === "middleware" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <Globe className="w-4 h-4 text-sky-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-zinc-300">Request</span>
+                      <span className="text-[9px] text-zinc-500">/dashboard</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <Workflow className="w-4 h-4 text-amber-400 mb-1" />
+                      <span className="font-semibold text-amber-300">Middleware</span>
+                      <span className="text-[9px] text-zinc-400">getUser()</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <Unlock className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Login ✅</span>
+                      <span className="text-[9px] text-zinc-400">Lanjutkan</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-rose-950/40 border border-rose-500/40 flex flex-col items-center justify-center">
+                      <Lock className="w-4 h-4 text-rose-400 mb-1" />
+                      <span className="font-semibold text-rose-300">Tamu ❌</span>
+                      <span className="text-[9px] text-zinc-400">→ /login</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-amber-300/90 text-center font-mono">
+                    Intersepsi di Edge sebelum halaman dirender — proteksi tanpa overhead
+                  </p>
+                </div>
+              )}
+
+              {/* JWT Pipeline */}
+              {term === "jwt" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <KeyRound className="w-4 h-4 text-indigo-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-indigo-300">Header.Payload</span>
+                      <span className="text-[9px] text-zinc-400">Data pengguna</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-amber-400 mb-1" />
+                      <span className="font-semibold text-amber-300">Signature</span>
+                      <span className="text-[9px] text-zinc-400">HMAC-SHA256</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Verify ✅</span>
+                      <span className="text-[9px] text-zinc-400">Tanpa DB lookup</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-indigo-300/90 text-center font-mono">
+                    Stateless — server verifikasi identitas tanpa menyimpan sesi di RAM
+                  </p>
+                </div>
+              )}
+
+              {/* OAuth Pipeline */}
+              {term === "oauth" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <Laptop className="w-4 h-4 text-sky-400 mb-1" />
+                      <span className="font-semibold text-zinc-300">Browser</span>
+                      <span className="text-[9px] text-zinc-500">Klik Login</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-gray-950/40 border border-gray-500/40 flex flex-col items-center justify-center">
+                      <Code className="w-4 h-4 text-gray-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-gray-300">GitHub</span>
+                      <span className="text-[9px] text-zinc-400">Kirim code</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <Server className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">Callback</span>
+                      <span className="text-[9px] text-zinc-400">Tukar → JWT</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Login ✅</span>
+                      <span className="text-[9px] text-zinc-400">Cookie aman</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-300/90 text-center font-mono">
+                    Authorization Code Flow — token tidak pernah lewat URL browser
+                  </p>
+                </div>
+              )}
+
+              {/* Supabase Auth Pipeline */}
+              {term === "supabase-auth" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <Database className="w-4 h-4 text-emerald-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-emerald-300">GoTrue Engine</span>
+                      <span className="text-[9px] text-zinc-400">auth.users</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">JWT + RLS</span>
+                      <span className="text-[9px] text-zinc-400">auth.uid()</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <Zap className="w-4 h-4 text-amber-400 mb-1" />
+                      <span className="font-semibold text-amber-300">Trigger DB</span>
+                      <span className="text-[9px] text-zinc-400">public.profiles</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-emerald-300/90 text-center font-mono">
+                    Multi-provider Auth bawaan — tanpa membangun sistem login dari nol
+                  </p>
+                </div>
+              )}
+
+              {/* RLS Pipeline */}
+              {term === "rls" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-rose-950/40 border border-rose-500/40 flex flex-col items-center justify-center">
+                      <Lock className="w-4 h-4 text-rose-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-rose-300">Row-Level</span>
+                      <span className="text-[9px] text-zinc-400">Per baris data</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">auth.uid()</span>
+                      <span className="text-[9px] text-zinc-400">Policy check</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Data Izin</span>
+                      <span className="text-[9px] text-zinc-400">Dikembalikan</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-rose-300/90 text-center font-mono">
+                    Keamanan di level kernel PostgreSQL — tidak bisa dibypass dari aplikasi
+                  </p>
+                </div>
+              )}
+
             </div>
 
             {/* Key bullet points */}

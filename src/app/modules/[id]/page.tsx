@@ -1304,7 +1304,7 @@ export default function ModuleDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
                       <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
                         <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                          <span>🤖</span> Jika Menggunakan AI Agent
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Prompt ini dirancang <strong>All-in-One</strong>. Jika dijalankan di folder proyek kosong, AI Agent akan otomatis mendeteksi dan mengeksekusi instalasi Next.js 16 via CLI terminal, lalu langsung melengkapi berkas <code className="font-mono text-indigo-600 dark:text-indigo-400">.gitignore</code>, <code className="font-mono text-indigo-600 dark:text-indigo-400">.env.example</code>, dan <code className="font-mono text-indigo-600 dark:text-indigo-400">README.md</code>.
@@ -1332,7 +1332,7 @@ export default function ModuleDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
                       <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
                         <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                          <span>🤖</span> Jika Menggunakan AI Agent
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mendeteksi apakah Shadcn UI sudah ada; jika belum, Agent akan menjalankan instalasi CLI (<code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn init</code> &amp; <code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn add</code>) lalu merakit 5 berkas antarmuka premium (termasuk halaman landing di root <code className="font-mono text-indigo-600 dark:text-indigo-400">/</code> yang menghubungkan ke <code className="font-mono text-indigo-600 dark:text-indigo-400">/tasks</code>) ke workspace Anda.
@@ -1360,7 +1360,7 @@ export default function ModuleDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
                       <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
                         <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                          <span>🤖</span> Jika Menggunakan AI Agent
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-indigo-600 dark:text-indigo-400">zod</code> dan komponen form Shadcn UI; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit 5 berkas arsitektur form mutasi data ke workspace Anda.
@@ -1388,7 +1388,7 @@ export default function ModuleDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
                       <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-emerald-100 dark:border-zinc-800 space-y-1 shadow-2xs">
                         <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                          <span>🤖</span> Jika Menggunakan AI Agent
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-emerald-600 dark:text-emerald-400">@supabase/supabase-js</code> dan <code className="font-mono text-emerald-600 dark:text-emerald-400">@supabase/ssr</code> via terminal, lalu menyusun 5 berkas arsitektur database Supabase SSR (utilitas server dengan async cookies Next.js 16, utilitas client, skema DDL SQL 3 tabel, tipe TypeScript, dan landing page root) langsung ke workspace Anda.
@@ -1416,7 +1416,7 @@ export default function ModuleDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
                       <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-rose-100 dark:border-zinc-800 space-y-1 shadow-2xs">
                         <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                          <span>🤖</span> Jika Menggunakan AI Agent
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis memeriksa ketersediaan <code className="font-mono text-rose-600 dark:text-rose-400">@supabase/ssr</code> dan komponen Shadcn UI; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit <strong>6 berkas</strong> autentikasi (middleware, callback handler, server actions, login form, landing page root, dan konfigurasi env) langsung ke workspace Anda.
