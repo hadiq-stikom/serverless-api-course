@@ -521,31 +521,6 @@ export function ModuleQuizPanel({
                 <span>Masuk ke Sesi Ujian</span>
               </Button>
             </form>
-
-            <div className="pt-4 border-t border-border/60">
-              <p className="text-[11px] text-muted-foreground text-center mb-2 font-medium">
-                Akun Uji Coba Cepat (Klik untuk isi otomatis):
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {[
-                  { nim: "202401001", name: "Budi" },
-                  { nim: "202401002", name: "Siti" },
-                  { nim: "202401004", name: "Dewi" },
-                ].map((s) => (
-                  <button
-                    key={s.nim}
-                    type="button"
-                    onClick={() => {
-                      setNimInput(s.nim);
-                      setPasswordInput(s.nim);
-                    }}
-                    className="px-2.5 py-1 text-[11px] rounded-lg bg-muted/80 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 border border-border transition-colors font-mono"
-                  >
-                    {s.nim} ({s.name})
-                  </button>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

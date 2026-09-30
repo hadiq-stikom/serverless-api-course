@@ -2523,7 +2523,23 @@ if (user && isAuthRoute) {
               language: "typescript",
               caption: "Matriks Evaluasi Hak Akses dan Pengalihan Rute Dinamis"
             }
-          ]
+          ],
+          comparisonTable: {
+            headers: ["Aspek", "getSession() ❌ Anti-Pattern", "getUser() ✅ Best Practice"],
+            rows: [
+              ["Validasi Sumber", "Lokal (decode cookie saja)", "Server Supabase (network call)"],
+              ["Deteksi Akun Diblokir", "Tidak bisa", "Bisa real-time"],
+              ["Deteksi Password Diubah", "Tidak bisa", "Bisa real-time"],
+              ["Keamanan Middleware", "BERBAHAYA", "AMAN"],
+              ["Latensi Tambahan", "0ms (lokal)", "~50ms (Edge network)"],
+              ["Standar Resmi Supabase", "Tidak direkomendasikan", "Wajib digunakan"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "⚠️ Anti-Pattern Kritis: DILARANG KERAS getSession() di Middleware!",
+            text: "supabase.auth.getSession() hanya mendekode JWT dari cookie lokal tanpa menghubungi auth server Supabase. Akun yang sudah diblokir admin atau password yang diubah TETAP dianggap valid sampai token kedaluwarsa. Selalu gunakan getUser() yang melakukan verifikasi kriptografis real-time ke server Supabase."
+          }
         },
         {
           title: "3. Session Management di Server Components & Server Actions",
@@ -2688,7 +2704,12 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
               language: "sql",
               caption: "Fungsi Trigger PL/pgSQL untuk Otomasi Pembuatan Profil Pengguna"
             }
-          ]
+          ],
+          callout: {
+            type: "tip",
+            title: "💡 Mengapa SECURITY DEFINER Diperlukan pada Fungsi Trigger?",
+            text: "Klausa SECURITY DEFINER memerintahkan PostgreSQL untuk menjalankan fungsi trigger menggunakan hak akses pemilik fungsi (biasanya superuser) bukan hak akses pemanggil. Ini diperlukan karena tabel auth.users berada di skema auth yang terisolasi, dan pengguna biasa tidak memiliki izin untuk membaca raw_user_meta_data dari sistem auth internal Supabase."
+          }
         }
       ]
     },
@@ -2841,31 +2862,55 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
         }
       ],
       aiPromptTemplate: {
-        role: "Senior Full-Stack Security & Next.js 16 Specialist",
-        prompt: `Bertindaklah sebagai Senior Full-Stack Security & Next.js 16 Specialist.
-Tugas Anda adalah mengimplementasikan sistem autentikasi multi-provider lengkap (GitHub OAuth & Email/Password) menggunakan @supabase/ssr, memproteksi rute privat dengan Next.js 16 Middleware, dan menyinkronkan profil pengguna di proyek "The Serverless Odyssey".
+        role: "Senior Full-Stack Security Engineer & Next.js 16 Specialist",
+        prompt: `Bertindaklah sebagai Senior Full-Stack Security Engineer & Next.js 16 Specialist.
+Tugas Anda adalah mengimplementasikan sistem autentikasi multi-provider lengkap (GitHub OAuth & Email/Password) menggunakan @supabase/ssr pada proyek "The Serverless Odyssey", memproteksi rute privat dengan Next.js 16 Middleware Session Refresher, dan menyinkronkan profil pengguna via PostgreSQL Trigger.
 
 LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
-1. Periksa ketersediaan paket @supabase/ssr dan @supabase/supabase-js di package.json. Jika belum ada, eksekusi perintah terminal:
+1. Periksa apakah @supabase/ssr dan @supabase/supabase-js sudah ada di package.json. Jika belum, eksekusi:
    npm install @supabase/ssr @supabase/supabase-js
-2. Periksa ketersediaan komponen Shadcn UI yang dibutuhkan (Button, Card, Input, Label, Badge). Jika belum ada, jalankan:
-   npx shadcn@latest add button card input label badge
+2. Periksa apakah komponen Shadcn UI yang dibutuhkan sudah ada (Button, Card, Input, Label, Badge, Avatar). Jika belum, eksekusi:
+   npx shadcn@latest add button card input label badge avatar
 
-BATASAN ARSITEKTUR KETAT:
-1. Wajib Next.js 16 App Router: Gunakan async cookies (const cookieStore = await cookies()) pada klien server.
-2. Dilarang keras menaruh 'use client' di page.tsx atau layout.tsx. Seluruh halaman adalah Server Component (RSC). Direktif 'use client' HANYA di leaf component interaktif (seperti LoginForm).
-3. Keamanan Sesi: Wajib menggunakan supabase.auth.getUser() di Middleware dan Server Component. DILARANG KERAS menggunakan getSession() yang rentan session hijacking.
-4. UI/UX Estetika Premium: Gunakan glassmorphism (backdrop-blur-md), micro-interactions (hover:-translate-y-0.5), dan adaptabilitas Dark/Light mode penuh berbasis semantic tokens Tailwind.
-5. Zero any types di TypeScript.
+BATASAN ARSITEKTUR KETAT (DILARANG DILANGGAR):
+1. Next.js 16 Async APIs: Wajib menggunakan \`const cookieStore = await cookies()\` di semua Server Components dan Route Handlers.
+2. Direktif 'use client' HANYA boleh berada di komponen daun interaktif (LoginForm, LogoutButton). DILARANG di page.tsx dan layout.tsx.
+3. Keamanan Sesi: WAJIB \`supabase.auth.getUser()\` di Middleware dan RSC. DILARANG KERAS \`getSession()\`.
+4. Dual-Cookie Synchronization: Middleware harus menulis token baru ke request.cookies (untuk RSC) DAN response.cookies (untuk browser Set-Cookie).
+5. UI Estetika Premium: Glassmorphism (backdrop-blur-md), micro-interactions (hover:-translate-y-0.5), Dark/Light mode penuh via semantic tokens Tailwind/Shadcn.
+6. Zero TypeScript 'any' types. Semua tipe eksplisit.
 
-STRUKTUR BERKAS YANG WAJIB DIBUAT/DIPERBARUI (SIAP JALAN 100%):
-1. src/utils/supabase/middleware.ts: Helper updateSession() dengan siklus dual-cookie synchronization (request.cookies & response.cookies).
-2. src/middleware.ts: Konfigurasi Next.js Edge Middleware dengan filter matcher ketat pengecualian aset statis.
-3. src/app/auth/callback/route.ts: Next.js Route Handler penukar kode otorisasi sementara (exchangeCodeForSession).
-4. src/actions/auth.ts: Server Actions terpadu untuk loginWithEmailAction, signupWithEmailAction, dan signOutAction.
-5. src/app/(auth)/login/page.tsx & src/components/auth/login-form.tsx: Halaman login responsif dengan tombol GitHub OAuth 1-klik dan form email/password.
-6. src/app/page.tsx (ROOT NAVIGATION RULE): Perbarui Hero Landing Page root agar secara cerdas mendeteksi sesi pengguna: tampilkan tombol "Buka Dashboard Tugas ➔" jika sudah login, atau tombol "Masuk / Daftar Akun ➔" jika berstatus tamu.`,
-        tip: "Pastikan URL Callback http://localhost:3000/auth/callback dan domain produksi Vercel telah didaftarkan pada menu Authentication ➔ URL Configuration di dashboard Supabase!"
+STRUKTUR 6 BERKAS YANG WAJIB DIBUAT/DIPERBARUI (SIAP JALAN 100%, TANPA POTONGAN KODE):
+
+BERKAS 1: src/utils/supabase/middleware.ts
+- Fungsi updateSession(request: NextRequest) dengan dual-cookie sync lengkap (getAll, setAll ke request dan response).
+- Logika proteksi rute: redirect tamu dari /dashboard ke /login?next=<path>, redirect user dari /login ke /dashboard.
+- Parameter ?next= dipertahankan untuk state preservation setelah login.
+
+BERKAS 2: src/middleware.ts
+- Import dan delegasi ke updateSession() dari berkas middleware.ts.
+- Config matcher dengan regex negative lookahead yang mengecualikan _next/static, _next/image, favicon.ico, dan semua ekstensi aset statis.
+
+BERKAS 3: src/app/auth/callback/route.ts
+- Route Handler GET untuk menerima ?code= dari GitHub OAuth redirect.
+- Panggil exchangeCodeForSession(code) dan redirect ke parameter ?next atau /dashboard jika sukses.
+- Fallback redirect ke /auth/auth-code-error jika kode kosong atau penukaran gagal.
+
+BERKAS 4: src/actions/auth.ts ('use server')
+- loginWithEmailAction(formData: FormData): Validasi email & password via Zod, panggil signInWithPassword, revalidatePath dan redirect('/dashboard').
+- signupWithEmailAction(formData: FormData): Validasi via Zod, panggil signUp, redirect ke /check-email.
+- loginWithGithubAction(): Panggil signInWithOAuth ke GitHub dengan redirectTo ke /auth/callback.
+- signOutAction(): Panggil signOut(), revalidatePath('/', 'layout'), redirect('/login').
+
+BERKAS 5: src/app/(auth)/login/page.tsx + src/components/auth/login-form.tsx
+- page.tsx: Server Component, cek sesi (jika sudah login redirect ke /dashboard), render LoginForm sebagai children.
+- login-form.tsx ('use client'): Form premium dua bagian (GitHub OAuth button + Email/Password form), loading states, error display, animasi framer-motion.
+- Desain: Glassmorphism card, gradient header merah-rose, tombol GitHub dengan ikon brand, input dengan focus ring rose-500.
+
+BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
+- Perbarui Root Landing Page agar cerdas mendeteksi sesi: tampilkan tombol "Buka Dashboard Tugas →" jika sudah login, atau Hero CTA "Mulai Perjalanan Serverless →" + "Masuk / Daftar →" jika tamu.
+- Desain hero premium: gradient animated background, badge status versi teknologi (Next.js 16, Supabase, Cloudinary, Vercel), statistik engagement palsu (mahasiswa aktif, minggu kursus).`,
+        tip: "Pastikan URL http://localhost:3000/auth/callback sudah didaftarkan di Supabase Dashboard ➔ Authentication ➔ URL Configuration ➔ Redirect URLs, dan konfigurasi GitHub OAuth App di GitHub Developer Settings sudah mengarah ke https://<PROJECT-REF>.supabase.co/auth/v1/callback sebagai Authorization callback URL!"
       },
       warningZone: {
         title: "Perhatian Kritis: Bahaya Redirect URL Mismatch di Supabase",

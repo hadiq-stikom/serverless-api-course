@@ -1406,6 +1406,34 @@ export default function ModuleDetailPage() {
                   </div>
                 )}
 
+                {/* Panduan Alur Kerja AI Tool Modul 5 */}
+                {currentModule.id === 5 && (
+                  <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-xs space-y-2.5">
+                    <div className="flex items-center gap-2 font-bold text-rose-900 dark:text-rose-200">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-rose-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 text-xs">
+                          <span>🤖</span> Jika Menggunakan AI Agent (Antigravity / Cursor)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis memeriksa ketersediaan <code className="font-mono text-rose-600 dark:text-rose-400">@supabase/ssr</code> dan komponen Shadcn UI; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit <strong>6 berkas</strong> autentikasi (middleware, callback handler, server actions, login form, landing page root, dan konfigurasi env) langsung ke workspace Anda.
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-rose-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
+                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install @supabase/ssr @supabase/supabase-js</code> dan komponen Shadcn), daftarkan GitHub OAuth App, eksekusi DDL Trigger di Supabase SQL Editor, lalu salin 6 berkas kode yang dihasilkan AI ke proyek Anda.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <VsCodePrompt
                   role={currentModule.lab.aiPromptTemplate.role}
                   prompt={currentModule.lab.aiPromptTemplate.prompt}

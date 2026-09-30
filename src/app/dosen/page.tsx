@@ -24,7 +24,8 @@ import {
   LogOut,
   Lock,
   UserCheck,
-  ShieldCheck
+  ShieldCheck,
+  FlaskConical
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ import {
   LecturerSession
 } from "@/actions/lecturer-auth";
 import { MODULES } from "@/data/curriculum";
+import { LecturerPracticumTab } from "@/components/practicum/lecturer-practicum-tab";
 
 interface StudentRow {
   nim: string;
@@ -96,6 +98,7 @@ export default function DosenPortalPage() {
   const [authError, setAuthError] = useState("");
 
   // State Monitoring Data
+  const [activePortalTab, setActivePortalTab] = useState<"quiz" | "practicum">("quiz");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
@@ -406,9 +409,41 @@ export default function DosenPortalPage() {
           </div>
         )}
 
-        {/* 4 Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border border-border/80 shadow-sm bg-card/60 backdrop-blur-xs">
+        {/* Portal Sub-Header Navigation Tabs */}
+        <div className="flex items-center gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 w-fit">
+          <button
+            type="button"
+            onClick={() => setActivePortalTab("quiz")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+              activePortalTab === "quiz"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs border border-zinc-200/80 dark:border-zinc-700"
+                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            }`}
+          >
+            <Award className="w-4 h-4 text-amber-500" />
+            <span>Monitoring Kuis Teori</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePortalTab("practicum")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+              activePortalTab === "practicum"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs border border-zinc-200/80 dark:border-zinc-700"
+                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            }`}
+          >
+            <FlaskConical className="w-4 h-4 text-indigo-500" />
+            <span>Monitoring Laporan Praktikum (7 Modul)</span>
+          </button>
+        </div>
+
+        {activePortalTab === "practicum" ? (
+          <LecturerPracticumTab selectedClass={selectedClass} />
+        ) : (
+          <>
+            {/* 4 Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="border border-border/80 shadow-sm bg-card/60 backdrop-blur-xs">
             <CardContent className="p-5 flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground font-medium">Total Mahasiswa</p>
@@ -702,6 +737,8 @@ export default function DosenPortalPage() {
             </table>
           </div>
         </Card>
+          </>
+        )}
       </main>
 
       {/* Modal Import Mahasiswa */}

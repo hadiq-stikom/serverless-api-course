@@ -12,7 +12,7 @@ import {
   Flame, Sparkles, ChevronRight, ChevronDown, BookOpen, Layers,
   Layout, Database, LockKeyhole, Image as ImageIcon, CheckCircle2,
   SlidersHorizontal, Eye, EyeOff, LogIn, LogOut, GraduationCap,
-  ArrowRight, TrendingUp
+  ArrowRight, TrendingUp, FlaskConical
 } from "lucide-react";
 import Link from "next/link";
 import { MODULES } from "@/data/curriculum";
@@ -275,6 +275,14 @@ export default function Home() {
               Buku Rancangan Pembelajaran (RPS)
             </div>
 
+            <Link href="/practicum">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase hover:bg-emerald-500/20 transition-all cursor-pointer">
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span>7 Modul Praktikum</span>
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+            </Link>
+
             {/* Mobile Auth Button */}
             <div className="lg:hidden flex items-center gap-2">
               {studentSession ? (
@@ -339,6 +347,12 @@ export default function Home() {
                     {studentSession.classGroup}
                   </Badge>
                 </div>
+                <Link href="/practicum">
+                  <Button variant="outline" size="sm" className="h-7 text-xs border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-semibold rounded-lg px-2.5 gap-1.5 shadow-xs">
+                    <FlaskConical className="w-3 h-3 text-emerald-500" />
+                    <span>Praktikum</span>
+                  </Button>
+                </Link>
                 <Link href="/dashboard">
                   <Button size="sm" className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-2.5 gap-1 shadow-xs">
                     <span>Dashboard Saya</span>
