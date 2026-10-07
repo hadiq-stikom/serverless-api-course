@@ -1960,9 +1960,15 @@ export async function createClient() {
   // ⚡ Breaking Change Next.js 16: Wajib di-await!
   const cookieStore = await cookies()
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  // 🛡️ Mendukung Publishable Key (Supabase Baru) & Legacy Anon Key
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
@@ -1988,18 +1994,21 @@ export async function createClient() {
               label: "Pemisahan Client vs Server Supabase Client",
               text: "1. Klien Browser (`client.ts` - Singleton): Menggunakan `createBrowserClient` di Client Component (`'use client'`) yang berjalan sebagai singleton di memori peramban untuk otentikasi OAuth dan langganan WebSocket Realtime.\n\n" +
                     "2. Klien Server (`server.ts` - Per-Request Instance): Menggunakan `createServerClient` di Server Component dan Server Actions; instance dibuat baru per HTTP request dengan bundle 0 kB JS ke browser.\n\n" +
-                    "3. Larangan Impor Lintas Batas: DILARANG KERAS mengimpor `server.ts` ke dalam berkas Client Component karena dependensi `'next/headers'` hanya didukung pada lingkungan server runtime.",
+                    "3. Standar Kunci API Modern (Publishable Key vs Anon Key): Supabase resmi merekomendasikan `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_...`) menggantikan legacy `anon` key (`eyJ...`). Gunakan pola dual-key fallback agar kode mahasiswa kebal terhadap perbedaan nama variabel di `.env.local`.",
               code: `// src/utils/supabase/client.ts ('use client')
 import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  // 🛡️ Mendukung Publishable Key (Supabase Baru) & Legacy Anon Key
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+
+  return createBrowserClient(supabaseUrl, supabaseKey)
 }`,
               language: "typescript",
-              caption: "Utilitas Supabase Browser Client"
+              caption: "Utilitas Supabase Browser Client dengan Dual-Key Support"
             }
           ],
           comparisonTable: {
@@ -2028,9 +2037,9 @@ export function createClient() {
                     "2. Kunci Primer Kriptografis Terpadu: Seluruh tabel menggunakan `id UUID PRIMARY KEY DEFAULT gen_random_uuid()` dengan relasi cascading `ON DELETE CASCADE`.\n\n" +
                     "3. Skalabilitas Snowballing Proyek: Skema 3 tabel ini menjadi pondasi kokoh yang akan terus dikembangkan dengan otentikasi OAuth (Minggu 5), filter pencarian (Minggu 6), dan upload media Cloudinary (Minggu 7).",
               code: `-- Skema Inti Proyek Akhir (The Serverless Odyssey)
--- 1. profiles: Ekstensi data publik auth.users
+-- 1. profiles: Entitas profil pengembang (akan disambungkan ke auth.users pada Minggu 5)
 CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name TEXT NOT NULL,
   avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL
@@ -2113,30 +2122,31 @@ import { cookies } from 'next/headers'
 
 export async function createClient() {
   const cookieStore = await cookies()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  // 🛡️ Mendukung Publishable Key (Quickstart Baru) & Legacy Anon Key
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // Dipanggil dari Server Component (aman diabaikan)
-          }
-        },
+  return createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll()
       },
-    }
-  )
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          )
+        } catch {
+          // Dipanggil dari Server Component (aman diabaikan)
+        }
+      },
+    },
+  })
 }`,
           language: "typescript",
-          explanation: "Perhatikan baris 'const cookieStore = await cookies()'. Pada Next.js 16, cookies() adalah Promise asinkron yang wajib di-await."
+          explanation: "Perhatikan baris 'const cookieStore = await cookies()' (Next.js 16) serta baris fallback supabaseKey yang mendukung format Publishable Key baru maupun Anon Key lama dari .env.local."
         },
         {
           stepNumber: 3,
@@ -2144,20 +2154,23 @@ export async function createClient() {
           code: `import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  // 🛡️ Mendukung Publishable Key (Quickstart Baru) & Legacy Anon Key
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+
+  return createBrowserClient(supabaseUrl, supabaseKey)
 }`,
           language: "typescript",
-          explanation: "Fungsi ini digunakan di dalam Client Component ('use client') untuk operasi browser seperti interaktivitas tombol login atau channel realtime."
+          explanation: "Fungsi ini digunakan di Client Component ('use client'). Pola fallback menjamin koneksi berhasil baik menggunakan token Publishable Key (sb_publishable_...) maupun Anon Key (JWT eyJ...)."
         },
         {
           stepNumber: 4,
           instruction: "Eksekusi Script SQL Skema 3 Tabel di Supabase SQL Editor",
           code: `-- Buka Dashboard Supabase -> SQL Editor -> Tempel Script Ini:
 CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name TEXT NOT NULL,
   avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL
@@ -2184,10 +2197,78 @@ CREATE TABLE tasks (
 CREATE INDEX idx_projects_user_id ON projects(user_id);
 CREATE INDEX idx_tasks_project_id ON tasks(project_id);`,
           language: "sql",
-          explanation: "Script SQL ini membangun fondasi 3 tabel relasional Proyek Akhir lengkap dengan UUID v4, relasi cascading, check constraints, dan B-Tree index."
+          explanation: "Script SQL ini membangun fondasi 3 tabel relasional Proyek Akhir lengkap dengan UUID v4, relasi cascading, check constraints, dan B-Tree index tanpa ketergantungan pada auth.users (autentikasi dibahas di Minggu 5)."
         },
         {
           stepNumber: 5,
+          instruction: "Eksekusi Seed Data Contoh & Verifikasi Relasi Multi-Tabel di Supabase SQL Editor",
+          code: `-- ====================================================================
+-- SEED DATA CONTOH (Jalankan di Supabase SQL Editor setelah DDL dibuat)
+-- Murni mengisi 3 tabel aplikasi tanpa perlu login atau tabel auth.users
+-- ====================================================================
+
+-- 1. Isi Profil Pengguna Contoh (profiles)
+-- (Menggunakan UUID deterministik agar tabel projects di bawah dapat berelasi dengan pasti)
+INSERT INTO profiles (id, full_name, avatar_url)
+VALUES (
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'Raden Wijaya (Lead Cloud Architect)',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+)
+ON CONFLICT (id) DO UPDATE
+SET full_name = EXCLUDED.full_name, avatar_url = EXCLUDED.avatar_url;
+
+-- 2. Isi Data Proyek Relasional (projects)
+INSERT INTO projects (id, user_id, title, description, budget)
+VALUES
+  (
+    'b1111111-1111-4000-a000-000000000001',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    'Arsitektur Platform E-Commerce Serverless',
+    'Pembangunan microservices backend Next.js 16 dan Supabase PostgreSQL untuk toko online modern.',
+    25000000
+  ),
+  (
+    'b2222222-2222-4000-a000-000000000002',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    'Sistem Manajemen Inventaris & AI Media CDN',
+    'Integrasi media asset pipeline dengan Cloudinary AI transformations dan optimasi edge caching.',
+    18500000
+  ),
+  (
+    'b3333333-3333-4000-a000-000000000003',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    'Aplikasi Mobile Realtime Telemetri IoT',
+    'Streaming sensor suhu dan kelembaban dengan Supabase Realtime Channels dan Webhooks.',
+    12000000
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- 3. Isi Data Tugas Terkait (tasks) dengan Status Bervariasi
+INSERT INTO tasks (project_id, title, status)
+VALUES
+  ('b1111111-1111-4000-a000-000000000001', 'Desain Skema ERD Relasional 3 Tabel', 'done'),
+  ('b1111111-1111-4000-a000-000000000001', 'Konfigurasi Supabase SSR & Async Cookies Next.js 16', 'in_progress'),
+  ('b1111111-1111-4000-a000-000000000001', 'Audit Keamanan Row Level Security (RLS)', 'todo'),
+  ('b2222222-2222-4000-a000-000000000002', 'Setup Akun Cloudinary & Upload Preset Serverless', 'done'),
+  ('b2222222-2222-4000-a000-000000000002', 'Uji Transformasi Gambar Otomatis (f_auto, q_auto)', 'in_progress'),
+  ('b3333333-3333-4000-a000-000000000003', 'Setup WebSocket Realtime Listener di Klien Browser', 'todo');
+
+-- 4. Query Verifikasi: Pastikan Relasi JOIN 1:N Berhasil Ditampilkan
+SELECT 
+  p.title AS nama_proyek,
+  pr.full_name AS pemilik,
+  COUNT(t.id) AS jumlah_tugas,
+  p.budget AS anggaran
+FROM projects p
+JOIN profiles pr ON pr.id = p.user_id
+LEFT JOIN tasks t ON t.project_id = p.id
+GROUP BY p.id, p.title, pr.full_name, p.budget;`,
+          language: "sql",
+          explanation: "Query seed ini murni mengisi 3 tabel aplikasi (profiles, projects, tasks) tanpa perlu menyentuh tabel internal auth.users (materi autentikasi dipelajari di Minggu 5). Data ini langsung bisa dibaca dan ditampilkan secara publik di Next.js Server Component tanpa perlu login!"
+        },
+        {
+          stepNumber: 6,
           instruction: "Generasi Kontrak Tipe TypeScript & Verifikasi Koneksi RSC (src/types/database.types.ts)",
           code: `# 1. Jalankan Typegen via Supabase CLI di terminal:
 npx supabase gen types typescript --project-id <your-project-id> > src/types/database.types.ts
@@ -2200,12 +2281,24 @@ export default async function HomePage() {
   const supabase = await createClient();
   const { data: projects, error } = await supabase
     .from("projects")
-    .select("id, title, budget, status");
+    .select("id, title, description, budget, tasks(id, title, status)");
 
-  return <div>{projects?.length ?? 0} Proyek Terdeteksi</div>;
+  return (
+    <div className="p-8 space-y-4">
+      <h1 className="text-xl font-bold">Daftar Proyek Serverless ({projects?.length ?? 0})</h1>
+      {projects?.map((proj) => (
+        <div key={proj.id} className="p-4 border rounded-xl">
+          <h2 className="font-semibold text-lg">{proj.title}</h2>
+          <p className="text-sm text-gray-500">{proj.description}</p>
+          <p className="text-xs font-mono text-emerald-600">Anggaran: Rp {Number(proj.budget).toLocaleString("id-ID")}</p>
+          <p className="text-xs text-gray-400 mt-2">Jumlah Tugas: {proj.tasks?.length ?? 0} Item</p>
+        </div>
+      ))}
+    </div>
+  );
 }`,
           language: "tsx",
-          explanation: "Menghubungkan tipe data hasil Supabase CLI Typegen ke klien createServerClient menjamin autocompletion penuh pada kolom tabel dan mencegah error runtime akibat kesalahan ketik nama field."
+          explanation: "Karena data seed telah dimasukkan pada Langkah 5, Server Component sekarang langsung menampilkan 3 proyek beserta relasi tugasnya secara nyata (bukan 0 proyek kosong)!"
         }
       ],
       aiPromptTemplate: {
@@ -2220,15 +2313,16 @@ Instruksi Pengerjaan:
 
 2. Rakitlah arsitektur 5 berkas modular terintegrasi yang saling terhubung:
    - Berkas 1: 'src/utils/supabase/server.ts' (Server Client)
-     Gunakan 'createServerClient' dari '@supabase/ssr' dengan implementasi async cookies Next.js 16 ('const cookieStore = await cookies()') yang membaca 'getAll()' dan menyetel 'setAll()' dalam blok try/catch.
+     Gunakan 'createServerClient' dari '@supabase/ssr' dengan implementasi async cookies Next.js 16 ('const cookieStore = await cookies()') yang membaca 'getAll()' dan menyetel 'setAll()' dalam blok try/catch. Wajib mendukung dual-key fallback ('process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!').
    - Berkas 2: 'src/utils/supabase/client.ts' (Browser Client 'use client')
-     Gunakan 'createBrowserClient' dari '@supabase/ssr' membaca environment variables publik NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY.
-   - Berkas 3: 'supabase/migrations/01_initial_schema.sql' (DDL PostgreSQL)
-     Rancang skema relasional 3 tabel: 'profiles' (FK auth.users), 'projects' (FK profiles), dan 'tasks' (FK projects). Seluruh tabel wajib menggunakan UUID v4 ('gen_random_uuid()'), foreign key 'ON DELETE CASCADE', CHECK constraints untuk validasi logika (misal budget >= 0 dan enum status: todo/in_progress/done), B-Tree indexes pada foreign key, serta trigger fungsi PL/pgSQL otomatis untuk kolom 'updated_at'.
+     Gunakan 'createBrowserClient' dari '@supabase/ssr' membaca NEXT_PUBLIC_SUPABASE_URL dan dual-key fallback ('process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!').
+   - Berkas 3: 'supabase/migrations/01_initial_schema.sql' (DDL PostgreSQL & Seed Data Contoh)
+     Rancang skema relasional 3 tabel: 'profiles' (UUID v4 mandiri 'gen_random_uuid()', akan disambungkan ke auth.users pada Minggu 5), 'projects' (FK profiles), dan 'tasks' (FK projects). Seluruh tabel wajib menggunakan UUID v4 ('gen_random_uuid()'), foreign key 'ON DELETE CASCADE', CHECK constraints untuk validasi logika (misal budget >= 0 dan enum status: todo/in_progress/done), B-Tree indexes pada foreign key, serta trigger fungsi PL/pgSQL otomatis untuk kolom 'updated_at'.
+     Wajib sertakan pula query INSERT seed data contoh yang realistis (1 profil pengembang, 3 proyek serverless lengkap dengan deskripsi & budget, serta 6 tasks berelasi dengan klausa ON CONFLICT DO NOTHING) tanpa menyentuh tabel internal auth.users agar database langsung terisi data hidup untuk verifikasi cepat tanpa login!
    - Berkas 4: 'src/types/database.types.ts' (TypeScript Definitions)
      Definisikan interface tipe data 'Database' lengkap (Tables, Row, Insert, Update, Enums) yang merefleksikan 100% skema 3 tabel di atas tanpa tipe 'any'.
    - Berkas 5: 'src/app/page.tsx' (Root Landing Page - Root Navigation Rule)
-     Perbarui halaman utama (/) dengan tampilan Hero modern: badge status koneksi Supabase terverifikasi, arsitektur skema 3 tabel, kartu metrik proyek, dan tombol Call-to-Action (CTA) "Buka Dashboard Tugas" yang menghubungkan navigasi langsung ke rute "/tasks".
+     Perbarui halaman utama (/) dengan tampilan Hero modern: badge status koneksi Supabase terverifikasi, arsitektur skema 3 tabel, kartu metrik proyek, daftar proyek real-time dari database hasil seed data, dan tombol Call-to-Action (CTA) "Buka Dashboard Tugas" yang menghubungkan navigasi langsung ke rute "/tasks".
 
 Batasan Teknis Wajib:
 - DILARANG menggunakan paket deprecated '@supabase/auth-helpers-nextjs'.
@@ -2237,7 +2331,7 @@ Batasan Teknis Wajib:
 - Seluruh input dan query wajib type-safe 100% menggunakan tipe dari 'database.types.ts' (0 tipe 'any').
 - Desain antarmuka landing page wajib PREMIUM: gunakan token semantik Tailwind (bg-card, text-card-foreground, border-border) yang adaptif terhadap Dark Mode dan Light Mode.
 - Kode yang dihasilkan harus utuh, fungsional, dan siap jalan tanpa placeholder komentar singkatan.`,
-        tip: "Formula prompt All-in-One ini otomatis menginstal SDK Supabase via CLI jika belum ada, lalu merakit 5 berkas arsitektur database Supabase SSR yang 100% menuntaskan Definition of Done Misi Minggu 4."
+        tip: "Formula prompt All-in-One ini otomatis menginstal SDK Supabase via CLI jika belum ada, lalu merakit 5 berkas arsitektur database Supabase SSR lengkap dengan DDL dan seed data contoh realistis yang 100% menuntaskan Definition of Done Misi Minggu 4."
       },
       warningZone: {
         title: "Zona Bahaya: Menghapus Tabel Tanpa Backup di Supabase!",
@@ -2246,12 +2340,13 @@ Batasan Teknis Wajib:
     },
     mission: {
       taskTitle: "Misi Minggu 4: Inisiasi Repositori Final & Migrasi Database Relasional",
-      taskDesc: "Inisiasi repositori resmi Proyek Akhir Anda, amankan kredensial Supabase di .env.local, dan jalankan migrasi 3 tabel relasional di Supabase SQL Editor.",
+      taskDesc: "Inisiasi repositori resmi Proyek Akhir Anda, amankan kredensial Supabase di .env.local, dan jalankan migrasi 3 tabel relasional beserta seed data contoh di Supabase SQL Editor.",
       definitionOfDone: [
-        "Kredensial Supabase (NEXT_PUBLIC_SUPABASE_URL & NEXT_PUBLIC_SUPABASE_ANON_KEY) terkonfigurasi di .env.local",
+        "Kredensial Supabase (NEXT_PUBLIC_SUPABASE_URL & NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / ANON_KEY) terkonfigurasi di .env.local",
         "Paket resmi @supabase/supabase-js dan @supabase/ssr terpasang tanpa dependensi usang auth-helpers",
         "Utilitas Supabase SSR (server.ts dengan await cookies() Next.js 16 dan client.ts) aktif di src/utils/supabase/",
         "Skema DDL 3 tabel (profiles, projects, tasks) berhasil dimigrasikan ke Supabase dengan UUID, FK Cascading, dan B-Tree index",
+        "Seed data contoh (1 profil, 3 projects, 6 tasks) sukses dieksekusi di database dan berhasil ditampilkan di Next.js Server Components tanpa login",
         "Berkas kontrak tipe src/types/database.types.ts siap pakai dan halaman landing root / memiliki kartu navigasi arsitektur database"
       ],
       gitBranchTask: "git checkout -b feature/supabase-database-schema"
@@ -2456,11 +2551,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() { return request.cookies.getAll(); },
@@ -2989,54 +3087,642 @@ BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
     worldId: "world-1",
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 6,
-    title: "Integrasi CRUD & URL as State (Filter & Pagination)",
-    subtitle: "Operasi database menyeluruh, sinkronisasi state via URL Search Params untuk filter dan pencarian.",
-    cpmk: "Mahasiswa mampu membuat operasi Create, Read, Update, Delete secara end-to-end serta mengelola state pencarian melalui URL parameters.",
+    title: "Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers & Keamanan API",
+    subtitle: "Membangun arsitektur ganda (Web BFF via Server Actions & Universal REST API via Route Handlers), validasi Zod terbagi, proteksi Bearer Token JWT, CORS, dan URL as State.",
+    cpmk: "Mahasiswa mampu merancang arsitektur data ganda (Server Actions untuk Web dan REST API Route Handlers untuk Mobile/Universal Clients), mengamankan endpoint publik dengan Bearer Token JWT Supabase, CORS headers, mitigasi abuse, validasi skema Zod, serta mengelola URL search params untuk filter dan pagination.",
     duration: "150 Menit Lab + 180 Menit Mandiri",
-    xp: 350,
+    xp: 400,
     concepts: {
-      summary: "Menyimpan state pencarian dan pagination di URL (?query=...&page=1) membuat halaman dapat di-bookmark dan dibagikan secara instan tanpa kehilangan konteks.",
+      summary: "Membangun aplikasi modern menuntut fleksibilitas arsitektur ganda: Web Dashboard yang cepat dan reaktif menggunakan React Server Components & Server Actions (BFF Pattern), serta RESTful API Route Handlers berbasis standar HTTP untuk melayani Klien Mobile (Flutter/React Native) dan integrasi publik. Seluruh endpoint publik diamankan dengan verifikasi Bearer Token JWT, kebijakan CORS lintas-domain, penegakan Row Level Security (RLS) PostgreSQL, serta sinkronisasi state pencarian dan pagination melalui URL search parameters.",
       points: [
-        { title: "End-to-End CRUD", desc: "Membaca data langsung di Server Component (fetch instan) dan memutasi data via Server Actions dengan revalidatePath()." },
-        { title: "Async Page Props (Next.js 16)", desc: "Di Next.js 16, props 'params' dan 'searchParams' bertipe Promise: const { query } = await searchParams; wajib di-await sebelum difilter ke query database." }
+        { title: "Dual Architecture: BFF vs Universal REST API", desc: "Server Actions untuk internal web dengan 0-bundle dan progressive enhancement; Route Handlers (route.ts) untuk melayani aplikasi mobile Flutter/React Native dengan format JSON standar." },
+        { title: "DRY Validation: Shared Zod Schemas", desc: "Satu skema Zod (taskSchema) memvalidasi form web via Server Action dan memvalidasi payload request.json() di REST Route Handler secara konsisten." },
+        { title: "Optimal REST API Security (Bearer JWT & CORS)", desc: "Autentikasi stateless via header Authorization: Bearer <jwt>, penanganan CORS Preflight OPTIONS, dan pencegahan mutlak kebocoran SERVICE_ROLE_KEY." },
+        { title: "URL as State & Server-Side Filtering", desc: "Sinkronisasi kata kunci pencarian dan pagination di URL search params (?search=...&page=...) dengan input debounced 300ms dan Supabase range queries." }
+      ],
+      diagramNote: "Mobile Client (Bearer JWT) ➔ OPTIONS Preflight (CORS) ➔ Route Handler (Zod safeParse) ➔ Supabase Auth (getUser) ➔ PostgreSQL RLS (auth.uid) ➔ JSON RFC 7807 Response",
+      deepDiveSections: [
+        {
+          title: "1. Arsitektur Komputasi Ganda: Server Actions (Web BFF) vs REST API Route Handlers (Mobile Backend)",
+          badge: "Pilar 1: Fondasi Komputasi Ganda",
+          content: "Di ekosistem Next.js modern, kita tidak lagi dipaksa memilih antara monolithic web atau decoupled API. Kita dapat menerapkan keduanya secara harmonis: Server Actions bertindak sebagai Backend-for-Frontend (BFF) untuk web peramban internal, sedangkan Route Handlers (src/app/api/.../route.ts) bertindak sebagai Universal REST API Gateway yang siap melayani aplikasi Mobile (Flutter, Kotlin, Swift) maupun integrasi pihak ketiga.",
+          subpoints: [
+            {
+              label: "BFF Server Actions vs Decoupled Universal REST API",
+              text: "1. Keterbatasan Server Actions untuk Mobile: Server Actions menggunakan format serialisasi internal Next.js (Flight RPC) yang terikat erat dengan sesi kuki peramban (browser-based cookies) dan siklus render React 19. Format ini tidak dirancang untuk dikonsumsi langsung oleh HTTP client standar seperti aplikasi mobile Flutter, cURL, atau Postman.\n\n" +
+                    "2. Next.js 16 Route Handlers sebagai API Gateway: Dengan meletakkan berkas route.ts di dalam direktori src/app/api/, Next.js membangkitkan endpoint RESTful serverless murni. Route Handlers menerima dan merespons payload baku application/json dengan HTTP Status Code semantik (200, 201, 400, 401, 404, 422, 500).\n\n" +
+                    "3. Skalabilitas Serverless Edge: Setiap pemanggilan method GET, POST, PUT, atau DELETE pada Route Handler dieksekusi secara instan on-demand di Edge Network dengan scale-to-zero, tanpa membebani server fisik yang menyala 24 jam.",
+              code: `// src/app/api/v1/tasks/route.ts
+import { NextResponse } from 'next/server';
+
+// 1. HTTP GET - Membaca data tugas untuk aplikasi mobile
+export async function GET(request: Request) {
+  return NextResponse.json({
+    status: 'success',
+    data: [{ id: '1', title: 'Belajar REST API' }]
+  });
+}
+
+// 2. HTTP POST - Membuat data tugas baru dari mobile
+export async function POST(request: Request) {
+  const body = await request.json();
+  return NextResponse.json({ status: 'success', data: body }, { status: 201 });
+}`,
+              language: "typescript",
+              caption: "Anatomi Dasar Route Handler RESTful di Next.js 16 App Router"
+            },
+            {
+              label: "Pola Reusable Business Logic & Shared Zod Schema Validation",
+              text: "1. Prinsip DRY (Don't Repeat Yourself): Kesalahan arsitektur paling umum adalah membuat dua aturan validasi terpisah untuk web dan mobile. Jika syarat panjang judul tugas berubah menjadi minimal 5 karakter, developer rawan lupa memperbarui salah satu sisi.\n\n" +
+                    "2. Skema Zod Terpusat (src/lib/schemas.ts): Kita mendeklarasikan kontrak data satu kali saja. Skema ini kemudian diimpor oleh Server Action (createTaskAction) untuk form web DAN diimpor oleh Route Handler (POST /api/v1/tasks) untuk payload JSON mobile.\n\n" +
+                    "3. safeParse vs parse: Selalu gunakan safeParse() pada Route Handler agar kegagalan validasi tidak melempar uncaught exception (500 crash), melainkan menghasilkan objek kesalahan terstruktur yang dapat dikembalikan sebagai respons HTTP 422 Unprocessable Content.",
+              code: `// src/lib/schemas.ts (Shared Contract)
+import { z } from 'zod';
+
+export const taskSchema = z.object({
+  title: z.string().min(3, 'Judul minimal 3 karakter').max(100),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+});
+
+export type TaskInput = z.infer<typeof taskSchema>;`,
+              language: "typescript",
+              caption: "Skema Zod Tunggal yang Dibagikan Antara Form Web dan REST API"
+            },
+            {
+              label: "Standarisasi Format Respons RESTful & HTTP Status Code Semantics",
+              text: "1. Format Respons RFC 7807: Aplikasi mobile membutuhkan kontrak JSON yang konsisten agar parser data (misal: serialisasi Dart di Flutter) tidak crash saat menerima error. Struktur baku wajib memuat properti: status, data (jika sukses), atau code dan details (jika gagal).\n\n" +
+                    "2. Semantika Status Code: Dilarang keras mengembalikan HTTP 200 OK jika terjadi kesalahan (anti-pattern: { status: 200, error: 'Password salah' }). Gunakan kode status resmi:\n" +
+                    "   - 200 OK: Pembacaan data (GET) atau pembaruan sukses (PUT).\n" +
+                    "   - 201 Created: Pembuatan entitas baru berhasil (POST).\n" +
+                    "   - 400 Bad Request: Format JSON rusak atau malformed syntax.\n" +
+                    "   - 401 Unauthorized: Kredensial Bearer Token tidak ada atau kedaluwarsa.\n" +
+                    "   - 404 Not Found: Data dengan ID spesifik tidak ditemukan di database.\n" +
+                    "   - 422 Unprocessable Content: Data tidak lolos validasi skema Zod.\n" +
+                    "   - 500 Internal Server Error: Kesalahan sistem serverless / database terputus.",
+              code: `// Format Standar Respons Sukses (200 OK / 201 Created):
+{
+  "status": "success",
+  "data": { "id": "uuid-1", "title": "Implementasi Flutter REST Client" },
+  "meta": { "page": 1, "total": 1 }
+}
+
+// Format Standar Respons Kesalahan (422 Unprocessable Content):
+{
+  "status": "error",
+  "code": "VALIDATION_ERROR",
+  "message": "Input data tidak memenuhi validasi skema",
+  "errors": [{ "field": "title", "message": "Judul minimal 3 karakter" }]
+}`,
+              language: "typescript",
+              caption: "Standarisasi Struktur Payload JSON Sukses dan Error RFC 7807"
+            }
+          ],
+          comparisonTable: {
+            headers: ["Karakteristik", "Server Actions ('use server')", "REST Route Handlers (/api/...)", "Supabase PostgREST (Direct)"],
+            rows: [
+              ["Target Klien Utama", "Web Internal Next.js (Dashboard)", "Universal: Mobile, Web, Webhook, API Publik", "Aplikasi Mobile / Frontend Client Langsung"],
+              ["Format Pertukaran Data", "React Flight RPC Payload / multipart", "Standard JSON (application/json)", "JSON via PostgREST Specification"],
+              ["Metode Autentikasi", "Browser Cookies (Async cookieStore)", "Bearer Token (JWT di Header Authorization)", "Anon Key / User JWT via SDK"],
+              ["Status Respons HTTP", "200 OK (dengan mutasi state internal)", "Semantik (200, 201, 400, 401, 404, 422)", "Status Codes Baku PostgREST"],
+              ["Lapisan Business Logic", "Validasi Zod + mutasi data server", "Validasi Zod + Logging + Integrasi pihak ke-3", "Tergantung Database Constraints & Triggers"],
+              ["CORS Requirement", "Tidak perlu (Same-Origin Web)", "Wajib dikonfigurasi untuk Mobile & Public", "Dikonfigurasi di Dashboard Supabase"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Prinsip Single Source of Truth",
+            text: "Jangan pernah membuat file skema validasi terpisah untuk Web dan API. Selalu impor skema yang sama dari 'src/lib/schemas.ts' agar seluruh aturan bisnis aplikasi Anda terpusat di satu titik."
+          }
+        },
+        {
+          title: "2. Standar Keamanan Optimal Serverless REST API (Bearer JWT, CORS & RLS)",
+          badge: "Pilar 2: Benteng Keamanan REST API",
+          content: "Membuka endpoint REST API ke publik berarti mengekspos aplikasi ke potensi serangan brute-force, pencurian data lintas akun, dan manipulasi origin. Kita menerapkan standar keamanan industri berlapis: autentikasi Bearer Token JWT stateless, konfigurasi CORS (Cross-Origin Resource Sharing) dengan penanganan Preflight OPTIONS, serta penegakan mutlak Row Level Security (RLS) PostgreSQL.",
+          subpoints: [
+            {
+              label: "Autentikasi Stateless Bearer Token JWT & Validasi Supabase Auth",
+              text: "1. Mengapa Aplikasi Mobile Menggunakan Bearer Token: Berbeda dengan web browser yang otomatis mengelola cookie, aplikasi mobile (Flutter/React Native) menyimpan Access Token di penyimpanan aman perangkat (Flutter Secure Storage / Keychain). Setiap kali mobile memanggil API, token tersebut dikirimkan pada header: `Authorization: Bearer <jwt_access_token>`.\n\n" +
+                    "2. Ekstraksi & Verifikasi di Route Handler: Route Handler membaca header Authorization, memisahkan prefiks 'Bearer ', lalu memanggil method resmi `supabase.auth.getUser(token)`. Supabase akan memverifikasi tanda tangan kriptografis token secara stateless.\n\n" +
+                    "3. Penolakan Instan (Fast-Fail 401): Jika header tidak ditemukan, token berformat salah, atau token telah kedaluwarsa, Route Handler langsung mengembalikan respons `401 Unauthorized` sebelum mengeksekusi kueri apa pun ke database.",
+              code: `// src/lib/api-auth.ts
+import { createClient } from '@supabase/supabase-js';
+
+export async function verifyApiAuth(request: Request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { user: null, error: 'Header Authorization: Bearer <token> wajib disertakan' };
+  }
+
+  const token = authHeader.split(' ')[1];
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  const supabase = createClient(
+    supabaseUrl,
+    supabaseKey,
+    { global: { headers: { Authorization: \`Bearer \${token}\` } } }
+  );
+
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return { user: null, error: 'Token tidak valid atau telah kedaluwarsa' };
+  }
+
+  return { user, supabase, error: null };
+}`,
+              language: "typescript",
+              caption: "Helper Ekstraksi & Verifikasi Bearer Token JWT pada Route Handler"
+            },
+            {
+              label: "CORS (Cross-Origin Resource Sharing) & Penanganan Preflight OPTIONS",
+              text: "1. Mekanisme Keamanan Same-Origin Browser: Saat aplikasi web frontend (misal: frontend terpisah di domain client.com) atau mobile web memanggil API di api.com, browser secara otomatis memblokir respons kecuali server memberikan izin eksplisit via header CORS.\n\n" +
+                    "2. Preflight Request (HTTP OPTIONS): Sebelum peramban mengirimkan method berbahaya (POST, PUT, DELETE) atau header non-standar (Authorization), browser mengirim permintaan pendahuluan otomatis bertipe `OPTIONS`. Route Handler wajib menangkap method OPTIONS ini dan merespons dengan status 204 No Content beserta header CORS yang sah.\n\n" +
+                    "3. Header CORS Wajib: Respons API wajib menyertakan:\n" +
+                    "   - `Access-Control-Allow-Origin`: Menentukan domain mana yang diizinkan (gunakan '*' untuk mobile/public API atau domain spesifik untuk dashboard web).\n" +
+                    "   - `Access-Control-Allow-Methods`: 'GET, POST, PUT, DELETE, OPTIONS'.\n" +
+                    "   - `Access-Control-Allow-Headers`: 'Content-Type, Authorization'.",
+              code: `// Helper CORS Headers baku di Next.js 16:
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Penanganan Preflight Request di Route Handler:
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}`,
+              language: "typescript",
+              caption: "Konfigurasi Header CORS dan Penanganan Preflight OPTIONS"
+            },
+            {
+              label: "Isolasi Keamanan: RLS Enforcement vs Bahaya Service Role Key di Endpoint Publik",
+              text: "1. Golden Rule Keamanan Cloud: DILARANG KERAS mengimpor `SUPABASE_SERVICE_ROLE_KEY` di dalam Route Handler yang dapat diakses publik! Service Role Key memiliki hak akses admin super (bypass all RLS) yang menonaktifkan seluruh kebijakan Row Level Security.\n\n" +
+                    "2. Bahaya Privilege Escalation: Jika Route Handler menggunakan Service Role Key, seorang penyerang dapat mengirim request `GET /api/v1/tasks/uuid-orang-lain` dan berhasil membaca data rahasia orang lain karena RLS tidak dievaluasi oleh PostgreSQL.\n\n" +
+                    "3. Penerapan RLS yang Benar: Selalu bangun instance client Supabase menggunakan token pengguna dari header request: `createClient(url, anonKey, { global: { headers: { Authorization: \`Bearer \${token}\` } } })`. Dengan demikian, PostgreSQL secara otomatis menyisipkan klaim `auth.uid() = user_id` ke setiap kueri SELECT, INSERT, UPDATE, dan DELETE.",
+              code: `// ❌ ANTI-PATTERN FATAL (Bypass RLS - Bahaya Kebocoran Data!):
+// const supabaseAdmin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+// await supabaseAdmin.from('tasks').select('*'); // Mengembalikan seluruh data semua user!
+
+// ✅ BEST PRACTICE TERUJI (RLS Enforced - Terisolasi Sempurna):
+const supabaseUser = createClient(url, anonKey, {
+  global: { headers: { Authorization: \`Bearer \${token}\` } }
+});
+// Postgres otomatis menyaring hanya data milik user yang sedang login!
+const { data, error } = await supabaseUser.from('tasks').select('*');`,
+              language: "typescript",
+              caption: "Perbandingan Fatal: Bahaya Service Role Key vs Penegakan User Client RLS"
+            }
+          ],
+          callout: {
+            type: "warning",
+            title: "Zona Bahaya Privilege Escalation",
+            text: "Jangan pernah menggunakan SUPABASE_SERVICE_ROLE_KEY di Route Handler publik! Kunci ini membypass seluruh kebijakan Row Level Security (RLS) sehingga penyerang dapat membaca, mengubah, dan menghapus data milik pengguna lain."
+          }
+        },
+        {
+          title: "3. Endpoint REST API CRUD Lengkap & Penanganan Async Params Next.js 16",
+          badge: "Pilar 3: Implementasi Route Handlers",
+          content: "Implementasi REST API di Next.js 16 App Router terbagi menjadi dua kategori struktur rute: Endpoint Koleksi (/api/v1/tasks) untuk operasi jamak, serta Endpoint Item Spesifik (/api/v1/tasks/[id]) untuk operasi data tunggal. Next.js 16 memperkenalkan perubahan breaking change arsitektur di mana parameter rute dinamis bersifat asinkron (Promise).",
+          subpoints: [
+            {
+              label: "Endpoint Koleksi: GET (Filtering & Pagination) & POST (Creation)",
+              text: "1. Struktur Berkas src/app/api/v1/tasks/route.ts: Menangani pemanggilan pada path koleksi. Method GET menerima URL query parameters untuk filter status, pencarian kata kunci, dan pagination.\n\n" +
+                    "2. Membaca Query String di Route Handler: Gunakan `const { searchParams } = new URL(request.url)` untuk mengekstrak parameter seperti ?search=laporan&page=1&limit=10.\n\n" +
+                    "3. Method POST dengan Validasi Zod: Membaca request body dengan `await request.json()`, memvalidasi data menggunakan `taskSchema.safeParse(body)`, lalu menyisipkan `user_id: user.id` dari token terverifikasi sebelum mengirim kueri INSERT ke Supabase.",
+              code: `// src/app/api/v1/tasks/route.ts
+import { NextResponse } from 'next/server';
+import { verifyApiAuth } from '@/lib/api-auth';
+import { taskSchema } from '@/lib/schemas';
+import { corsHeaders } from '@/lib/api-response';
+
+export async function GET(request: Request) {
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) {
+    return NextResponse.json({ status: 'error', message: error }, { status: 401, headers: corsHeaders });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get('search');
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '10');
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase.from('tasks').select('*', { count: 'exact' }).range(from, to);
+  if (search) query = query.ilike('title', \`%\${search}%\`);
+
+  const { data, count, error: dbError } = await query;
+  if (dbError) {
+    return NextResponse.json({ status: 'error', message: dbError.message }, { status: 500, headers: corsHeaders });
+  }
+
+  return NextResponse.json({
+    status: 'success',
+    data,
+    meta: { page, limit, total: count }
+  }, { headers: corsHeaders });
+}`,
+              language: "typescript",
+              caption: "Implementasi Route Handler Koleksi GET dengan Filter & Pagination"
+            },
+            {
+              label: "Endpoint Item Spesifik: GET by ID, PUT & DELETE (Async Params Next.js 16)",
+              text: "1. Breaking Change Next.js 16 pada Route Handler Params: Parameter dinamis kedua dari Route Handler sekarang bertipe Promise: `{ params }: { params: Promise<{ id: string }> }`. Anda WAJIB mengeksekusi `const { id } = await params;` sebelum membaca nilai ID.\n\n" +
+                    "2. Operasi PUT (Update Parsial/Penuh): Memvalidasi perubahan data dan memperbarui record dengan klausa `.eq('id', id)`. Berkat RLS, operasi update otomatis gagal jika data tersebut bukan milik user yang sedang login.\n\n" +
+                    "3. Operasi DELETE (Penghapusan Bersih): Menghapus entitas berdasarkan ID dan mengembalikan konfirmasi respons JSON dengan status 200 OK.",
+              code: `// src/app/api/v1/tasks/[id]/route.ts
+import { NextResponse } from 'next/server';
+import { verifyApiAuth } from '@/lib/api-auth';
+import { corsHeaders } from '@/lib/api-response';
+
+// ⚠️ Next.js 16: params adalah Promise<{ id: string }>
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params; // Wajib di-await!
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) {
+    return NextResponse.json({ status: 'error', message: error }, { status: 401, headers: corsHeaders });
+  }
+
+  const { error: dbError } = await supabase.from('tasks').delete().eq('id', id);
+  if (dbError) {
+    return NextResponse.json({ status: 'error', message: dbError.message }, { status: 500, headers: corsHeaders });
+  }
+
+  return NextResponse.json({
+    status: 'success',
+    message: \`Tugas dengan ID '\${id}' berhasil dihapus\`
+  }, { headers: corsHeaders });
+}`,
+              language: "typescript",
+              caption: "Implementasi DELETE Route Handler dengan Async Params Next.js 16"
+            }
+          ],
+          callout: {
+            type: "info",
+            title: "Breaking Change Next.js 16: Async Params",
+            text: "Pada Next.js 16, context.params pada Route Handlers dan Server Components bersifat asinkron. Jangan pernah langsung menulis params.id tanpa 'await params', karena hal tersebut akan memicu runtime error atau mengembalikan nilai undefined."
+          }
+        },
+        {
+          title: "4. URL as State & Server-Side Filtering & Pagination",
+          badge: "Pilar 4: State Management & UX",
+          content: "Pada arsitektur modern, URL peramban adalah Single Source of Truth untuk status antarmuka pengguna. Menyimpan kata kunci pencarian, filter status, dan nomor halaman di URL parameters (?search=...&page=...) menjamin bahwa halaman dapat di-refresh, di-bookmark, dan dibagikan secara instan tanpa kehilangan konteks data.",
+          subpoints: [
+            {
+              label: "URL Search Parameters sebagai Single Source of Truth",
+              text: "1. Kekurangan Menyimpan Filter di useState Lokal: Jika state pencarian hanya disimpan di memori React (useState), saat pengguna menyalin tautan website dan mengirimkannya ke rekan kerja, rekan kerja akan membuka halaman kosong tanpa filter yang sama. Demikian pula saat tombol reload browser ditekan, filter akan hilang.\n\n" +
+                    "2. URL as State Pattern: Setiap ketikan input memperbarui query string URL peramban melalui pustaka Next.js (`useRouter`, `usePathname`, dan `useSearchParams`). Server Component di App Router secara otomatis menangkap nilai terbaru via `await searchParams` dan merender ulang data dari database.\n\n" +
+                    "3. Browser History & Navigasi Back/Forward: Dengan URL as State, tombol Back dan Forward peramban berfungsi secara alami untuk mengembalikan filter sebelumnya.",
+              code: `// src/components/tasks/task-search-input.tsx ('use client')
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useDebouncedCallback } from 'use-debounce';
+
+export function TaskSearchInput() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Debounce 300ms untuk mencegah spam pergantian URL saat user mengetik cepat
+  const handleSearch = useDebouncedCallback((term: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set('search', term);
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '1'); // Reset ke halaman 1 saat pencarian baru
+    router.replace(\`\${pathname}?\${params.toString()}\`);
+  }, 300);
+
+  return (
+    <input
+      type="text"
+      placeholder="Cari tugas..."
+      defaultValue={searchParams.get('search')?.toString()}
+      onChange={(e) => handleSearch(e.target.value)}
+      className="px-3 py-2 border rounded-lg"
+    />
+  );
+}`,
+              language: "typescript",
+              caption: "Komponen Input Pencarian dengan Sinkronisasi URL Search Params & Debounce"
+            },
+            {
+              label: "Server-Side Range Query Supabase & Debounced Input",
+              text: "1. Async searchParams di Next.js 16: Pada Server Component page.tsx, props searchParams bertipe Promise: `const { search, page } = await searchParams;`.\n\n" +
+                    "2. Rumus Matematika Pagination Supabase: Supabase menggunakan method `.range(from, to)`. Rumus perhitungan offset dan limit:\n" +
+                    "   - `from = (page - 1) * pageSize`\n" +
+                    "   - `to = from + pageSize - 1`\n" +
+                    "   Contoh untuk pageSize = 10: Halaman 1 membaca range(0, 9), Halaman 2 membaca range(10, 19), Halaman 3 membaca range(20, 29).\n\n" +
+                    "3. ILIKE Search di Postgres: Gunakan `.ilike('title', \`%\${search}%\`)` untuk pencarian case-insensitive yang efisien memanfaatkan B-Tree index pada kolom teks.",
+              code: `// src/app/(dashboard)/tasks/page.tsx (Server Component)
+import { createClient } from '@/utils/supabase/server';
+
+export default async function TasksPage({
+  searchParams
+}: {
+  searchParams: Promise<{ search?: string; page?: string }>
+}) {
+  const { search, page = '1' } = await searchParams; // ⚠️ Next.js 16 await
+  const currentPage = Math.max(1, parseInt(page));
+  const pageSize = 10;
+  const from = (currentPage - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const supabase = await createClient();
+  let query = supabase.from('tasks').select('*', { count: 'exact' }).range(from, to);
+
+  if (search) {
+    query = query.ilike('title', \`%\${search}%\`);
+  }
+
+  const { data: tasks, count } = await query;
+  return <div>{/* Render daftar tugas & pagination control */}</div>;
+}`,
+              language: "typescript",
+              caption: "Pembacaan searchParams Asinkron & Supabase Range Query di Server Component"
+            }
+          ]
+        }
       ]
     },
     references: [
-      { title: "Next.js Revalidating Data", url: "https://nextjs.org/docs/app/building-your-application/data-fetching/fetching-caching-and-revalidating#revalidating-data", source: "Next.js" },
-      { title: "Supabase JS Client Queries", url: "https://supabase.com/docs/reference/javascript/select", source: "Supabase" }
+      { title: "Next.js Route Handlers Guide", url: "https://nextjs.org/docs/app/building-your-application/routing/route-handlers", source: "Next.js" },
+      { title: "Supabase Auth REST API & Bearer Tokens", url: "https://supabase.com/docs/guides/auth/auth-rest-api", source: "Supabase" },
+      { title: "MDN Web Docs: Cross-Origin Resource Sharing (CORS)", url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS", source: "Mozilla" },
+      { title: "RFC 7807: Problem Details for HTTP APIs", url: "https://datatracker.ietf.org/doc/html/rfc7807", source: "IETF" }
     ],
     lab: {
-      prerequisites: ["Tabel Supabase & Auth aktif"],
+      prerequisites: ["Proyek Modul 5 (Supabase Auth & Database) berjalan", "Pustaka use-debounce terpasang"],
       steps: [
         {
           stepNumber: 1,
-          instruction: "Buat fungsi Server Action untuk create dan delete data dengan revalidasi",
-          code: `import { revalidatePath } from 'next/cache'
-import { createClient } from '@/utils/supabase/server'
+          instruction: "Instal modul pembantu debounce dan buat berkas utilitas respons standar & CORS",
+          code: `npm install use-debounce
 
-export async function deleteTask(id: string) {
-  const supabase = await createClient()
-  await supabase.from('tasks').delete().eq('id', id)
-  revalidatePath('/dashboard')
+// src/lib/api-response.ts
+import { NextResponse } from 'next/server';
+
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export function apiSuccess<T>(data: T, meta?: any, status = 200) {
+  return NextResponse.json({ status: 'success', data, meta }, { status, headers: corsHeaders });
+}
+
+export function apiError(message: string, code = 'BAD_REQUEST', status = 400, details?: any) {
+  return NextResponse.json({ status: 'error', code, message, details }, { status, headers: corsHeaders });
 }`,
-          language: "typescript"
+          language: "typescript",
+          explanation: "Helper ini menjamin seluruh endpoint REST API mengembalikan format JSON yang seragam dan menyertakan header CORS untuk akses aplikasi mobile."
+        },
+        {
+          stepNumber: 2,
+          instruction: "Buat helper verifikasi autentikasi Bearer Token JWT di src/lib/api-auth.ts",
+          code: `// src/lib/api-auth.ts
+import { createClient } from '@supabase/supabase-js';
+
+export async function verifyApiAuth(request: Request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { user: null, supabase: null, error: 'Kredensial Bearer Token tidak ditemukan di header' };
+  }
+
+  const token = authHeader.split(' ')[1];
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  const supabase = createClient(
+    supabaseUrl,
+    supabaseKey,
+    { global: { headers: { Authorization: \`Bearer \${token}\` } } }
+  );
+
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return { user: null, supabase: null, error: 'Token autentikasi tidak valid atau telah kedaluwarsa' };
+  }
+
+  return { user, supabase, error: null };
+}`,
+          language: "typescript",
+          explanation: "Helper ini memvalidasi token JWT secara stateless ke Supabase Auth dan membangun instance database client yang patuh pada RLS."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Bangun Endpoint Koleksi REST API di src/app/api/v1/tasks/route.ts",
+          code: `// src/app/api/v1/tasks/route.ts
+import { verifyApiAuth } from '@/lib/api-auth';
+import { apiSuccess, apiError, corsHeaders } from '@/lib/api-response';
+import { taskSchema } from '@/lib/schemas';
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders });
+}
+
+export async function GET(request: Request) {
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
+
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get('search');
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase.from('tasks').select('*', { count: 'exact' }).range(from, to);
+  if (search) query = query.ilike('title', \`%\${search}%\`);
+
+  const { data, count, error: dbError } = await query;
+  if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
+
+  return apiSuccess(data, { page, limit, total: count });
+}
+
+export async function POST(request: Request) {
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
+
+  try {
+    const body = await request.json();
+    const parsed = taskSchema.safeParse(body);
+    if (!parsed.success) {
+      return apiError('Validasi data gagal', 'VALIDATION_ERROR', 422, parsed.error.flatten().fieldErrors);
+    }
+
+    const { data, error: dbError } = await supabase
+      .from('tasks')
+      .insert({ ...parsed.data, user_id: user.id })
+      .select()
+      .single();
+
+    if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
+    return apiSuccess(data, undefined, 201);
+  } catch {
+    return apiError('Format JSON malformed atau tidak valid', 'BAD_REQUEST', 400);
+  }
+}`,
+          language: "typescript",
+          explanation: "Endpoint ini melayani pembacaan koleksi tugas dengan filter pencarian dan pagination, serta pembuatan tugas baru dengan validasi skema Zod."
+        },
+        {
+          stepNumber: 4,
+          instruction: "Bangun Endpoint Item Spesifik di src/app/api/v1/tasks/[id]/route.ts",
+          code: `// src/app/api/v1/tasks/[id]/route.ts
+import { verifyApiAuth } from '@/lib/api-auth';
+import { apiSuccess, apiError, corsHeaders } from '@/lib/api-response';
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders });
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params; // ⚠️ Next.js 16 wajib await params
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
+
+  const { error: dbError } = await supabase.from('tasks').delete().eq('id', id);
+  if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
+
+  return apiSuccess({ message: \`Data tugas '\${id}' berhasil dihapus\` });
+}`,
+          language: "typescript",
+          explanation: "Endpoint dinamis ini menangani penghapusan item tugas spesifik berdasarkan UUID yang diproteksi RLS."
+        },
+        {
+          stepNumber: 5,
+          instruction: "Uji coba pemanggilan endpoint menggunakan cURL atau Thunder Client",
+          code: `# 1. Tes Preflight CORS:
+curl -X OPTIONS http://localhost:3000/api/v1/tasks -i
+
+# 2. Tes GET tanpa Token (Wajib ditolak 401):
+curl -X GET http://localhost:3000/api/v1/tasks -i
+
+# 3. Tes GET dengan Bearer Token:
+curl -X GET "http://localhost:3000/api/v1/tasks?search=laporan&page=1" \\
+  -H "Authorization: Bearer YOUR_SUPABASE_ACCESS_TOKEN"`,
+          language: "bash",
+          explanation: "Pengujian cURL memverifikasi penegakan status 401 Unauthorized saat tanpa token dan respons 200 OK saat token valid disertakan."
         }
       ],
       aiPromptTemplate: {
-        role: "Full-Stack Specialist",
-        prompt: "Buatkan komponen pencarian instan (Search Bar) di Next.js App Router yang mengubah query parameter URL (?search=...) menggunakan useRouter dan usePathname dengan debounce 300ms.",
-        tip: "Gunakan library use-debounce untuk mencegah pemanggilan berlebihan saat user mengetik."
+        role: "Senior Cloud Architect & REST API Specialist",
+        prompt: `Bertindaklah sebagai Senior Cloud Architect & Next.js 16 Specialist.
+Tugas Anda adalah merancang arsitektur ganda (Dual Architecture) pada aplikasi "The Serverless Odyssey":
+1. Server Actions untuk kebutuhan Web Dashboard internal.
+2. REST API Route Handlers terproteksi (/api/v1/tasks) untuk kebutuhan Klien Mobile (Flutter/React Native) dan integrasi publik.
+
+Silakan periksa dan pasang dependensi prasyarat:
+- Pastikan pustaka 'use-debounce' terpasang: 'npm install use-debounce'
+- Pastikan skema Zod 'taskSchema' di 'src/lib/schemas.ts' dapat diimpor secara modular.
+
+Rakit kode produksi utuh siap jalan (tanpa placeholder atau komentar terpotong) untuk 6 berkas berikut:
+1. 'src/lib/api-response.ts': Standarisasi JSON response helper (apiSuccess, apiError) dan objek 'corsHeaders' lengkap dengan penanganan Access-Control-Allow-*.
+2. 'src/lib/api-auth.ts': Helper ekstraksi 'Authorization: Bearer <token>', verifikasi via 'supabase.auth.getUser(token)', dan inisialisasi client Supabase berbasis token pengguna (menjaga kepatuhan RLS, 0 pemakaian service role key).
+3. 'src/app/api/v1/tasks/route.ts': Route Handler koleksi:
+   - 'OPTIONS': Handler preflight CORS 204 No Content.
+   - 'GET': Ekstraksi URL query string (?search, ?page, ?limit), kueri range Supabase, dan pagination metadata.
+   - 'POST': Validasi JSON body via 'taskSchema.safeParse()', penolakan 422 jika gagal, penyisipan user_id dari token, dan pengembalian 201 Created.
+4. 'src/app/api/v1/tasks/[id]/route.ts': Dynamic Route Handler:
+   - Menangani Next.js 16 async params: 'const { id } = await params;'
+   - 'OPTIONS', 'GET' spesifik, dan 'DELETE' terproteksi Bearer Auth.
+5. 'src/components/tasks/task-search-input.tsx': Komponen Client ('use client') input pencarian tersinkronisasi URL via useRouter & useSearchParams dengan debounce 300ms.
+6. 'src/app/page.tsx': Perbarui Landing Page utama di root '/' dengan Banner Hero navigasi dan tombol CTA jelas menuju Dashboard Tugas (/tasks) serta dokumentasi singkat endpoint REST API Mobile.
+
+Batasan Arsitektur Ketat:
+- Dilarang keras menggunakan 'SUPABASE_SERVICE_ROLE_KEY' di Route Handler publik.
+- Next.js 16: Parameter dinamis 'params' dan 'searchParams' WAJIB di-await.
+- 0 tipe 'any', gunakan TypeScript strict.`,
+        tip: "Dapatkan Access Token pengguna yang sedang login di browser melalui console peramban: `(await supabase.auth.getSession()).data.session?.access_token` untuk menguji endpoint via Postman atau cURL."
+      },
+      warningZone: {
+        title: "Zona Bahaya: Kebocoran Data Lintas Pengguna via Service Role Key",
+        desc: "Jangan pernah menggunakan SUPABASE_SERVICE_ROLE_KEY di dalam REST Route Handler publik. Kunci ini mematikan seluruh Row Level Security (RLS) PostgreSQL, sehingga penyerang dapat membaca dan menghapus tugas milik pengguna lain hanya dengan menebak parameter UUID."
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 6: Fitur CRUD & Filter Lengkap",
-      taskDesc: "Lengkapi aplikasi Proyek Akhir Anda dengan alur Create, Read, Update, Delete dan fitur filter/pencarian data.",
+      taskTitle: "Misi Minggu 6: Implementasi REST API Terproteksi & Search URL State",
+      taskDesc: "Bangun endpoint REST API serverless lengkap untuk aplikasi mobile yang diamankan dengan Bearer Token JWT dan CORS, serta integrasikan fitur pencarian URL as State pada dashboard web.",
       definitionOfDone: [
-        "Data dapat ditambahkan dan dihapus secara langsung dari antarmuka web",
-        "Fungsi revalidatePath memperbarui tampilan data tanpa reload halaman",
-        "Fitur filter atau pencarian bekerja berdasarkan URL query parameter"
+        "Endpoint REST API GET /api/v1/tasks mendukung filter pencarian dan pagination dengan format JSON standar",
+        "Endpoint POST /api/v1/tasks memvalidasi input via Zod dan mengembalikan 201 Created atau 422 Unprocessable Content",
+        "Endpoint terproteksi DELETE /api/v1/tasks/[id] mewajibkan header Authorization: Bearer <token> dan menolak request ilegal dengan 401 Unauthorized",
+        "Header CORS (Access-Control-Allow-*) dan preflight OPTIONS terpasang pada route handler untuk mendukung akses klien mobile",
+        "Halaman dashboard web mengintegrasikan pencarian instan tersinkronisasi URL (?search=...) dengan debounce 300ms"
       ],
-      gitBranchTask: "git checkout -b feature/crud-url-state"
+      gitBranchTask: "git checkout -b feature/crud-rest-api-security"
+    },
+    quiz: {
+      totalQuestions: 6,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Mengapa fungsi Server Actions Next.js ('use server') tidak cocok dikonsumsi secara langsung oleh aplikasi mobile (Flutter / React Native), dan bagaimana Route Handlers (route.ts) menyelesaikan kebutuhan arsitektur ini?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa Server Actions menggunakan format serialisasi internal Next.js (Flight RPC) yang terikat dengan browser cookie session dan siklus render React Web. Route Handlers menyelesaikan masalah ini dengan menyediakan endpoint HTTP RESTful universal berbasis format JSON standar (application/json) dan status code HTTP semantik yang dapat dikonsumsi oleh HTTP client multi-platform.",
+          keyConcepts: ["Flight RPC vs JSON REST", "Browser Cookie Session vs Stateless HTTP", "Universal Client Interoperability", "Route Handlers sebagai API Gateway"],
+          weight: 15,
+          socraticHint: "Bandingkan format data yang dihasilkan oleh Server Action saat form disubmit dengan respons JSON murni dari endpoint REST API. Bagaimana aplikasi mobile di luar browser menangani kedua format tersebut?"
+        },
+        {
+          id: 2,
+          question: "Jelaskan alur verifikasi autentikasi Bearer Token JWT pada Route Handler Next.js 16! Mengapa pendekatan ini disebut stateless dibanding sistem sesi berbasis kuki peramban tradisional?",
+          rubric: "Mahasiswa wajib menguraikan bahwa klien mobile menyertakan token JWT pada header 'Authorization: Bearer <jwt>'. Route Handler mengekstrak token dan memverifikasinya melalui supabase.auth.getUser(token) secara kriptografis tanpa mencari session ID di memori RAM server, sehingga cocok dengan karakteristik serverless yang scale-to-zero.",
+          keyConcepts: ["Header Authorization: Bearer", "Stateless JWT Verification", "Scale-to-Zero Compatibility", "supabase.auth.getUser()"],
+          weight: 18,
+          socraticHint: "Pikirkan apa yang terjadi jika serverless function mati setelah mengeksekusi request. Mengapa server tidak perlu mengingat sesi login sebelumnya saat memproses Bearer Token pada request berikutnya?"
+        },
+        {
+          id: 3,
+          question: "Apa itu mekanisme CORS Preflight (HTTP OPTIONS) dan mengapa peramban web mengirimkannya secara otomatis sebelum memproses request POST, PUT, atau DELETE ke endpoint REST API yang berbeda origin?",
+          rubric: "Mahasiswa wajib menjelaskan mekanisme Same-Origin Policy pada peramban, peran HTTP OPTIONS sebagai preflight handshake untuk menanyakan izin apakah origin, method, dan header (seperti Authorization) diizinkan oleh server, serta kewajiban Route Handler merespons dengan header Access-Control-Allow-* dan status 204 No Content.",
+          keyConcepts: ["Cross-Origin Resource Sharing (CORS)", "Preflight Request (OPTIONS)", "Same-Origin Policy", "Access-Control-Allow-Headers", "204 No Content"],
+          weight: 18,
+          socraticHint: "Bayangkan sebuah website jahat di browser mencoba memanggil API bank Anda secara diam-diam dengan membawa kredensial Anda. Bagaimana preflight OPTIONS melindungi pengguna sebelum request mutasi data dieksekusi?"
+        },
+        {
+          id: 4,
+          question: "Mengapa penggunaan SUPABASE_SERVICE_ROLE_KEY di dalam Route Handler yang dapat diakses publik merupakan bencana keamanan fatal (Privilege Escalation)? Bagaimana cara yang benar menginisialisasi client Supabase di dalam Route Handler?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa Service Role Key membypass 100% kebijakan Row Level Security (RLS) PostgreSQL sehingga penyerang dapat membaca dan memanipulasi data milik semua pengguna. Pendekatan yang benar adalah menggunakan ANON_KEY yang dikombinasikan dengan token pengguna pada header Authorization agar PostgreSQL tetap menerapkan isolasi RLS berbasis auth.uid().",
+          keyConcepts: ["Bypass Row Level Security (RLS)", "Privilege Escalation Vulnerability", "Anon Key + Bearer Header", "Isolasi Data auth.uid()"],
+          weight: 18,
+          socraticHint: "Apa yang terjadi pada evaluasi klausul 'USING (auth.uid() = user_id)' di PostgreSQL jika koneksi database dilakukan menggunakan peran superuser / service_role?"
+        },
+        {
+          id: 5,
+          question: "Mengapa pada aplikasi web Next.js Server Components, state pencarian dan pagination sebaiknya disimpan di URL Search Parameters (?search=...&page=...) dibanding hanya di-state lokal React (useState)?",
+          rubric: "Mahasiswa wajib menjelaskan konsep URL as Single Source of Truth: halaman menjadi shareable, bookmarkable, mendukung navigasi browser (back/forward history), serta memungkinkan Server Component membaca searchParams secara langsung di sisi server untuk fetching data teroptimasi tanpa client-side waterfall.",
+          keyConcepts: ["URL as Single Source of Truth", "Bookmarkable & Shareable State", "Server-Side Fetching via searchParams", "Browser History Navigation", "Debounce Input"],
+          weight: 16,
+          socraticHint: "Jika Anda memfilter daftar tugas dengan kata kunci 'penting' dan menyalin link di address bar peramban untuk dikirimkan ke teman, apa yang terjadi jika filter tersebut hanya disimpan di useState lokal?"
+        },
+        {
+          id: 6,
+          question: "Bagaimana standarisasi format respons JSON (RFC 7807) dan penggunaan semantika HTTP Status Code (200, 201, 400, 401, 404, 422, 500) meningkatkan stabilitas aplikasi mobile klien?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa format terstruktur (status, data, error, code, details) memudahkan deserialisasi model di aplikasi mobile (seperti Dart di Flutter), dan status code semantik memungkinkan klien menentukan alur UI secara otomatis (misal: redirect ke login saat 401, mapping error ke form field saat 422, atau menampilkan banner retry saat 500).",
+          keyConcepts: ["RFC 7807 Problem Details", "HTTP Status Code Semantics", "Mobile Deserialization Stability", "Error Mapping (422 vs 401 vs 500)"],
+          weight: 15,
+          socraticHint: "Bagaimana developer aplikasi mobile Flutter membedakan antara 'token login habis' dan 'input form judul kosong' jika backend selalu mengembalikan HTTP status 200 OK untuk semua kondisi?"
+        }
+      ]
     }
   },
   {
@@ -3385,78 +4071,42 @@ WITH CHECK (auth.uid() = user_id);`,
     worldId: "world-2",
     worldTitle: "Dunia 2: Rich UI, Media & Real-time",
     weekNumber: 13,
-    title: "Deployment & CI/CD Pipeline ke Vercel",
-    subtitle: "Otomatisasi build produksi dari GitHub ke Vercel, konfigurasi Environment Variables, dan domain publik.",
-    cpmk: "Mahasiswa mampu mengonfigurasi pipeline CI/CD otomatis dari GitHub ke platform Vercel dengan konfigurasi env yang tepat.",
+    title: "Deployment ke Vercel, CI/CD Pipeline & Observability",
+    subtitle: "Otomatisasi build produksi dari GitHub ke Vercel, konfigurasi Preview Deployments, dan penanganan crash dengan Error Boundaries.",
+    cpmk: "Mahasiswa mampu mengonfigurasi pipeline CI/CD otomatis dari GitHub ke platform Vercel, mengisolasi fitur via Preview Branches, serta menangani runtime error dengan Error Boundaries.",
     duration: "150 Menit Lab + 180 Menit Mandiri",
-    xp: 400,
+    xp: 450,
     concepts: {
-      summary: "Vercel menyediakan pipeline CI/CD bawaan: setiap push ke branch fitur menghasilkan Preview Deployment, dan push ke branch main menghasilkan Production Deployment.",
+      summary: "Vercel menyediakan pipeline CI/CD otomatis untuk setiap push ke GitHub. Digabungkan dengan Error Boundaries (error.tsx, not-found.tsx) dan Vercel Runtime Logs, aplikasi memiliki ketahanan tinggi terhadap error tak terduga di lingkungan produksi.",
       points: [
-        { title: "Production Build Lifecycle", desc: "Next.js melakukan optimasi kompilasi, static generation, dan pengecekan tipe data TypeScript saat proses build." },
-        { title: "Environment Variables Synchronization", desc: "Memasukkan nilai NEXT_PUBLIC_SUPABASE_URL dan kunci lain ke tab Settings -> Environment Variables Vercel." }
+        { title: "Production Build & Environment Sync", desc: "Next.js melakukan optimasi kompilasi dan type-check saat build, disinkronkan dengan Environment Variables aman di Vercel." },
+        { title: "Branching & Preview Deployments", desc: "Setiap push ke branch fitur menghasilkan URL pratinjau terisolasi untuk peninjauan sebelum digabungkan ke branch main." },
+        { title: "Error Boundaries (error.tsx & not-found.tsx)", desc: "Menangkap runtime crash secara elegan pada tingkat layout tanpa menyebabkan layar putih kosong (blank screen) bagi pengguna." },
+        { title: "Vercel Runtime Logs & Reverse-Prompting", desc: "Membaca stack trace error serverless di cloud secara real-time dan mendiagnosis solusinya dengan bantuan AI Prompt." }
       ]
     },
     references: [
       { title: "Vercel Next.js Deployment Docs", url: "https://vercel.com/docs/frameworks/nextjs", source: "Vercel" },
-      { title: "Vercel Environment Variables Guide", url: "https://vercel.com/docs/projects/environment-variables", source: "Vercel" }
+      { title: "Next.js Error Handling Guide", url: "https://nextjs.org/docs/app/building-your-application/routing/error-handling", source: "Next.js" },
+      { title: "Vercel Runtime Logs Docs", url: "https://vercel.com/docs/observability/runtime-logs", source: "Vercel" }
     ],
     lab: {
-      prerequisites: ["Akun Vercel terhubung ke GitHub"],
+      prerequisites: ["Akun Vercel terhubung ke GitHub", "Proyek lokal bebas error lint dan build"],
       steps: [
         {
           stepNumber: 1,
           instruction: "Uji coba build lokal terlebih dahulu untuk menangkap error sebelum deploy",
           code: "npm run build",
           language: "bash",
-          explanation: "Jika perintah ini sukses menghasilkan folder .next, aplikasi Anda siap di-deploy ke Vercel."
-        }
-      ],
-      aiPromptTemplate: {
-        role: "DevOps Engineer",
-        prompt: "Aplikasi Next.js saya mengalami error saat build di Vercel: [PASTE PESAN ERROR BUILD VERCEL]. Tolong bantu analisis penyebab kegagalan build dan berikan solusinya.",
-        tip: "Periksa selalu apakah ada variabel environment yang lupa dimasukkan di dashboard Vercel."
-      }
-    },
-    mission: {
-      taskTitle: "Misi Minggu 13: Live Deployment Pertama di Vercel",
-      taskDesc: "Hubungkan repository GitHub Anda ke Vercel, konfigurasikan Environment Variables, dan dapatkan domain publik *.vercel.app.",
-      definitionOfDone: [
-        "Project berhasil di-import ke Vercel",
-        "Environment variables Supabase & Cloudinary terpasang di Vercel",
-        "Website publik dapat diakses dan berfungsi 100% di browser"
-      ],
-      gitBranchTask: "git checkout -b feature/vercel-deployment"
-    }
-  },
-  {
-    id: 14,
-    worldId: "world-2",
-    worldTitle: "Dunia 2: Rich UI, Media & Real-time",
-    weekNumber: 14,
-    title: "Observability & AI-Powered Debugging",
-    subtitle: "Membaca Vercel Runtime Logs, menangani error dengan Error Boundaries, dan reverse-prompting bug.",
-    cpmk: "Mahasiswa mampu memanfaatkan log sistem serverless dan AI untuk mengidentifikasi serta memperbaiki bug runtime di level produksi.",
-    duration: "150 Menit Lab + 180 Menit Mandiri",
-    xp: 400,
-    concepts: {
-      summary: "Pada arsitektur serverless, kita tidak bisa login SSH ke server. Kita mengandalkan Observability: membaca Runtime Logs dan Error Traces secara real-time.",
-      points: [
-        { title: "Next.js error.tsx & not-found.tsx", desc: "Menangkap runtime crash secara elegan dengan UI fallback kustom tanpa merusak seluruh halaman aplikasi." },
-        { title: "Reverse-Prompting Bug Fix", desc: "Menyalin stack trace log dari Vercel ke AI untuk mendapatkan diagnosis akar masalah secara cepat." }
-      ]
-    },
-    references: [
-      { title: "Next.js Error Handling Guide", url: "https://nextjs.org/docs/app/building-your-application/routing/error-handling", source: "Next.js" },
-      { title: "Vercel Runtime Logs Docs", url: "https://vercel.com/docs/observability/runtime-logs", source: "Vercel" }
-    ],
-    lab: {
-      prerequisites: ["Aplikasi sudah live di Vercel"],
-      steps: [
+          explanation: "Jika perintah ini sukses menghasilkan folder .next tanpa error typecheck, aplikasi Anda siap di-deploy ke Vercel."
+        },
         {
-          stepNumber: 1,
-          instruction: "Buat komponen penangkap error di src/app/error.tsx",
+          stepNumber: 2,
+          instruction: "Buat komponen Error Boundary di src/app/error.tsx",
           code: `'use client'
+
+import { useEffect } from 'react'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 
 export default function Error({
   error,
@@ -3465,33 +4115,237 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  useEffect(() => {
+    // Log error ke sistem analitik / monitoring
+    console.error('Runtime error caught by boundary:', error)
+  }, [error])
+
   return (
-    <div className="p-8 text-center space-y-4">
-      <h2 className="text-2xl font-bold text-red-500">Terjadi Kesalahan Sistem!</h2>
-      <p className="text-zinc-500">{error.message}</p>
-      <button onClick={() => reset()} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">
-        Coba Lagi
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400">
+        <AlertCircle className="w-6 h-6" />
+      </div>
+      <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Terjadi Kesalahan Sistem!</h2>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md">
+        {error.message || 'Terjadi gangguan saat memproses data. Tim teknis telah menerima log insiden ini.'}
+      </p>
+      {error.digest && (
+        <span className="text-xs font-mono px-2.5 py-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+          Digest: {error.digest}
+        </span>
+      )}
+      <button
+        onClick={() => reset()}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Coba Muat Ulang
       </button>
     </div>
   )
 }`,
-          language: "typescript"
+          language: "typescript",
+          explanation: "File error.tsx wajib berupa Client Component dan menyediakan fungsi reset() untuk mencoba me-render ulang rute yang gagal."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Buat halaman 404 Kustom di src/app/not-found.tsx",
+          code: `import Link from 'next/link'
+import { FileQuestion, ArrowLeft } from 'lucide-react'
+
+export default function NotFound() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 dark:text-amber-400">
+        <FileQuestion className="w-6 h-6" />
+      </div>
+      <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Halaman Tidak Ditemukan (404)</h2>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md">
+        Data atau rute yang Anda cari tidak tersedia atau telah dipindahkan.
+      </p>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Kembali ke Beranda
+      </Link>
+    </div>
+  )
+}`,
+          language: "typescript",
+          explanation: "File not-found.tsx menangani status HTTP 404 ketika pemanggilan fungsi notFound() dieksekusi di Server Component."
         }
       ],
       aiPromptTemplate: {
-        role: "Site Reliability Engineer (SRE)",
-        prompt: "Berikut adalah log error dari Vercel Serverless Function saya: [PASTE LOG ERROR]. Tolong jelaskan mengapa error ini terjadi dan bagaimana cara memperbaiki kode Server Action terkait.",
-        tip: "Sertakan juga potongan baris kode tempat error tersebut dipicu."
+        role: "DevOps & Reliability Engineer",
+        prompt: "Aplikasi Next.js saya mengalami error saat build/runtime di Vercel: [PASTE PESAN ERROR / LOG]. Tolong bantu analisis penyebab kegagalan dari stack trace tersebut dan berikan solusi perbaikannya pada kode terkait.",
+        tip: "Periksa selalu apakah variabel lingkungan rahasia seperti NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY sudah dimasukkan di tab Settings -> Environment Variables Vercel."
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 14: Pasang Error Boundary & Log Audit",
-      taskDesc: "Pasang file error.tsx dan not-found.tsx di aplikasi Anda dan lakukan simulasi penanganan error tak terduga.",
+      taskTitle: "Misi Minggu 13: Live Deployment & Observability",
+      taskDesc: "Hubungkan repository GitHub ke Vercel, terapkan Environment Variables, uji Preview Deployment dari Pull Request, serta pasang error boundary pencegah crash.",
       definitionOfDone: [
-        "File error.tsx dan not-found.tsx terpasang di root app",
-        "Aplikasi tidak menampilkan layar putih kosong (blank screen) jika terjadi error"
+        "Project berhasil di-deploy ke Vercel dengan domain publik *.vercel.app aktif",
+        "Environment variables Supabase & Cloudinary terpasang sempurna di dashboard Vercel",
+        "Komponen error.tsx dan not-found.tsx terpasang dan teruji menangkal crash tak terduga",
+        "Terdapat minimal 1 Preview Deployment sukses yang dihasilkan dari Pull Request branch fitur"
       ],
-      gitBranchTask: "git checkout -b feature/error-handling-observability"
+      gitBranchTask: "git checkout -b feature/vercel-deployment-observability"
+    }
+  },
+  {
+    id: 14,
+    worldId: "world-2",
+    worldTitle: "Dunia 2: Rich UI, Media & Real-time",
+    weekNumber: 14,
+    title: "Otomasi Serverless, Vercel Cron Jobs & Arsitektur Webhooks",
+    subtitle: "Mengatasi limitasi timeout serverless dengan tugas terjadwal (Vercel Cron) dan integrasi event eksternal asinkron yang aman (Webhooks).",
+    cpmk: "Mahasiswa mampu merancang sistem otomatisasi terjadwal (Vercel Cron Jobs) dan endpoint Webhook receiver aman berbasis verifikasi kriptografis HMAC SHA-256.",
+    duration: "150 Menit Lab + 180 Menit Mandiri",
+    xp: 450,
+    concepts: {
+      summary: "Fungsi Serverless bersifat stateless dan memiliki batas waktu eksekusi ketat (Execution Timeout 10–60s). Vercel Cron Jobs dan Webhook Signature Verification adalah dua fondasi wajib untuk menjalankan otomatisasi periodik dan memproses event eksternal secara asinkron tanpa risiko pemalsuan data.",
+      points: [
+        { title: "Serverless Timeout & Asynchronous Pattern", desc: "Mengapa fungsi serverless tidak boleh menjalankan loop daemon dan bagaimana pola pemicu asinkron bekerja." },
+        { title: "Vercel Cron Jobs (vercel.json)", desc: "Mendefinisikan jadwal eksekusi ekspresi cron (5-field) yang secara otomatis memicu Route Handler Next.js di cloud." },
+        { title: "Pengamanan Endpoint via CRON_SECRET", desc: "Memvalidasi header Authorization: Bearer agar endpoint otomatisasi tidak dapat ditembak atau dieksploitasi publik." },
+        { title: "Webhook Architecture: Push vs Poll", desc: "Menerima notifikasi instan saat terjadi event di layanan pihak ketiga (Stripe, GitHub, Supabase) tanpa polling berkala." },
+        { title: "Verifikasi Kriptografis HMAC SHA-256", desc: "Membandingkan hash signature payload menggunakan kunci rahasia (node:crypto) untuk memastikan payload asli dan belum dimanipulasi." },
+        { title: "Idempotensi Transaksi", desc: "Menjamin mutasi database aman dari eksekusi ganda jika webhook dikirim ulang oleh sistem pengirim." }
+      ]
+    },
+    references: [
+      { title: "Vercel Cron Jobs Documentation", url: "https://vercel.com/docs/cron-jobs", source: "Vercel" },
+      { title: "Securing Webhooks with HMAC SHA-256", url: "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries", source: "GitHub Docs" },
+      { title: "Next.js Route Handlers Guide", url: "https://nextjs.org/docs/app/building-your-application/routing/route-handlers", source: "Next.js" }
+    ],
+    lab: {
+      prerequisites: ["Aplikasi Next.js 16 aktif", "Akun Vercel terhubung ke GitHub", "Tools HTTP Client (cURL, Thunder Client, atau Postman)"],
+      steps: [
+        {
+          stepNumber: 1,
+          instruction: "Buat berkas konfigurasi vercel.json untuk jadwal Cron Job",
+          code: `{
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-tasks",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}`,
+          language: "json",
+          explanation: "Ekspresi cron '0 0 * * *' menjadwalkan Vercel untuk memanggil rute /api/cron/cleanup-tasks setiap tengah malam (00:00 UTC)."
+        },
+        {
+          stepNumber: 2,
+          instruction: "Bangun Route Handler Cron Terproteksi di src/app/api/cron/cleanup-tasks/route.ts",
+          code: `import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+export async function GET(request: NextRequest) {
+  // 1. Verifikasi token rahasia CRON_SECRET dari Vercel Scheduler
+  const authHeader = request.headers.get('authorization')
+  if (authHeader !== \`Bearer \${process.env.CRON_SECRET}\`) {
+    return NextResponse.json(
+      { error: 'Unauthorized: Invalid or missing CRON_SECRET token' },
+      { status: 401 }
+    )
+  }
+
+  // 2. Eksekusi tugas otomatis (misal: arsipkan tugas berstatus done yang lebih dari 30 hari)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ is_archived: true })
+    .eq('status', 'done')
+    .lt('updated_at', thirtyDaysAgo)
+    .select('id')
+
+  if (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: 'Cron job executed successfully',
+    archivedCount: data?.length ?? 0,
+    timestamp: new Date().toISOString(),
+  })
+}`,
+          language: "typescript",
+          explanation: "Vercel secara otomatis mengirimkan header 'Authorization: Bearer <CRON_SECRET>' saat memicu cron. Endpoint wajib memvalidasi token ini."
+        },
+        {
+          stepNumber: 3,
+          instruction: "Bangun Webhook Receiver Aman dengan HMAC SHA-256 di src/app/api/webhooks/external/route.ts",
+          code: `import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'node:crypto'
+
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Baca raw body sebagai teks untuk validasi kriptografis
+    const rawBody = await request.text()
+    const signature = request.headers.get('x-webhook-signature')
+    const secret = process.env.WEBHOOK_SIGNING_SECRET
+
+    if (!signature || !secret) {
+      return NextResponse.json({ error: 'Missing signature or webhook secret' }, { status: 400 })
+    }
+
+    // 2. Hitung digest HMAC SHA-256 dari raw body
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(rawBody)
+      .digest('hex')
+
+    // 3. Bandingkan signature secara aman dari timing attack
+    const isSignatureValid = crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    )
+
+    if (!isSignatureValid) {
+      return NextResponse.json({ error: 'Invalid cryptographic signature' }, { status: 401 })
+    }
+
+    // 4. Parse payload JSON setelah tanda tangan terbukti sah
+    const payload = JSON.parse(rawBody)
+    console.log('Valid webhook payload received:', payload.event)
+
+    // 5. Kembalikan 200 OK sesegera mungkin (< 5 detik)
+    return NextResponse.json({ received: true, event: payload.event }, { status: 200 })
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: 'Webhook processing failed', details: errorMsg }, { status: 500 })
+  }
+}`,
+          language: "typescript",
+          explanation: "Verifikasi webhook wajib membaca raw body murni (bukan request.json()) sebelum di-hash dan diverifikasi dengan timingSafeEqual."
+        }
+      ],
+      aiPromptTemplate: {
+        role: "Serverless Systems Architect & Security Engineer",
+        prompt: "Buatkan Next.js 16 Route Handler untuk Webhook Receiver di /api/webhooks/[nama-layanan] yang membaca raw body, memvalidasi tanda tangan kriptografis HMAC SHA-256 dari header x-signature menggunakan secret key dari process.env, dan memproses data secara idempoten ke Supabase.",
+        tip: "Gunakan crypto.timingSafeEqual saat membandingkan hash signature untuk mencegah serangan timing attack."
+      }
+    },
+    mission: {
+      taskTitle: "Misi Minggu 14: Otomasi Terjadwal & Integrasi Webhook Aman",
+      taskDesc: "Pasang konfigurasi vercel.json untuk tugas otomatis berkala, bangun endpoint cron terproteksi, serta sediakan webhook receiver dengan verifikasi tanda tangan kriptografis.",
+      definitionOfDone: [
+        "File vercel.json terkonfigurasi dengan jadwal cron yang valid",
+        "Endpoint cron /api/cron/... menolak request tanpa token CRON_SECRET yang valid (401 Unauthorized)",
+        "Endpoint webhook /api/webhooks/... memverifikasi keaslian signature HMAC SHA-256 sebelum memproses payload",
+        "Pengujian simulasi payload webhook berhasil mengembalikan status 200 OK via cURL atau Thunder Client"
+      ],
+      gitBranchTask: "git checkout -b feature/cron-and-webhooks"
     }
   },
   {

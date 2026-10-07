@@ -2,6 +2,7 @@
 
 import dns from "node:dns";
 import { createClient } from "@/utils/supabase/server";
+import { MODULES } from "@/data/curriculum";
 
 try {
   dns.setDefaultResultOrder("ipv4first");
@@ -35,7 +36,11 @@ export interface QuizProgress {
   resetCount: number;
   isCompleted: boolean;
   totalScore: number;
-  answers: Record<number, { score: number; isPassed: boolean; studentAnswer: string; feedback: string }>;
+  answers: Record<number, { score: number; isPassed: boolean; studentAnswer: string; feedback: string; aiProvider?: string; timestamp?: string }>;
+  activityLogs?: { timestamp: string; type: string; message: string }[];
+  startedAt?: string;
+  completedAt?: string;
+  updatedAt?: string;
 }
 
 // In-memory progress store fallback (when Supabase is offline/not configured)
@@ -422,21 +427,39 @@ async function recordAnswerProgress(
   }
 
   const sub = inMemorySubmissions[key];
+  if (!sub.startedAt) sub.startedAt = new Date().toISOString();
+  sub.updatedAt = new Date().toISOString();
+
+  // Pertahankan nilai tertinggi (best score) untuk soal ini dari riwayat percobaan sebelumnya
+  const prevBestScore = sub.answers[questionNumber]?.score || 0;
+  const bestScoreForQ = Math.max(prevBestScore, evaluation.score);
+
   sub.answers[questionNumber] = {
-    score: evaluation.score,
-    isPassed: evaluation.isPassed,
+    score: bestScoreForQ,
+    isPassed: evaluation.isPassed || (sub.answers[questionNumber]?.isPassed ?? false),
     studentAnswer: answerText,
     feedback: evaluation.feedback,
+    aiProvider: evaluation.providerUsed,
+    timestamp: new Date().toISOString(),
   };
+
+  if (!sub.activityLogs) sub.activityLogs = [];
+  sub.activityLogs.push({
+    timestamp: new Date().toISOString(),
+    type: evaluation.isPassed ? "answer_passed" : "answer_failed",
+    message: `Menjawab Soal #${questionNumber}: Skor ${evaluation.score}/100 (${evaluation.isPassed ? "Lolos >= 80" : "Perlu Revisi < 80"}) [Model: ${evaluation.providerUsed}] • Skor Terbaik Soal: ${bestScoreForQ}/100`,
+  });
 
   if (evaluation.isPassed && sub.currentQuestionIndex === questionNumber - 1) {
     sub.currentQuestionIndex = questionNumber;
   }
 
-  // Hitung ulang total score rata-rata sesi ini (pertahankan nilai tertinggi)
-  const scores = Object.values(sub.answers).map((a) => a.score);
-  const currentAttemptAvg = Math.round(scores.reduce((a, b) => a + b, 0) / Math.max(scores.length, 1));
-  sub.totalScore = Math.max(sub.totalScore || 0, currentAttemptAvg);
+  // Hitung ulang total score modul: Rata-rata dari nilai tertinggi seluruh soal yang telah dijawab
+  const bestScores = Object.values(sub.answers).map((a) => a.score);
+  const currentRunningAvg = Math.round(
+    (bestScores.reduce((a, b) => a + b, 0) / Math.max(bestScores.length, 1)) * 10
+  ) / 10;
+  sub.totalScore = currentRunningAvg;
 
   // Simpan ke Supabase jika aktif
   try {
@@ -447,16 +470,6 @@ async function recordAnswerProgress(
     if (isLiveSupabase) {
       const supabase = await createClient();
 
-      // Periksa skor sebelumnya agar nilai tertinggi selalu dipertahankan (Highest Score Retention)
-      const { data: prevSub } = await supabase
-        .from("quiz_submissions")
-        .select("total_score")
-        .match({ student_nim: studentNim, module_id: moduleId })
-        .maybeSingle();
-
-      const highestScore = Math.max(Number(prevSub?.total_score) || 0, sub.totalScore);
-      sub.totalScore = highestScore;
-
       // Upsert quiz_submissions
       const { data: subData } = await supabase
         .from("quiz_submissions")
@@ -465,7 +478,7 @@ async function recordAnswerProgress(
             student_nim: studentNim,
             module_id: moduleId,
             current_question_index: sub.currentQuestionIndex,
-            total_score: highestScore,
+            total_score: sub.totalScore,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "student_nim,module_id" }
@@ -474,7 +487,7 @@ async function recordAnswerProgress(
         .single();
 
       if (subData?.id) {
-        // Insert atau update quiz_answers
+        // Insert quiz_answers row untuk riwayat percobaan ini
         await supabase.from("quiz_answers").insert({
           submission_id: subData.id,
           question_number: questionNumber,
@@ -484,6 +497,37 @@ async function recordAnswerProgress(
           ai_provider: evaluation.providerUsed,
           is_passed: evaluation.isPassed,
         });
+
+        // Ambil seluruh jawaban untuk submission ini agar kita dapat menghitung:
+        // 1. Nilai TERTINGGI untuk masing-masing nomor soal dari berbagai percobaan
+        // 2. Nilai RATA-RATA dari nilai tertinggi seluruh nomor soal tersebut
+        const { data: allAnswers } = await supabase
+          .from("quiz_answers")
+          .select("question_number, score")
+          .eq("submission_id", subData.id);
+
+        if (allAnswers && allAnswers.length > 0) {
+          const maxPerQ: Record<number, number> = {};
+          for (const a of allAnswers) {
+            const q = Number(a.question_number);
+            maxPerQ[q] = Math.max(maxPerQ[q] || 0, Number(a.score) || 0);
+          }
+          const bestScoresList = Object.values(maxPerQ);
+          const trueModuleAvg = Math.round(
+            (bestScoresList.reduce((acc, sc) => acc + sc, 0) / bestScoresList.length) * 10
+          ) / 10;
+
+          sub.totalScore = trueModuleAvg;
+
+          // Update total_score di quiz_submissions dengan nilai rata-rata yang akurat
+          await supabase
+            .from("quiz_submissions")
+            .update({
+              total_score: trueModuleAvg,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", subData.id);
+        }
       }
     }
   } catch (err) {
@@ -496,7 +540,8 @@ async function recordAnswerProgress(
  */
 export async function recordTabViolationAction(
   studentNim: string,
-  moduleId: number
+  moduleId: number,
+  reason: "tab_violation" | "timeout" = "tab_violation"
 ): Promise<{ success: boolean; newResetCount: number }> {
   const key = getSubmissionKey(studentNim, moduleId);
   if (!inMemorySubmissions[key]) {
@@ -506,6 +551,8 @@ export async function recordTabViolationAction(
       isCompleted: false,
       totalScore: 0,
       answers: {},
+      activityLogs: [],
+      startedAt: new Date().toISOString(),
     };
   }
 
@@ -513,6 +560,16 @@ export async function recordTabViolationAction(
   sub.resetCount += 1;
   sub.currentQuestionIndex = 0; // Reset instan kembali ke Soal 1
   sub.answers = {}; // Hapus jawaban sesi ini
+  sub.updatedAt = new Date().toISOString();
+
+  if (!sub.activityLogs) sub.activityLogs = [];
+  sub.activityLogs.push({
+    timestamp: new Date().toISOString(),
+    type: reason === "timeout" ? "timeout_reset" : "tab_violation",
+    message: reason === "timeout"
+      ? "⏱️ Batas waktu pengerjaan habis. Sesi kuis di-reset kembali ke Soal 1."
+      : "⚠️ Pelanggaran Integritas Ujian: Layar peramban kehilangan fokus atau berpindah tab/jendela. Sesi kuis di-reset kembali ke Soal 1.",
+  });
 
   // Update Supabase jika aktif
   try {
@@ -571,20 +628,34 @@ export async function getQuizProgressAction(
         const answers: Record<number, { score: number; isPassed: boolean; studentAnswer: string; feedback: string }> = {};
         if (ansData) {
           for (const a of ansData) {
-            answers[a.question_number] = {
-              score: a.score,
-              isPassed: a.is_passed,
-              studentAnswer: a.student_answer,
-              feedback: a.ai_feedback,
-            };
+            const q = Number(a.question_number);
+            const scoreNum = Number(a.score) || 0;
+            const existing = answers[q];
+
+            // Selalu simpan percobaan dengan nilai tertinggi untuk soal ini
+            if (!existing || scoreNum >= existing.score) {
+              answers[q] = {
+                score: scoreNum,
+                isPassed: a.is_passed || scoreNum >= 80,
+                studentAnswer: a.student_answer,
+                feedback: a.ai_feedback,
+              };
+            }
           }
         }
+
+        // Hitung nilai rata-rata dari seluruh soal yang telah dikerjakan
+        const bestScoresList = Object.values(answers).map((ans) => ans.score);
+        const calculatedAvg =
+          bestScoresList.length > 0
+            ? Math.round((bestScoresList.reduce((acc, sc) => acc + sc, 0) / bestScoresList.length) * 10) / 10
+            : Number(subData.total_score) || 0;
 
         return {
           currentQuestionIndex: subData.current_question_index || 0,
           resetCount: subData.reset_count || 0,
           isCompleted: subData.status === "completed",
-          totalScore: Number(subData.total_score) || 0,
+          totalScore: calculatedAvg,
           answers,
         };
       }
@@ -614,7 +685,7 @@ export async function restartQuizForImprovementAction(
   if (inMemorySubmissions[key]) {
     inMemorySubmissions[key].isCompleted = false;
     inMemorySubmissions[key].currentQuestionIndex = 0;
-    inMemorySubmissions[key].answers = {};
+    // Nilai terbaik tiap soal dipertahankan agar dapat dibandingkan dengan percobaan baru
   } else {
     inMemorySubmissions[key] = {
       currentQuestionIndex: 0,
@@ -652,16 +723,16 @@ export async function restartQuizForImprovementAction(
 }
 
 /**
- * Server Action: Tandai Kuis Selesai (100% kelulusan) dengan Highest Score Retention
+ * Server Action: Tandai Kuis Selesai (100% kelulusan)
+ * Menghitung nilai akhir modul sebagai RATA-RATA dari nilai TERTINGGI setiap soal dalam pertemuan tersebut.
  */
 export async function markQuizCompletedAction(
   studentNim: string,
   moduleId: number
 ): Promise<{ success: boolean }> {
   const key = getSubmissionKey(studentNim, moduleId);
-  if (inMemorySubmissions[key]) {
-    inMemorySubmissions[key].isCompleted = true;
-  }
+  const targetMod = MODULES.find((m) => m.id === moduleId);
+  const totalQuestionsInMod = targetMod?.quiz?.questions.length || 1;
 
   try {
     const isLiveSupabase =
@@ -670,27 +741,64 @@ export async function markQuizCompletedAction(
 
     if (isLiveSupabase) {
       const supabase = await createClient();
-      const { data: prevSub } = await supabase
+
+      const { data: subData } = await supabase
         .from("quiz_submissions")
-        .select("total_score")
+        .select("id")
         .match({ student_nim: studentNim, module_id: moduleId })
         .maybeSingle();
 
-      const curScore = inMemorySubmissions[key]?.totalScore || 0;
-      const highestScore = Math.max(Number(prevSub?.total_score) || 0, curScore);
+      let finalAvgScore = inMemorySubmissions[key]?.totalScore || 0;
 
-      await supabase
-        .from("quiz_submissions")
-        .update({
-          status: "completed",
-          total_score: highestScore,
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .match({ student_nim: studentNim, module_id: moduleId });
+      if (subData?.id) {
+        // Ambil seluruh jawaban untuk menghitung nilai tertinggi per nomor soal
+        const { data: allAnswers } = await supabase
+          .from("quiz_answers")
+          .select("question_number, score")
+          .eq("submission_id", subData.id);
+
+        if (allAnswers && allAnswers.length > 0) {
+          const maxPerQ: Record<number, number> = {};
+          for (const a of allAnswers) {
+            const q = Number(a.question_number);
+            maxPerQ[q] = Math.max(maxPerQ[q] || 0, Number(a.score) || 0);
+          }
+          const bestList = Object.values(maxPerQ);
+          // Nilai masuk ke dashboard: RATA-RATA dari nilai tertinggi seluruh soal pertemuan
+          finalAvgScore = Math.round(
+            (bestList.reduce((acc, sc) => acc + sc, 0) / Math.max(totalQuestionsInMod, bestList.length)) * 10
+          ) / 10;
+        }
+
+        if (inMemorySubmissions[key]) {
+          inMemorySubmissions[key].totalScore = finalAvgScore;
+        }
+
+        await supabase
+          .from("quiz_submissions")
+          .update({
+            status: "completed",
+            total_score: finalAvgScore,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", subData.id);
+      }
     }
   } catch (err) {
     console.warn("Supabase completion mark fallback:", err);
+  }
+
+  if (inMemorySubmissions[key]) {
+    inMemorySubmissions[key].isCompleted = true;
+    inMemorySubmissions[key].completedAt = new Date().toISOString();
+    inMemorySubmissions[key].updatedAt = new Date().toISOString();
+    if (!inMemorySubmissions[key].activityLogs) inMemorySubmissions[key].activityLogs = [];
+    inMemorySubmissions[key].activityLogs!.push({
+      timestamp: new Date().toISOString(),
+      type: "quiz_completed",
+      message: `🏆 Mahasiswa menyelesaikan seluruh soal kuis Modul ${moduleId} dengan kelulusan tuntas 100%!`,
+    });
   }
 
   return { success: true };
@@ -721,7 +829,10 @@ export async function getLecturerMonitoringDataAction(classGroup = "all") {
 
       const { data: dbStudents } = await query;
       const { data: dbSubmissions } = await supabase.from("quiz_submissions").select("*");
-      const { data: dbAnswers } = await supabase.from("quiz_answers").select("*");
+      const { data: dbAnswers } = await supabase
+        .from("quiz_answers")
+        .select("*")
+        .order("created_at", { ascending: true });
 
       let mappedStudents: { nim: string; fullName: string; classGroup: string }[] = [];
       if (dbStudents && dbStudents.length > 0) {
@@ -734,10 +845,52 @@ export async function getLecturerMonitoringDataAction(classGroup = "all") {
         mappedStudents = defaultStudents;
       }
 
+      // Bangun lookup map untuk submission_id -> { student_nim, module_id }
+      const submissionMap = new Map((dbSubmissions || []).map((s: any) => [s.id, s]));
+
+      // Perkaya dbAnswers dengan student_nim dan module_id agar matching di frontend akurat
+      const enrichedAnswers = (dbAnswers || []).map((ans: any) => {
+        const sub = submissionMap.get(ans.submission_id);
+        return {
+          ...ans,
+          student_nim: sub?.student_nim || ans.student_nim,
+          module_id: sub?.module_id || ans.module_id,
+        };
+      });
+
+      // Hitung ulang total_score di setiap submission secara real-time:
+      // Nilai Pertemuan = Rata-rata dari nilai tertinggi setiap soal yang telah dijawab
+      const answersBySubId = new Map<string, any[]>();
+      enrichedAnswers.forEach((ans: any) => {
+        const list = answersBySubId.get(ans.submission_id) || [];
+        list.push(ans);
+        answersBySubId.set(ans.submission_id, list);
+      });
+
+      const recalculatedSubmissions = (dbSubmissions || []).map((sub: any) => {
+        const answersForSub = answersBySubId.get(sub.id) || [];
+        if (answersForSub.length > 0) {
+          const maxPerQ: Record<number, number> = {};
+          answersForSub.forEach((a: any) => {
+            const q = Number(a.question_number);
+            maxPerQ[q] = Math.max(maxPerQ[q] || 0, Number(a.score) || 0);
+          });
+          const bestList = Object.values(maxPerQ);
+          if (bestList.length > 0) {
+            const targetMod = MODULES.find((m) => m.id === sub.module_id);
+            const totalQ = targetMod?.quiz?.questions.length || bestList.length || 1;
+            const divisor = sub.status === "completed" ? totalQ : bestList.length;
+            const avg = Math.round((bestList.reduce((a, b) => a + b, 0) / divisor) * 10) / 10;
+            return { ...sub, total_score: avg };
+          }
+        }
+        return sub;
+      });
+
       return {
         students: mappedStudents,
-        submissions: dbSubmissions || [],
-        answers: dbAnswers || [],
+        submissions: recalculatedSubmissions,
+        answers: enrichedAnswers,
       };
     }
   } catch (err) {
@@ -745,21 +898,47 @@ export async function getLecturerMonitoringDataAction(classGroup = "all") {
   }
 
   // Fallback in-memory
+  const answersList: any[] = [];
   const submissionsList = Object.entries(inMemorySubmissions).map(([k, v]) => {
     const [nim, modStr] = k.split("_mod_");
+    const modId = parseInt(modStr, 10);
+    const subId = `sub_${k}`;
+
+    Object.entries(v.answers || {}).forEach(([qNum, ans]: [string, any]) => {
+      answersList.push({
+        id: `ans_${k}_${qNum}`,
+        submission_id: subId,
+        student_nim: nim,
+        module_id: modId,
+        question_number: parseInt(qNum, 10),
+        student_answer: ans.studentAnswer,
+        score: ans.score,
+        ai_feedback: ans.feedback,
+        ai_provider: ans.aiProvider || "Groq (Primary)",
+        attempt_count: 1,
+        is_passed: ans.isPassed,
+        created_at: ans.timestamp || new Date().toISOString(),
+      });
+    });
+
     return {
+      id: subId,
       student_nim: nim,
-      module_id: parseInt(modStr, 10),
+      module_id: modId,
       current_question_index: v.currentQuestionIndex,
       reset_count: v.resetCount,
       total_score: v.totalScore,
       status: v.isCompleted ? "completed" : "in_progress",
+      started_at: v.startedAt || new Date().toISOString(),
+      completed_at: v.completedAt,
+      updated_at: v.updatedAt || new Date().toISOString(),
+      activity_logs: v.activityLogs || [],
     };
   });
 
   return {
     students: defaultStudents.filter((s) => classGroup === "all" || s.classGroup === classGroup),
     submissions: submissionsList,
-    answers: [],
+    answers: answersList,
   };
 }

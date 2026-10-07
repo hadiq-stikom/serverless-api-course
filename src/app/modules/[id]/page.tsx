@@ -66,6 +66,16 @@ import { AuthActionsFlowAnimator } from "@/components/visualizers/auth-actions-f
 import { AuthCallbackRouteAnimator } from "@/components/visualizers/auth-callback-route-animator";
 import { AuthUsersVsProfilesAnimator } from "@/components/visualizers/auth-users-vs-profiles-animator";
 import { AutoProfileTriggerAnimator } from "@/components/visualizers/auto-profile-trigger-animator";
+import { DualArchAnimator } from "@/components/visualizers/dual-arch-animator";
+import { SharedZodSchemaAnimator } from "@/components/visualizers/shared-zod-schema-animator";
+import { RestResponseContractAnimator } from "@/components/visualizers/rest-response-contract-animator";
+import { BearerAuthFlowAnimator } from "@/components/visualizers/bearer-auth-flow-animator";
+import { CorsPreflightAnimator } from "@/components/visualizers/cors-preflight-animator";
+import { RlsVsServiceRoleAnimator } from "@/components/visualizers/rls-vs-service-role-animator";
+import { CollectionRouteAnimator } from "@/components/visualizers/collection-route-animator";
+import { ItemRouteAnimator } from "@/components/visualizers/item-route-animator";
+import { UrlStateSyncAnimator } from "@/components/visualizers/url-state-sync-animator";
+import { PaginationRangeAnimator } from "@/components/visualizers/pagination-range-animator";
 import { ModuleQuizPanel } from "@/components/quiz/module-quiz-panel";
 import { VsCodeSnippet } from "@/components/vscode-snippet";
 import { VsCodePrompt } from "@/components/vscode-prompt";
@@ -339,8 +349,8 @@ const MODULE_4_VISUALIZERS: Record<string, { key: string; title: string; subtitl
   },
   "0-1": {
     key: "one-to-many-rel",
-    title: "Simulasi Relasi 1:N & Integritas ON DELETE CASCADE",
-    subtitle: "Bandingkan CASCADE (pembersihan otomatis) vs RESTRICT (larangan hapus relasi yatim)",
+    title: "Simulasi Relasi 1:N & Integritas Kernel (INSERT, UPDATE, DELETE)",
+    subtitle: "Uji penolakan FK hantu saat INSERT/UPDATE, serta pembersihan CASCADE vs RESTRICT saat DELETE",
     component: <OneToManyRelAnimator />,
   },
   "0-2": {
@@ -479,6 +489,77 @@ const MODULE_5_VISUALIZERS: Record<string, { key: string; title: string; subtitl
     title: "Simulasi Trigger PostgreSQL: Otomasi Pembuatan Profil Pengguna",
     subtitle: "Saksikan eksekusi otomatis fungsi handle_new_user() saat event AFTER INSERT auth.users",
     component: <AutoProfileTriggerAnimator />,
+  },
+};
+
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 10 Subpoin Konsep Pertemuan 6
+const MODULE_6_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur Komputasi Ganda (BFF vs REST)
+  "0-0": {
+    key: "dual-arch",
+    title: "Simulasi Arsitektur Ganda: Server Actions (Web) vs Route Handlers (Mobile)",
+    subtitle: "Bandingkan transmisi payload Flight RPC untuk internal web vs standard JSON REST untuk Flutter",
+    component: <DualArchAnimator />,
+  },
+  "0-1": {
+    key: "shared-zod-schema",
+    title: "Simulasi Skema Validasi Terbagi (Shared Schema) Web & REST API",
+    subtitle: "Uji coba validasi Zod tunggal yang memproteksi form web sekaligus payload JSON endpoint",
+    component: <SharedZodSchemaAnimator />,
+  },
+  "0-2": {
+    key: "rest-response-contract",
+    title: "Simulator Standarisasi Respons RESTful & Semantika HTTP Status Code",
+    subtitle: "Inspeksi struktur respons RFC 7807 dan semantika status 200, 201, 400, 401, 404, 422, 500",
+    component: <RestResponseContractAnimator />,
+  },
+
+  // Pilar 2: Standar Keamanan Optimal Serverless REST API (Bearer JWT, CORS & RLS)
+  "1-0": {
+    key: "bearer-auth-flow",
+    title: "Simulasi Otentikasi Stateless Bearer Token: Mobile Client ➔ Route Handler",
+    subtitle: "Uji alur validasi header Authorization Bearer token dan penolakan 401 Unauthorized",
+    component: <BearerAuthFlowAnimator />,
+  },
+  "1-1": {
+    key: "cors-preflight",
+    title: "Simulasi Mekanisme CORS Preflight: Mengapa Browser Mengirim HTTP OPTIONS?",
+    subtitle: "Lihat pertukaran preflight handshake dan header Access-Control-Allow-* lintas origin",
+    component: <CorsPreflightAnimator />,
+  },
+  "1-2": {
+    key: "rls-vs-service-role",
+    title: "Simulasi Kebocoran Data: RLS Enforcement vs Bahaya Service Role Key di REST API",
+    subtitle: "Bandingkan proteksi isolasi data User Client vs kebocoran fatal akibat bypass Service Role Key",
+    component: <RlsVsServiceRoleAnimator />,
+  },
+
+  // Pilar 3: Endpoint REST API CRUD Lengkap & Penanganan Async Params Next.js 16
+  "2-0": {
+    key: "collection-route",
+    title: "Simulasi Route Handler Koleksi: GET (Filter/Pagination) & POST (Mutasi)",
+    subtitle: "Uji pemanggilan endpoint koleksi dengan query string dan validasi payload pembuatan data",
+    component: <CollectionRouteAnimator />,
+  },
+  "2-1": {
+    key: "item-route",
+    title: "Simulasi Operasi Item Spesifik: GET by ID, PUT & DELETE (Async Params Next.js 16)",
+    subtitle: "Pelajari penanganan asinkron context.params dan proteksi token pada operasi item spesifik",
+    component: <ItemRouteAnimator />,
+  },
+
+  // Pilar 4: URL as State & Server-Side Filtering & Pagination
+  "3-0": {
+    key: "url-state-sync",
+    title: "Simulasi URL as State: Debounced Input ➔ URL Synchronization ➔ Server Refetch",
+    subtitle: "Saksikan sinkronisasi kata kunci pencarian ke URL dan pengambilan data otomatis di server",
+    component: <UrlStateSyncAnimator />,
+  },
+  "3-1": {
+    key: "pagination-range",
+    title: "Simulasi Rumus Matematika Pagination: Supabase Range Query vs Offset/Limit",
+    subtitle: "Pahami perhitungan indeks from/to matematika PostgreSQL untuk pemuatan data per halaman",
+    component: <PaginationRangeAnimator />,
   },
 };
 
@@ -1025,7 +1106,7 @@ export default function ModuleDetailPage() {
 
                                 {/* Interactive Simulation Accordions for Module Concepts (Option 2: Smooth Accordion Unfold) */}
                                 {(() => {
-                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : null;
+                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : null;
                                   const viz = activeVizMap ? activeVizMap[`${sIdx}-${subIdx}`] : null;
                                   if (!viz) return null;
                                   const isExpanded = !!expandedVisualizers[viz.key];
@@ -1428,6 +1509,34 @@ export default function ModuleDetailPage() {
                         </span>
                         <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
                           Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install @supabase/ssr @supabase/supabase-js</code> dan komponen Shadcn), daftarkan GitHub OAuth App, eksekusi DDL Trigger di Supabase SQL Editor, lalu salin 6 berkas kode yang dihasilkan AI ke proyek Anda.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Panduan Alur Kerja AI Tool Modul 6 */}
+                {currentModule.id === 6 && (
+                  <div className="p-4 rounded-xl border border-cyan-200 dark:border-cyan-900/60 bg-cyan-50/60 dark:bg-cyan-950/30 text-xs space-y-2.5">
+                    <div className="flex items-center gap-2 font-bold text-cyan-900 dark:text-cyan-200">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-cyan-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 text-xs">
+                          <span>🤖</span> Jika Menggunakan AI Agent
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-cyan-600 dark:text-cyan-400">use-debounce</code>; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit <strong>6 berkas</strong> arsitektur ganda REST API terproteksi Bearer JWT, penanganan CORS, skema Zod terbagi, dan sinkronisasi URL as State ke workspace Anda.
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-cyan-100 dark:border-zinc-800 space-y-1 shadow-2xs">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
+                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
+                        </span>
+                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install use-debounce</code>), lalu salin ke-6 berkas kode (helper respons, auth bearer, route koleksi, route dinamis, search input, dan landing page) ke proyek Anda.
                         </p>
                       </div>
                     </div>

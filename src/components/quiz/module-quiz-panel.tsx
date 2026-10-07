@@ -28,6 +28,7 @@ import {
   TrendingUp,
   Layout,
   ArrowRight,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,9 @@ export function ModuleQuizPanel({
   const [showExplanation, setShowExplanation] = useState(false);
   const [networkError, setNetworkError] = useState<string | null>(null);
 
+  // Status apakah ujian sudah dimulai secara eksplisit oleh mahasiswa (Mencegah timer jalan sebelum mahasiswa siap)
+  const [isQuizStarted, setIsQuizStarted] = useState<boolean>(false);
+
   // State Timer & Bank Waktu Akumulatif (Fischer Clock + AI Latency Freeze)
   const [timeLeft, setTimeLeft] = useState<number>(() =>
     getBaseTimeForQuestion(questions[0])
@@ -181,10 +185,11 @@ export function ModuleQuizPanel({
 
   // Anti-Cheat: Handler pelanggaran fokus layar (window.blur atau tab switch)
   const handleViolation = useCallback(async () => {
-    // Abaikan jika kuis telah selesai, belum login, atau saat AI sedang proses evaluasi
-    if (!session || quizProgress?.isCompleted || isEvaluating) return;
+    // Abaikan jika kuis belum dimulai, kuis telah selesai, belum login, atau saat AI sedang proses evaluasi
+    if (!session || !isQuizStarted || quizProgress?.isCompleted || isEvaluating) return;
 
     // Reset instan kuis
+    setIsQuizStarted(false);
     setCurrentIndex(0);
     setStudentAnswer("");
     setEvaluation(null);
@@ -192,10 +197,10 @@ export function ModuleQuizPanel({
     setLastRollover(0);
     setTimeLeft(getBaseTimeForQuestion(questions[0]));
     setResetAlert(
-      "Pelanggaran Integritas Ujian Terdeteksi! Layar peramban kehilangan fokus atau berpindah tab/aplikasi. Sesi Anda di-reset kembali ke Soal 1, dan kejadian ini telah dicatat ke database dosen."
+      "Pelanggaran Integritas Ujian Terdeteksi! Layar peramban kehilangan fokus atau berpindah tab/aplikasi luar saat ujian aktif. Sesi Anda di-reset kembali ke Soal 1, dan kejadian ini telah dicatat ke database dosen."
     );
 
-    const res = await recordTabViolationAction(session.nim, moduleId);
+    const res = await recordTabViolationAction(session.nim, moduleId, "tab_violation");
     setQuizProgress((prev) =>
       prev
         ? {
@@ -206,12 +211,13 @@ export function ModuleQuizPanel({
           }
         : null
     );
-  }, [session, moduleId, quizProgress?.isCompleted, questions]);
+  }, [session, isQuizStarted, moduleId, quizProgress?.isCompleted, isEvaluating, questions]);
 
   // Handler Waktu Habis (Hard Reset ke Soal 1 sesuai standar Mastery Learning)
   const handleTimeout = useCallback(async () => {
-    if (!session || quizProgress?.isCompleted) return;
+    if (!session || !isQuizStarted || quizProgress?.isCompleted) return;
 
+    setIsQuizStarted(false);
     setCurrentIndex(0);
     setStudentAnswer("");
     setEvaluation(null);
@@ -219,10 +225,10 @@ export function ModuleQuizPanel({
     setLastRollover(0);
     setTimeLeft(getBaseTimeForQuestion(questions[0]));
     setResetAlert(
-      "⏱️ WAKTU PENGERJAAN HABIS! Anda belum menyelesaikan seluruh pertanyaan sebelum batas waktu berakhir. Sesuai standar Mastery Learning, sesi kuis di-reset kembali ke Soal 1. Manfaatkan kesempatan ini untuk menjawab lebih tangkas dan tepat!"
+      "⏱️ WAKTU PENGERJAAN HABIS! Anda belum menyelesaikan pertanyaan sebelum batas waktu berakhir. Sesuai standar Mastery Learning, sesi kuis di-reset kembali ke Soal 1. Manfaatkan kesempatan berikutnya untuk menjawab lebih tangkas dan tepat!"
     );
 
-    const res = await recordTabViolationAction(session.nim, moduleId);
+    const res = await recordTabViolationAction(session.nim, moduleId, "timeout");
     setQuizProgress((prev) =>
       prev
         ? {
@@ -233,12 +239,13 @@ export function ModuleQuizPanel({
           }
         : null
     );
-  }, [session, moduleId, quizProgress?.isCompleted, questions]);
+  }, [session, isQuizStarted, moduleId, quizProgress?.isCompleted, questions]);
 
   // Timer Effect: Countdown 1 detik per interval dengan kompensasi AI Latency Freeze
   useEffect(() => {
     if (
       !session ||
+      !isQuizStarted ||
       quizProgress?.isCompleted ||
       isEvaluating ||
       evaluation?.isPassed
@@ -261,24 +268,25 @@ export function ModuleQuizPanel({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [session, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, handleTimeout]);
+  }, [session, isQuizStarted, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, handleTimeout]);
 
-  // Sinkronisasi status timer kuis ke komponen induk (agar floating timer di Tab Teori/Lab aktif)
+  // Sinkronisasi status timer kuis ke komponen induk (agar floating timer di Tab Teori/Lab aktif HANYA saat ujian sudah dimulai)
   useEffect(() => {
     if (onTimeUpdate) {
       const isRunning =
         !!session &&
+        isQuizStarted &&
         !quizProgress?.isCompleted &&
         !isEvaluating &&
         !evaluation?.isPassed &&
         timeLeft > 0;
       onTimeUpdate(timeLeft, isRunning);
     }
-  }, [timeLeft, session, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, onTimeUpdate]);
+  }, [timeLeft, isQuizStarted, session, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, onTimeUpdate]);
 
-  // Pasang listener Anti-Cheat di browser
+  // Pasang listener Anti-Cheat di browser (Hanya aktif saat ujian sedang berjalan)
   useEffect(() => {
-    if (!session || quizProgress?.isCompleted) return;
+    if (!session || !isQuizStarted || quizProgress?.isCompleted) return;
 
     const onBlur = () => {
       handleViolation();
@@ -297,7 +305,7 @@ export function ModuleQuizPanel({
       window.removeEventListener("blur", onBlur);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [session, quizProgress?.isCompleted, handleViolation]);
+  }, [session, isQuizStarted, quizProgress?.isCompleted, handleViolation]);
 
   // Handler Login Mahasiswa
   const handleLogin = async (e: React.FormEvent) => {
@@ -309,6 +317,7 @@ export function ModuleQuizPanel({
     if (res.success && res.student) {
       setSession(res.student);
       await loadProgress(res.student.nim);
+      setIsQuizStarted(false);
     } else {
       setAuthError(res.message);
     }
@@ -320,6 +329,7 @@ export function ModuleQuizPanel({
     await logoutStudentAction();
     setSession(null);
     setQuizProgress(null);
+    setIsQuizStarted(false);
     setStudentAnswer("");
     setEvaluation(null);
     setCurrentIndex(0);
@@ -437,6 +447,80 @@ export function ModuleQuizPanel({
   const handleRevise = () => {
     setEvaluation(null);
   };
+
+  // Modal Ganti Password Mandiri Mahasiswa
+  const renderPasswordModal = () => (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <Card className="w-full max-w-sm border border-border shadow-2xl bg-card">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-sm flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-amber-500" />
+              Ubah Kata Sandi Mandiri
+            </h3>
+            <button
+              type="button"
+              onClick={() => setShowPasswordModal(false)}
+              className="text-muted-foreground hover:text-foreground text-xs"
+            >
+              ✕
+            </button>
+          </div>
+
+          {passwordMsg && (
+            <p className="text-xs p-2 rounded-lg bg-muted border border-border">
+              {passwordMsg}
+            </p>
+          )}
+
+          <form onSubmit={handleChangePassword} className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-muted-foreground">
+                Kata Sandi Lama (Default: NIM)
+              </label>
+              <input
+                type="password"
+                required
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-muted-foreground">
+                Kata Sandi Baru
+              </label>
+              <input
+                type="password"
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPasswordModal(false)}
+                className="text-xs"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold"
+              >
+                Simpan Sandi Baru
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   // 1. Tampilan Loading Awal
   if (authLoading) {
@@ -577,6 +661,7 @@ export function ModuleQuizPanel({
                   if (session) {
                     await restartQuizForImprovementAction(session.nim, moduleId);
                     await loadProgress(session.nim);
+                    setIsQuizStarted(false);
                   }
                 }}
                 className="gap-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs rounded-xl"
@@ -596,6 +681,7 @@ export function ModuleQuizPanel({
                 onClick={() => {
                   setQuizProgress((prev) => (prev ? { ...prev, isCompleted: false } : null));
                   setCurrentIndex(0);
+                  setIsQuizStarted(false);
                 }}
                 className="gap-2 text-xs rounded-xl"
               >
@@ -614,6 +700,180 @@ export function ModuleQuizPanel({
             </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // 3b. Tampilan Standby / Briefing Sebelum Memulai Ujian (Mencegah timer jalan otomatis di Tab Teori)
+  if (!isQuizStarted) {
+    const hasPreviousProgress =
+      quizProgress &&
+      (quizProgress.currentQuestionIndex > 0 ||
+        (quizProgress.answers && Object.keys(quizProgress.answers).length > 0));
+
+    return (
+      <div className="max-w-3xl mx-auto my-6 space-y-6">
+        <Card className="border border-border/80 shadow-xl bg-card/90 backdrop-blur-md overflow-hidden">
+          <div className="h-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600" />
+          <CardContent className="p-6 md:p-8 space-y-6">
+            {/* Header Profil Mahasiswa */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-border/70">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-base shadow-sm">
+                  {session.fullName.charAt(0)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-foreground">{session.fullName}</h3>
+                    <Badge variant="outline" className="font-mono text-xs px-2 py-0.5">
+                      {session.nim}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Kelas: <span className="font-semibold text-foreground">{session.classGroup}</span> • Modul {moduleId}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPasswordModal(true)}
+                  className="text-xs h-8 gap-1.5 rounded-xl border-border hover:bg-muted"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Ubah Sandi</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-xs h-8 gap-1.5 text-muted-foreground hover:text-destructive rounded-xl"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Keluar</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Banner Modul & Informasi Ujian */}
+            <div className="space-y-2 text-center sm:text-left">
+              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 px-3 py-1 font-bold text-xs uppercase tracking-wider">
+                🎯 Evaluasi Pemahaman & Kognitif AI
+              </Badge>
+              <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
+                Uji Pemahaman: {moduleTitle}
+              </h2>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Ujian esai interaktif untuk menguji pemahaman arsitektur dan prinsip komputasi Anda melalui evaluasi langsung AI bertingkat (*Multi-Provider AI Evaluator*).
+              </p>
+            </div>
+
+            {resetAlert && (
+              <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{resetAlert}</span>
+              </div>
+            )}
+
+            {/* Kartu Ringkasan Aturan Ujian */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/80 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                  <Brain className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="font-bold text-xs text-foreground">
+                    {questions.length} Soal Esai Arsitektur
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Dikerjakan secara sekuensial. Wajib mencapai nilai minimal <strong>{passingScore}</strong> per soal sebelum membuka soal berikutnya.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/80 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="font-bold text-xs text-foreground">
+                    Timer Berkeadilan (Fischer Time Bank)
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Sisa waktu soal yang lulus otomatis ditabung ke soal berikutnya. Waktu dibekukan saat AI melakukan evaluasi (*AI Latency Freeze*).
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/80 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="font-bold text-xs text-foreground">
+                    Proteksi Integritas & Anti-Cheat
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Fitur salin-tempel dinonaktifkan. Kehilangan fokus layar (pindah tab browser/aplikasi luar) saat ujian aktif akan mereset sesi kuis ke Soal 1.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/80 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="font-bold text-xs text-foreground">
+                    Mode Open-Book Terbimbing
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Saat ujian aktif, Anda diperbolehkan membaca Tab Teori & Lab di modul ini. Badge floating timer akan menemani Anda untuk kembali.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Riwayat / Status Sebelum Mulai */}
+            {hasPreviousProgress && (
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span className="text-xs text-amber-800 dark:text-amber-300 font-medium">
+                    Anda sedang dalam pengerjaan <strong>Soal {currentIndex + 1} dari {questions.length}</strong> {quizProgress.resetCount > 0 && `(Reset tercatat: ${quizProgress.resetCount}x)`}.
+                  </span>
+                </div>
+                <Badge variant="secondary" className="text-[11px] font-bold">
+                  Sesi Berlanjut
+                </Badge>
+              </div>
+            )}
+
+            {/* Tombol CTA Mulai / Lanjutkan Ujian */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsQuizStarted(true);
+                  setResetAlert(null);
+                }}
+                className="w-full sm:flex-1 h-12 text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/25 rounded-2xl gap-2 transition-all hover:scale-[1.01]"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                <span>
+                  {hasPreviousProgress
+                    ? `Lanjutkan Ujian Sekarang (Soal ${currentIndex + 1}) ➔`
+                    : "Mulai Uji Pemahaman Sekarang ➔"}
+                </span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Modal Ubah Password */}
+        {showPasswordModal && renderPasswordModal()}
       </div>
     );
   }
@@ -1112,78 +1372,7 @@ export function ModuleQuizPanel({
       </Card>
 
       {/* Modal Ganti Password */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <Card className="w-full max-w-sm border border-border shadow-2xl bg-card">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-sm flex items-center gap-2">
-                  <KeyRound className="w-4 h-4 text-amber-500" />
-                  Ubah Kata Sandi Mandiri
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordModal(false)}
-                  className="text-muted-foreground hover:text-foreground text-xs"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {passwordMsg && (
-                <p className="text-xs p-2 rounded-lg bg-muted border border-border">
-                  {passwordMsg}
-                </p>
-              )}
-
-              <form onSubmit={handleChangePassword} className="space-y-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-muted-foreground">
-                    Kata Sandi Lama (Default: NIM)
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-muted-foreground">
-                    Kata Sandi Baru
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
-                  />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPasswordModal(false)}
-                    className="text-xs"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold"
-                  >
-                    Simpan Sandi Baru
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {showPasswordModal && renderPasswordModal()}
     </div>
   );
 }

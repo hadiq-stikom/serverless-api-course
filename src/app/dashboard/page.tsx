@@ -681,7 +681,9 @@ export default function StudentDashboardPage() {
                   <th className="py-3.5 px-4 w-36">Pertemuan</th>
                   <th className="py-3.5 px-4">Materi &amp; Topik Perkuliahan</th>
                   <th className="py-3.5 px-4 w-48">Status Pemahaman</th>
-                  <th className="py-3.5 px-4 w-40 text-center">Skor Tertinggi</th>
+                  <th className="py-3.5 px-4 w-44 text-center" title="Rata-rata dari nilai terbaik seluruh soal dalam pertemuan ini">
+                    Nilai Modul (Rata-rata)
+                  </th>
                   <th className="py-3.5 px-4 w-52 text-right">Aksi Mandiri</th>
                 </tr>
               </thead>
@@ -824,7 +826,7 @@ export default function StudentDashboardPage() {
                         )}
                       </td>
 
-                      {/* Skor Tertinggi */}
+                      {/* Nilai Modul (Rata-rata Soal) */}
                       <td className="py-3.5 px-4 align-middle text-center">
                         {isCompleted ? (
                           <div className="inline-flex flex-col items-center gap-1 min-w-[90px]">
@@ -863,6 +865,9 @@ export default function StudentDashboardPage() {
                                 style={{ width: `${mod.totalScore}%` }}
                               />
                             </div>
+                            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium leading-none">
+                              Rata-rata Soal
+                            </p>
                             {canImprove && (
                               <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-semibold tracking-tight">
                                 Target: 100 🎯

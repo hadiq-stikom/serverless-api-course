@@ -31,7 +31,7 @@ import {
   KeyRound
 } from "lucide-react";
 
-export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "jwt" | "supabase-auth";
+export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "jwt" | "supabase-auth" | "route-handler" | "rest-api" | "bearer-token" | "cors";
 
 interface TermData {
   title: string;
@@ -297,6 +297,66 @@ const TERMS_DATA: Record<TermKey, TermData> = {
       "⚡ Event Triggers: Memungkinkan trigger AFTER INSERT auth.users untuk otomasi sinkronisasi profil"
     ],
     courseRole: "Di kuliah ini: Mesin autentikasi dan manajemen akun terpusat untuk seluruh aplikasi web."
+  },
+  "route-handler": {
+    title: "Route Handler",
+    fullName: "Next.js 16 Serverless Route Handler (route.ts)",
+    badgeColor: "from-blue-600 to-indigo-600",
+    icon: Server,
+    type: "general",
+    summary: "Mekanisme resmi Next.js App Router untuk membangun HTTP endpoint (REST API) serverless. Didefinisikan di dalam file route.ts dengan fungsi async GET, POST, PUT, DELETE, dan PATCH.",
+    analogy: "💡 Analogi: Seperti loket pelayanan terpisah di gedung instansi. Siapa saja (web, mobile, atau pihak ketiga) yang memiliki tiket resmi dapat langsung mengajukan permintaan via loket ini.",
+    keyPoints: [
+      "🌐 Universal HTTP: Mengembalikan respons JSON standar (NextResponse.json)",
+      "📱 Mobile Ready: Dapat dikonsumsi oleh Flutter, React Native, Swift, Kotlin, dan cURL",
+      "⚡ Serverless Scale: Dijalankan on-demand di Edge Network atau Node.js runtime"
+    ],
+    courseRole: "Di kuliah ini: Backend API gateway yang menyediakan endpoint data untuk aplikasi mobile dan integrasi publik."
+  },
+  "rest-api": {
+    title: "REST API",
+    fullName: "Representational State Transfer API",
+    badgeColor: "from-emerald-500 to-teal-600",
+    icon: Globe,
+    type: "general",
+    summary: "Standar arsitektur komunikasi data berbasis protokol HTTP. Menggunakan method semantik (GET membaca, POST membuat, PUT mengubah, DELETE menghapus) dengan format pertukaran data JSON dan HTTP Status Codes.",
+    analogy: "💡 Analogi: Seperti buku menu restoran internasional. Di mana pun Anda berada, simbol dan pesanannya seragam dan dapat dipahami oleh semua orang di dunia.",
+    keyPoints: [
+      "📋 Semantika Status: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 422 Unprocessable",
+      "🔄 Stateless Communication: Setiap request membawa informasi autentikasi lengkap tanpa bergantung pada memori server",
+      "📱 Interoperabilitas Penuh: Menghubungkan berbagai platform berbeda ke satu sumber database"
+    ],
+    courseRole: "Di kuliah ini: Standar komunikasi universal untuk melayani klien multi-platform di luar ekosistem web."
+  },
+  "bearer-token": {
+    title: "Bearer Token",
+    fullName: "RFC 6750 Bearer Token Authentication",
+    badgeColor: "from-cyan-500 to-blue-600",
+    icon: KeyRound,
+    type: "general",
+    summary: "Format autentikasi HTTP di mana klien menyertakan token akses (JWT) di header 'Authorization: Bearer <token>'. Siapa pun yang memegang token ini dianggap memiliki hak akses sesuai klaim token tersebut.",
+    analogy: "💡 Analogi: Seperti gelang festival VIP. Siapa pun yang mengenakan gelang tersebut di pergelangan tangannya langsung diizinkan masuk ke area VIP tanpa ditanya KTP berulang-ulang.",
+    keyPoints: [
+      "🛡️ Header-Based: Disisipkan di header HTTP Authorization tanpa mengandalkan cookie browser",
+      "📱 Standar Mobile: Cara paling aman dan umum digunakan pada aplikasi Flutter & React Native",
+      "⏱️ Expiring Security: Memiliki masa kedaluwarsa pendek (1 jam) untuk mencegah penyalahgunaan token yang dicuri"
+    ],
+    courseRole: "Di kuliah ini: Kunci pengaman seluruh endpoint REST API privat agar hanya dapat diakses pengguna terverifikasi."
+  },
+  cors: {
+    title: "CORS",
+    fullName: "Cross-Origin Resource Sharing",
+    badgeColor: "from-amber-500 to-orange-600",
+    icon: ShieldCheck,
+    type: "general",
+    summary: "Mekanisme keamanan peramban yang membatasi permintaan HTTP dari domain asal (origin) yang berbeda. Server harus menyertakan header 'Access-Control-Allow-Origin' agar peramban mengizinkan akses ke sumber daya API.",
+    analogy: "💡 Analogi: Seperti petugas imigrasi bandara yang memeriksa visa Anda. Jika negara asal Anda belum ada di daftar izin masuk bandara tersebut, Anda langsung ditolak masuk.",
+    keyPoints: [
+      "🛑 Same-Origin Policy: Perlindungan bawaan browser untuk mencegah serangan CSRF dari web jahat",
+      "✈️ Preflight OPTIONS: Permintaan pendahuluan otomatis oleh browser untuk memastikan server mengizinkan akses",
+      "🌐 Universal Access: Wajib dikonfigurasi saat frontend web terpisah domain dari backend API"
+    ],
+    courseRole: "Di kuliah ini: Pengaturan gerbang keamanan HTTP agar aplikasi mobile dan web eksternal tidak diblokir browser."
   }
 };
 
@@ -758,6 +818,120 @@ export function InteractiveTerm({ term, children, showIcon = true }: Interactive
                   </div>
                   <p className="text-[10px] text-rose-300/90 text-center font-mono">
                     Keamanan di level kernel PostgreSQL — tidak bisa dibypass dari aplikasi
+                  </p>
+                </div>
+              )}
+
+              {/* Route Handler Pipeline */}
+              {term === "route-handler" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <Globe className="w-4 h-4 text-cyan-400 mb-1" />
+                      <span className="font-semibold text-zinc-300">Mobile/Web</span>
+                      <span className="text-[9px] text-zinc-500">HTTP Request</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-950/40 border border-blue-500/40 flex flex-col items-center justify-center">
+                      <Server className="w-4 h-4 text-blue-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-blue-300">route.ts</span>
+                      <span className="text-[9px] text-zinc-400">GET/POST</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-amber-400 mb-1" />
+                      <span className="font-semibold text-amber-300">Auth &amp; Zod</span>
+                      <span className="text-[9px] text-zinc-400">Validasi input</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">JSON 200</span>
+                      <span className="text-[9px] text-zinc-400">Universal REST</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-blue-300/90 text-center font-mono">
+                    Next.js Route Handler — jembatan REST universal untuk aplikasi Mobile &amp; API publik
+                  </p>
+                </div>
+              )}
+
+              {/* REST API Pipeline */}
+              {term === "rest-api" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <Globe className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">GET / POST</span>
+                      <span className="text-[9px] text-zinc-400">Metode baku</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <Code className="w-4 h-4 text-zinc-300 mb-1" />
+                      <span className="font-semibold text-zinc-300">JSON Payload</span>
+                      <span className="text-[9px] text-zinc-500">RFC 7807</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-cyan-950/40 border border-cyan-500/40 flex flex-col items-center justify-center">
+                      <Zap className="w-4 h-4 text-cyan-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-cyan-300">Stateless</span>
+                      <span className="text-[9px] text-zinc-400">Tanpa RAM sesi</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-purple-400 mb-1" />
+                      <span className="font-semibold text-purple-300">Status 200/201</span>
+                      <span className="text-[9px] text-zinc-400">Kode semantik</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-emerald-300/90 text-center font-mono">
+                    Standar arsitektur industri — dipahami oleh semua platform di seluruh dunia
+                  </p>
+                </div>
+              )}
+
+              {/* Bearer Token Pipeline */}
+              {term === "bearer-token" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-cyan-950/40 border border-cyan-500/40 flex flex-col items-center justify-center">
+                      <KeyRound className="w-4 h-4 text-cyan-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-cyan-300">Authorization:</span>
+                      <span className="text-[9px] text-zinc-400">Bearer &lt;JWT&gt;</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">getUser(token)</span>
+                      <span className="text-[9px] text-zinc-400">Supabase Auth</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Akses Diberikan</span>
+                      <span className="text-[9px] text-zinc-400">auth.uid() aktif</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-cyan-300/90 text-center font-mono">
+                    Token di header HTTP — aman untuk Flutter, React Native, dan API Klien
+                  </p>
+                </div>
+              )}
+
+              {/* CORS Pipeline */}
+              {term === "cors" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <Globe className="w-4 h-4 text-amber-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-amber-300">OPTIONS Preflight</span>
+                      <span className="text-[9px] text-zinc-400">Cek izin Origin</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-orange-400 mb-1" />
+                      <span className="font-semibold text-orange-300">Allow-Origin</span>
+                      <span className="text-[9px] text-zinc-400">Header server</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Izin Dibuka</span>
+                      <span className="text-[9px] text-zinc-400">Data terkirim</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-amber-300/90 text-center font-mono">
+                    CORS = Pengaman browser lintas-domain, wajib dikonfigurasi pada REST API
                   </p>
                 </div>
               )}

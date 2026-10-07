@@ -101,27 +101,12 @@ CREATE INDEX IF NOT EXISTS idx_practicum_essays_submission
 -- ---------------------------------------------------------------
 INSERT INTO practicum_modules (id, title, lecture_module, capaian, dasar_teori, steps)
 VALUES
--- PRAKTIKUM 1: Ekosistem Serverless & Git
+-- PRAKTIKUM 1: Next.js App Router: RSC vs Client
 (1,
- 'Ekosistem Serverless & Manajemen Repository Git',
- 1,
- 'Mahasiswa mampu menginisialisasi repository proyek Next.js, mengonfigurasi proteksi kunci rahasia dengan .gitignore dan .env.local, serta memahami alur kerja Git dasar (init, add, commit, push) sebagai fondasi kolaborasi tim berbasis cloud.',
- 'Arsitektur Serverless memungkinkan developer menjalankan logika bisnis tanpa mengelola server secara langsung. Platform seperti Vercel (FaaS) menjalankan fungsi secara on-demand, sementara Supabase (BaaS) menyediakan layanan backend terkelola. Git adalah sistem kontrol versi terdistribusi yang mencatat perubahan kode secara atomik melalui commit. File .env.local menyimpan variabel lingkungan rahasia (seperti API key dan database URL) yang TIDAK boleh masuk ke dalam repository publik — dilindungi oleh entri di file .gitignore.',
- '[
-   {"step": 1, "instruksi": "Inisialisasi project Next.js baru dengan perintah: npx create-next-app@latest my-project --typescript --app --tailwind --eslint --no-src-dir. Catat output yang muncul di terminal.", "contoh_output": "✓ Creating project in ./my-project... ✓ Installing dependencies..."},
-   {"step": 2, "instruksi": "Masuk ke folder project dan jalankan git log --oneline untuk melihat commit awal. Catat hash commit dan pesan commit yang ada.", "contoh_output": "a1b2c3d (HEAD -> main) Initial commit from create-next-app"},
-   {"step": 3, "instruksi": "Buat file .env.local dengan isi: NEXT_PUBLIC_SUPABASE_URL=https://test.supabase.co. Cek apakah file tersebut sudah terdaftar di .gitignore dengan perintah: cat .gitignore | grep env.", "contoh_output": ".env.local tercantum dalam .gitignore"},
-   {"step": 4, "instruksi": "Jalankan git status untuk melihat status file. Apakah file .env.local muncul sebagai untracked file? Catat hasilnya.", "contoh_output": "nothing to commit, working tree clean (atau .env.local tidak muncul)"},
-   {"step": 5, "instruksi": "Buat file README.md berisi deskripsi singkat project. Jalankan siklus lengkap: git add README.md, git commit -m ''docs: tambah README awal'', dan git log --oneline. Catat hash commit baru.", "contoh_output": "b2c3d4e (HEAD -> main) docs: tambah README awal"}
- ]'::jsonb
-),
-
--- PRAKTIKUM 2: Next.js App Router
-(2,
- 'Next.js App Router: Server vs Client Component',
+ 'Next.js 16 App Router: Server vs Client Component & Hydration',
  2,
- 'Mahasiswa mampu membedakan perilaku Server Component dan Client Component di Next.js App Router melalui pengujian langsung, mengamati perbedaan output HTML, ukuran JavaScript bundle, dan cara rendering masing-masing komponen.',
- 'Next.js App Router menggunakan React Server Components (RSC) secara default. Server Components dirender sepenuhnya di server — tidak mengirimkan JavaScript ke browser, memungkinkan akses langsung ke database dan environment variables rahasia, namun tidak dapat menggunakan hooks (useState, useEffect) atau event handler. Client Components ditandai dengan direktif ''use client'' di baris pertama file — komponen ini dikirimkan sebagai JavaScript bundle ke browser dan dapat menggunakan seluruh fitur React interaktif. Pemisahan yang tepat antara RSC dan Client Component adalah kunci performa aplikasi Next.js modern.',
+ 'Mahasiswa mampu membedakan perilaku Server Component dan Client Component di Next.js App Router melalui pengujian langsung, mengamati perbedaan output streaming HTML, inspeksi ukuran JavaScript bundle di DevTools, serta menerapkan pola komposisi Interleaving.',
+ 'Next.js App Router menggunakan React Server Components (RSC) secara default (0 kB client JS bundle). Server Components dirender sepenuhnya di server — memungkinkan akses langsung ke database dan environment variables rahasia, namun tidak dapat menggunakan hooks (useState, useEffect) atau event handler. Client Components ditandai dengan direktif ''use client'' di baris pertama file — komponen ini dikirimkan sebagai JavaScript bundle ke browser untuk proses hydration interaktif. Pemisahan yang tepat antara RSC dan Client Component adalah kunci utama performa dan skalabilitas aplikasi Next.js modern.',
  '[
    {"step": 1, "instruksi": "Buat file app/test-rsc/page.tsx sebagai Server Component (tanpa ''use client''). Tambahkan kode: console.log(''[SERVER] Rendered at:'', new Date().toISOString()). Akses halaman di browser dan cek: apakah log muncul di browser console atau terminal server?", "contoh_output": "Log muncul di terminal server (bukan browser console)"},
    {"step": 2, "instruksi": "Buat file app/test-client/page.tsx dengan direktif ''use client'' di baris pertama. Tambahkan useState dan console.log(''[CLIENT] Mounted''). Akses di browser. Di mana log muncul sekarang?", "contoh_output": "Log muncul di browser DevTools console"},
@@ -131,12 +116,12 @@ VALUES
  ]'::jsonb
 ),
 
--- PRAKTIKUM 3: Server Actions & Validasi Zod
-(3,
+-- PRAKTIKUM 2: Server Actions & Validasi Zod
+(2,
  'Server Actions & Validasi Skema Data dengan Zod',
  3,
- 'Mahasiswa mampu membuat Server Action di Next.js untuk memproses mutasi data secara aman, mengimplementasikan validasi schema menggunakan Zod, menangani error validasi, dan menampilkan feedback form yang informatif kepada pengguna.',
- 'Server Actions adalah fungsi asinkron yang berjalan eksklusif di server, ditandai dengan direktif ''use server''. Fungsi ini dipanggil langsung dari Client Component seperti memanggil fungsi biasa, namun eksekusinya terjadi di server — membuat operasi mutasi database aman tanpa membuat API route manual. Zod adalah library TypeScript-first untuk deklarasi dan validasi schema data. Metode safeParse() mengembalikan objek {success: boolean, data?, error?} yang memungkinkan penanganan error validasi tanpa melempar exception — sangat ideal untuk validasi form yang mengharapkan input pengguna yang mungkin tidak valid.',
+ 'Mahasiswa mampu membuat Server Action di Next.js untuk memproses mutasi data secara aman, mengimplementasikan validasi schema menggunakan Zod, menangani error validasi fieldErrors, serta mengelola siklus feedback form menggunakan React 19 form hooks.',
+ 'Server Actions adalah fungsi asinkron yang berjalan eksklusif di server, ditandai dengan direktif ''use server''. Fungsi ini dipanggil langsung dari Client Component seperti RPC (Remote Procedure Call), namun eksekusinya terjadi di server — membuat operasi mutasi database aman tanpa membuat API route manual. Zod adalah library TypeScript-first untuk deklarasi dan validasi schema data. Metode safeParse() mengembalikan objek {success: boolean, data?, error?} yang memungkinkan penanganan error validasi tanpa melempar exception — sangat ideal untuk validasi form yang mengharapkan input pengguna yang mungkin tidak valid.',
  '[
    {"step": 1, "instruksi": "Buat file src/actions/test-action.ts dengan direktif ''use server''. Buat fungsi createTaskAction yang menerima formData: FormData. Log isi formData ke console server. Panggil dari form HTML biasa di page.tsx.", "contoh_output": "[Server] FormData: { title: ''test'', priority: ''high'' }"},
    {"step": 2, "instruksi": "Install Zod: npm install zod. Buat schema validasi TaskSchema dengan field: title (string, min 3 karakter), priority (enum: ''low'', ''medium'', ''high''), deadline (optional date). Test dengan data valid.", "contoh_output": "{ success: true, data: { title: ''Belajar Zod'', priority: ''high'' } }"},
@@ -146,11 +131,11 @@ VALUES
  ]'::jsonb
 ),
 
--- PRAKTIKUM 4: Database Relasional Supabase
-(4,
+-- PRAKTIKUM 3: Database Relasional Supabase
+(3,
  'Database Relasional PostgreSQL & Integrasi Supabase',
  4,
- 'Mahasiswa mampu merancang skema database relasional di PostgreSQL menggunakan Supabase, membuat tabel dengan foreign key constraint, menjalankan query CRUD dasar, dan mengintegrasikan Supabase client di aplikasi Next.js menggunakan paket @supabase/ssr.',
+ 'Mahasiswa mampu merancang skema database relasional di PostgreSQL menggunakan Supabase, membuat tabel dengan foreign key constraint dan UUID v4, menjalankan query CRUD dasar, serta mengintegrasikan Supabase client di Next.js 16 menggunakan paket @supabase/ssr dan otomatisasi TypeScript typegen.',
  'PostgreSQL adalah sistem manajemen database relasional (RDBMS) yang kuat dan open-source. Supabase menyediakan PostgreSQL sebagai layanan BaaS (Backend-as-a-Service) dengan API RESTful dan client library untuk berbagai bahasa. Relasi antar tabel diimplementasikan melalui Foreign Key Constraint — kolom di tabel anak yang merujuk ke Primary Key tabel induk. UUID (Universally Unique Identifier) dipilih sebagai Primary Key karena aman, tidak prediktif, dan bisa di-generate di sisi client maupun server tanpa koordinasi dengan database.',
  '[
    {"step": 1, "instruksi": "Buka Supabase Dashboard > SQL Editor. Jalankan DDL untuk membuat tabel categories (id UUID PK, name TEXT NOT NULL) dan tasks (id UUID PK, category_id UUID FK REFERENCES categories). Periksa tabel di Table Editor.", "contoh_output": "Tabel categories dan tasks muncul di sidebar Supabase Table Editor"},
@@ -161,11 +146,11 @@ VALUES
  ]'::jsonb
 ),
 
--- PRAKTIKUM 5: Autentikasi & Route Protection
-(5,
- 'Autentikasi Multi-Provider & Proteksi Rute Next.js',
+-- PRAKTIKUM 4: Autentikasi & Route Protection
+(4,
+ 'Autentikasi Multi-Provider & Proteksi Rute Edge Middleware',
  5,
- 'Mahasiswa mampu mengimplementasikan sistem autentikasi lengkap menggunakan Supabase Auth dengan Email/Password dan GitHub OAuth, mengamankan rute privat menggunakan Next.js Middleware, serta mengelola session pengguna secara aman di Server Components.',
+ 'Mahasiswa mampu mengimplementasikan sistem autentikasi lengkap menggunakan Supabase Auth dengan Email/Password dan GitHub OAuth 2.0, mengamankan rute privat menggunakan Next.js 16 Edge Middleware, serta mengelola session pengguna secara aman di Server Components dan otomatisasi profile via database trigger.',
  'Autentikasi memverifikasi identitas pengguna, sementara otorisasi menentukan hak akses setelah identitas terverifikasi. Supabase Auth menggunakan JWT (JSON Web Token) yang dirotasi secara kriptografis. GitHub OAuth 2.0 adalah protokol delegasi otorisasi — pengguna memberikan izin kepada aplikasi untuk mengakses data profil GitHub mereka tanpa berbagi password. Next.js Middleware berjalan di Edge Runtime sebelum request mencapai halaman/API, menjadikannya tempat ideal untuk memeriksa session dan melakukan redirect otomatis ke halaman login jika session tidak valid.',
  '[
    {"step": 1, "instruksi": "Buka Supabase Dashboard > Authentication > Providers. Aktifkan Email provider. Buat akun test melalui Supabase Auth > Users > Invite User. Catat: di tabel mana Supabase menyimpan data pengguna dan bagaimana password di-hash?", "contoh_output": "Data pengguna tersimpan di tabel auth.users (bukan public schema). Password di-hash dengan bcrypt."},
@@ -176,18 +161,33 @@ VALUES
  ]'::jsonb
 ),
 
--- PRAKTIKUM 6: CRUD & URL as State
-(6,
- 'Integrasi CRUD Penuh & URL sebagai State Manager',
+-- PRAKTIKUM 5: CRUD & Universal REST API Route Handlers
+(5,
+ 'Integrasi CRUD & Universal REST API Route Handlers',
  6,
- 'Mahasiswa mampu mengimplementasikan operasi CRUD (Create, Read, Update, Delete) lengkap menggunakan Supabase client query dengan filter dan pagination, serta mengelola state filter dan pencarian melalui URL Search Parameters tanpa library state management tambahan.',
- 'CRUD adalah akronim untuk empat operasi fundamental pada data: Create (INSERT), Read (SELECT), Update (UPDATE), Delete (DELETE). Dengan Supabase JavaScript client, operasi ini dilakukan melalui method .insert(), .select(), .update(), dan .delete() yang menghasilkan query PostgreSQL di balik layar. URL Search Parameters (URLSearchParams) adalah teknik menyimpan state aplikasi di URL — misalnya /tasks?filter=high&page=2&search=belajar. Keuntungannya: state dapat dibagikan via link, tidak hilang saat refresh, dan dapat diakses di Server Component tanpa useState.',
+ 'Mahasiswa mampu mengimplementasikan arsitektur ganda (Server Actions untuk web UI internal dan Universal REST API Route Handlers untuk klien eksternal), menerapkan otentikasi Bearer JWT token, menangani dynamic async params Next.js 16, serta mengelola URL as State manager.',
+ 'Dalam arsitektur web modern, pendekatan Dual Architecture memadukan Server Actions sebagai Backend-for-Frontend (BFF) untuk mutasi form internal, dan Universal REST API Route Handlers (/api/v1/...) untuk konsumsi klien pihak ketiga atau aplikasi mobile. Route Handlers di Next.js 16 mendukung otentikasi stateless berbasis Bearer Token JWT di header Authorization, standarisasi respons error RFC 7807, serta penanganan parameter dinamis asinkron (await params). URL Search Parameters berfungsi sebagai state manager global yang dapat dibagikan dan tidak hilang saat halaman di-refresh.',
  '[
-   {"step": 1, "instruksi": "Implementasikan Create: buat Server Action yang menerima data task baru dan memanggil supabase.from(''tasks'').insert(). Setelah berhasil, panggil revalidatePath(''/tasks''). Uji membuat 3 task baru dan verifikasi muncul di UI.", "contoh_output": "Task baru muncul di daftar tanpa reload halaman manual (revalidatePath bekerja)"},
-   {"step": 2, "instruksi": "Implementasikan Read dengan filter: tambahkan .eq(''priority'', filter) ke query select jika filter aktif. Buat 3 tombol filter (All, High, Low). Klik masing-masing dan catat berapa task yang muncul.", "contoh_output": "Filter ''High'' menampilkan 2 task, filter ''Low'' menampilkan 1 task, filter ''All'' menampilkan 3 task"},
-   {"step": 3, "instruksi": "Pindahkan state filter ke URL: gunakan useRouter().push(''/tasks?priority=high''). Di Server Component, baca searchParams.priority untuk filter query. Salin URL dari address bar — apakah halaman tetap sama saat dibuka di tab baru?", "contoh_output": "URL /tasks?priority=high dapat dibagikan dan menghasilkan tampilan yang identik di tab/browser berbeda"},
-   {"step": 4, "instruksi": "Implementasikan Update: buat modal edit task. Saat disimpan, panggil Server Action dengan supabase.from(''tasks'').update(data).eq(''id'', taskId). Verifikasi perubahan tersimpan ke database.", "contoh_output": "Nama task berubah di UI setelah disimpan, data ter-update di Supabase Table Editor"},
-   {"step": 5, "instruksi": "Implementasikan Delete: tambahkan tombol hapus di setiap task card. Gunakan Optimistic UI: hapus task dari UI seketika, lalu konfirmasi ke server. Jika server error, kembalikan task. Simulasikan error dengan memutus koneksi.", "contoh_output": "Task hilang dari UI instan. Saat koneksi diputus, task muncul kembali otomatis (rollback optimistic)"}
+   {"step": 1, "instruksi": "Implementasikan Create: buat Server Action createTaskAction yang menerima data task baru dan memanggil supabase.from(''tasks'').insert(). Setelah berhasil, panggil revalidatePath(''/tasks''). Uji membuat 3 task baru dan verifikasi muncul di UI.", "contoh_output": "Task baru muncul di daftar tanpa reload halaman manual (revalidatePath bekerja)"},
+   {"step": 2, "instruksi": "Bangun Universal Route Handler GET di src/app/api/v1/tasks/route.ts yang membaca searchParams (limit, page), menjalankan kueri range pagination ke Supabase, dan mengembalikan format respons terstandarisasi { success: true, data: [...], pagination: {...} }.", "contoh_output": "Response HTTP 200 OK dengan JSON payload koleksi tugas dan pagination metadata"},
+   {"step": 3, "instruksi": "Bangun Universal Route Handler POST di rute yang sama untuk menerima JSON body, memverifikasi header Authorization: Bearer <token> menggunakan helper apiAuth, dan mengembalikan HTTP 201 Created atau HTTP 401 Unauthorized.", "contoh_output": "HTTP 201 Created saat token valid; HTTP 401 Unauthorized saat token tidak disertakan"},
+   {"step": 4, "instruksi": "Bangun Dynamic Route Handler di src/app/api/v1/tasks/[id]/route.ts dengan async params (const { id } = await params) untuk menangani method GET dan DELETE spesifik ID. Uji pemanggilan endpoint via cURL atau Thunder Client.", "contoh_output": "HTTP 200 OK saat ID ditemukan; HTTP 404 Not Found saat ID acak tidak ada di database"},
+   {"step": 5, "instruksi": "Pindahkan state filter dan pencarian di halaman web ke URL menggunakan useRouter().push(''/tasks?status=done&search=...''). Di Server Component, baca searchParams untuk memfilter data. Verifikasi bahwa URL dapat dibagikan dan menghasilkan tampilan yang identik di tab baru.", "contoh_output": "URL /tasks?status=done dapat dibagikan dan menghasilkan tampilan yang identik di tab/browser berbeda"}
+ ]'::jsonb
+),
+
+-- PRAKTIKUM 6: Supabase Realtime WebSocket & Presence
+(6,
+ 'Supabase Real-time: Kolaborasi WebSocket & Presence',
+ 11,
+ 'Mahasiswa mampu mengimplementasikan sinkronisasi data real-time menggunakan Supabase Realtime (WebSocket), mengonfigurasi listener ''postgres_changes'' untuk event INSERT/UPDATE/DELETE, mendeteksi pengguna online dengan Presence API, serta mengelola lifecycle koneksi channel tanpa memory leak.',
+ 'Supabase Realtime memanfaatkan protokol WebSocket untuk menyediakan koneksi persisten dua arah antara browser dan server database. Fitur ''postgres_changes'' mendengarkan Write-Ahead Log (WAL) PostgreSQL melalui replication slot dan mem-broadcast setiap perubahan baris data ke channel yang tersubscribe seketika tanpa perlu polling HTTP. Presence API memungkinkan pelacakan state pengguna yang sedang aktif secara terdistribusi. Pengelolaan lifecycle channel (subscribe dan removeChannel pada fungsi cleanup useEffect) sangat krusial untuk mencegah kebocoran memori (memory leak) di sisi browser klien.',
+ '[
+   {"step": 1, "instruksi": "Buka Supabase Dashboard > Database > Publications. Aktifkan replikasi real-time pada tabel tasks. Verifikasi tabel tasks terdaftar di publikasi supabase_realtime.", "contoh_output": "Tabel tasks berstatus Realtime Enabled di dashboard Supabase"},
+   {"step": 2, "instruksi": "Buat hook useRealtimeTasks di client: buat channel supabase.channel(''tasks-live'') dan pasang listener on(''postgres_changes'', { event: ''*'', schema: ''public'', table: ''tasks'' }, (payload) => ...). Tampilkan status koneksi channel di console.", "contoh_output": "Log browser: Channel status: SUBSCRIBED, siap mendengarkan event database"},
+   {"step": 3, "instruksi": "Buka Supabase Table Editor di tab browser lain, lakukan INSERT data baru secara manual ke tabel tasks. Amati jendela browser aplikasi. Apakah data baru langsung tertangkap di console tanpa refresh?", "contoh_output": "Log browser: Postgres change received: { eventType: ''INSERT'', new: { title: ''Tugas Realtime'' } }"},
+   {"step": 4, "instruksi": "Implementasikan sinkronisasi state lokal: saat event INSERT diterima, masukkan payload baru ke state array tugas. Buka dua jendela browser berdampingan (Tab A dan Tab B). Tambahkan tugas melalui form di Tab A. Amati apakah Tab B menampilkan tugas baru tersebut dalam waktu < 1 detik.", "contoh_output": "Tugas baru muncul otomatis di Tab B seketika (< 1s) setelah form disubmit di Tab A tanpa reload halaman"},
+   {"step": 5, "instruksi": "Implementasikan Presence tracking: panggil channel.track({ user: user.email, online_at: new Date().toISOString() }) dan dengarkan event ''sync''. Tampilkan badge ''X Pengguna Sedang Online'' di header aplikasi. Uji dengan membuka dan menutup tab kedua.", "contoh_output": "Badge menampilkan ''2 Online'', otomatis berkurang menjadi ''1 Online'' saat tab kedua ditutup"}
  ]'::jsonb
 ),
 
@@ -195,7 +195,7 @@ VALUES
 (7,
  'Keamanan Database: Row Level Security (RLS) PostgreSQL',
  12,
- 'Mahasiswa mampu mengaktifkan dan mengonfigurasi Row Level Security di PostgreSQL Supabase, menulis RLS Policies untuk operasi SELECT, INSERT, UPDATE, dan DELETE berdasarkan identitas pengguna yang terautentikasi, serta memverifikasi keamanan isolasi data antar pengguna.',
+ 'Mahasiswa mampu mengaktifkan dan mengonfigurasi Row Level Security di PostgreSQL Supabase, menulis RLS Policies untuk operasi SELECT, INSERT, UPDATE, dan DELETE berdasarkan identitas pengguna yang terautentikasi (auth.uid()), serta memverifikasi keamanan isolasi data antar pengguna multi-tenant.',
  'Row Level Security (RLS) adalah fitur keamanan PostgreSQL yang memungkinkan kontrol akses pada level baris individual dalam sebuah tabel. Ketika RLS diaktifkan pada sebuah tabel (ALTER TABLE tasks ENABLE ROW LEVEL SECURITY), seluruh akses ke tabel tersebut diblokir secara default — bahkan untuk anon key. Policy kemudian dibuat untuk mendefinisikan kondisi akses: CREATE POLICY "users_own_tasks" ON tasks FOR SELECT USING (auth.uid() = user_id). Fungsi auth.uid() mengembalikan UUID pengguna yang sedang terautentikasi dari JWT token, memungkinkan Supabase memfilter baris secara otomatis di level database.',
  '[
    {"step": 1, "instruksi": "Aktifkan RLS pada tabel tasks: ALTER TABLE tasks ENABLE ROW LEVEL SECURITY. Kemudian coba akses tabel dari aplikasi tanpa menambahkan policy. Apa yang terjadi? Catat response Supabase client.", "contoh_output": "Query mengembalikan [] (array kosong) — RLS memblokir semua akses karena belum ada policy"},

@@ -121,8 +121,8 @@ export default async function PracticumCatalogPage() {
               </div>
             </div>
           ) : (
-            <Link href="/">
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs gap-1.5">
+            <Link href="/practicum/1">
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs gap-1.5 shadow-sm">
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Masuk Akun Mahasiswa</span>
               </Button>
@@ -172,6 +172,27 @@ export default async function PracticumCatalogPage() {
             </div>
             <div className="text-[11px] text-zinc-400 mt-0.5">Draft / Perlu Revisi</div>
           </Card>
+        </div>
+      )}
+
+      {/* Public Explorer Banner when not logged in */}
+      {!student && (
+        <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1 text-xs">
+            <div className="font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-2 text-sm">
+              <Sparkles className="w-4 h-4 text-indigo-500" />
+              <span>Mode Penjelajah Publik / Belum Masuk Akun Mahasiswa</span>
+            </div>
+            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-xs">
+              Silakan klik salah satu modul praktikum di bawah untuk langsung masuk menggunakan akun mahasiswa (atau mode uji coba) dan mulai mengisi pengamatan serta evaluasi AI.
+            </p>
+          </div>
+          <Link href="/practicum/1">
+            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 gap-1.5 shadow-sm">
+              <GraduationCap className="w-4 h-4" />
+              <span>Masuk & Buka Praktikum 1</span>
+            </Button>
+          </Link>
         </div>
       )}
 
@@ -274,7 +295,9 @@ export default async function PracticumCatalogPage() {
                             ? "Lihat Pengiriman Laporan"
                             : currentStatus === "draft"
                             ? "Lanjutkan Pengerjaan Laporan"
-                            : "Mulai Praktikum Ini"}
+                            : student
+                            ? "Mulai Praktikum Ini"
+                            : "Masuk & Mulai Praktikum"}
                         </span>
                         <ChevronRight className="w-4 h-4" />
                       </Button>

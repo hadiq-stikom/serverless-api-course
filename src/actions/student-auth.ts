@@ -318,13 +318,43 @@ export async function getStudentDashboardDataAction(): Promise<{
       const supabase = await createClient();
       const { data: dbSubmissions } = await supabase
         .from("quiz_submissions")
-        .select("module_id, total_score, status, current_question_index, reset_count, completed_at, updated_at")
+        .select("id, module_id, total_score, status, current_question_index, reset_count, completed_at, updated_at")
         .eq("student_nim", student.nim);
 
       if (dbSubmissions && dbSubmissions.length > 0) {
+        const subIds = dbSubmissions.map((s) => s.id);
+        const { data: dbAnswers } = await supabase
+          .from("quiz_answers")
+          .select("submission_id, question_number, score")
+          .in("submission_id", subIds);
+
+        const answersBySubId = new Map<string, any[]>();
+        (dbAnswers || []).forEach((a) => {
+          const list = answersBySubId.get(a.submission_id) || [];
+          list.push(a);
+          answersBySubId.set(a.submission_id, list);
+        });
+
         for (const sub of dbSubmissions) {
+          let scoreToUse = Number(sub.total_score) || 0;
+          const answersForThisSub = answersBySubId.get(sub.id) || [];
+          if (answersForThisSub.length > 0) {
+            const maxPerQ: Record<number, number> = {};
+            answersForThisSub.forEach((a) => {
+              const q = Number(a.question_number);
+              maxPerQ[q] = Math.max(maxPerQ[q] || 0, Number(a.score) || 0);
+            });
+            const bestScores = Object.values(maxPerQ);
+            if (bestScores.length > 0) {
+              const targetMod = MODULES.find((m) => m.id === sub.module_id);
+              const totalQ = targetMod?.quiz?.questions.length || bestScores.length || 1;
+              const divisor = sub.status === "completed" ? totalQ : bestScores.length;
+              scoreToUse = Math.round((bestScores.reduce((acc, sc) => acc + sc, 0) / divisor) * 10) / 10;
+            }
+          }
+
           submissionsMap[sub.module_id] = {
-            totalScore: Number(sub.total_score) || 0,
+            totalScore: scoreToUse,
             status: sub.status === "completed" ? "completed" : "in_progress",
             currentQuestionIndex: sub.current_question_index || 0,
             resetCount: sub.reset_count || 0,

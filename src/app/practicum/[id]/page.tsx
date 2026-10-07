@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { getPracticumById } from "@/data/practicum";
 import { getOrCreatePracticumSubmissionAction } from "@/actions/practicum";
 import { PracticumWorkspace } from "@/components/practicum/practicum-workspace";
+import { PracticumLoginGate } from "@/components/practicum/practicum-login-gate";
 
 interface PracticumPageProps {
   params: Promise<{ id: string }>;
@@ -39,19 +40,48 @@ export default async function PracticumDetailPage({ params }: PracticumPageProps
     notFound();
   }
 
-  // Check student session
+  // Check student & lecturer session
   const cookieStore = await cookies();
   const studentCookie = cookieStore.get("student_session")?.value;
+  const lecturerCookie = cookieStore.get("lecturer_session")?.value;
 
-  if (!studentCookie) {
-    redirect("/");
+  let isLecturer = false;
+  let lecturerName: string | undefined = undefined;
+  if (lecturerCookie) {
+    try {
+      const lec = JSON.parse(lecturerCookie);
+      isLecturer = true;
+      lecturerName = lec.fullName;
+    } catch {
+      isLecturer = false;
+    }
   }
 
-  let student: { nim: string; fullName: string; classGroup: string };
-  try {
-    student = JSON.parse(studentCookie);
-  } catch {
-    redirect("/");
+  let student: { nim: string; fullName: string; classGroup: string } | null = null;
+  if (studentCookie) {
+    try {
+      student = JSON.parse(studentCookie);
+    } catch {
+      student = null;
+    }
+  }
+
+  // If not logged in as student, display the Login Gate with instant test login option
+  if (!student) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 md:p-10 lg:p-12 transition-colors duration-300 selection:bg-indigo-500 selection:text-white">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+          <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-40 w-96 h-96 bg-violet-500/10 dark:bg-violet-600/15 rounded-full blur-3xl" />
+        </div>
+
+        <PracticumLoginGate
+          practicum={practicum}
+          isLecturer={isLecturer}
+          lecturerName={lecturerName}
+        />
+      </div>
+    );
   }
 
   // Fetch or initialize submission & existing answers

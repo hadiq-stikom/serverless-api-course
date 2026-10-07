@@ -241,14 +241,39 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - Prompt All-in-One 6 Berkas (`src/utils/supabase/middleware.ts`, `src/middleware.ts`, `src/app/auth/callback/route.ts`, `src/actions/auth.ts`, `src/app/(auth)/login/page.tsx` + `login-form.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
   - Misi Snowballing: Branch `feature/auth-and-middleware` dengan 5 kriteria DoD terukur dan progress bar interaktif.
   - 6 Soal Esai Uji Pemahaman konsep arsitektur.
+- **Modul 6 (Selesai 100%)**: Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers (Mobile-Ready Backend) & Keamanan API.
+  - 10 Simulator Interaktif lengkap: Arsitektur Ganda BFF vs Universal REST (`DualArchAnimator`), Skema Validasi Terbagi Web & API (`SharedZodSchemaAnimator`), Standarisasi Respons RFC 7807 & Status Codes (`RestResponseContractAnimator`), Otentikasi Stateless Bearer Token JWT (`BearerAuthFlowAnimator`), Mekanisme CORS Preflight OPTIONS (`CorsPreflightAnimator`), Evaluasi Keamanan RLS vs Bahaya Service Role Key (`RlsVsServiceRoleAnimator`), Route Handler Koleksi GET & POST (`CollectionRouteAnimator`), Route Handler Item Spesifik Async Params Next.js 16 (`ItemRouteAnimator`), Sinkronisasi URL as State & Debounce (`UrlStateSyncAnimator`), serta Rumus Matematika Supabase Pagination Range Query (`PaginationRangeAnimator`).
+  - Interactive Terms: Badges interaktif `route-handler`, `rest-api`, `bearer-token`, dan `cors` di ringkasan konsep dengan diagram alur pipeline visual.
+  - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
+  - Lab Praktikum: 5 Langkah terpadu dari helper respons standar & CORS, verifikasi Bearer Token JWT, Route Handler koleksi, Route Handler dinamis async params, hingga pengujian endpoint cURL / Thunder Client.
+  - Prompt All-in-One 6 Berkas (`src/lib/api-response.ts`, `src/lib/api-auth.ts`, `src/app/api/v1/tasks/route.ts`, `src/app/api/v1/tasks/[id]/route.ts`, `src/components/tasks/task-search-input.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
+  - Misi Snowballing: Branch `feature/crud-rest-api-security` dengan 5 kriteria DoD terukur dan progress bar interaktif.
+  - 6 Soal Esai Uji Pemahaman konsep arsitektur & keamanan API.
 - **Implementasi Tab 4 & Sistem Autentikasi (Selesai 100%)**:
   - Tab 4 "Uji Pemahaman" (Mastery Learning $\ge 80$, Anti-Cheat Reset Instan, Triad Multi-Provider AI Groq/Gemini/DeepSeek/Heuristic).
   - Autentikasi Mahasiswa berbasis NIM & Dosen berbasis NIDN dengan cookie HTTP-only Next.js 16.
   - Database PostgreSQL Supabase aktif terhubung via `.env.local` (`setup_supabase.sql`).
   - Dashboard Monitoring Dosen (`/monitoring`) dengan kontrol import roster mahasiswa massal dan reset password mahasiswa.
 - **Target Prioritas Pengerjaan Berikutnya**:
-  - **Modul 6**: Integrasi CRUD & URL as State (Filter, Sort, Pagination, searchParams Next.js 16).
-  - **Modul 7-16**: Melanjutkan secara terstruktur sesuai RPS di `rancangan/DOKUMEN_PERANCANGAN_KULIAH.md`.
+  - **Modul 7**: Advanced UI/UX 1: Animasi & Framer Motion (Transisi layout, micro-interactions, exit animations).
+  - **Modul 8**: BOSS FIGHT 1: UTS – Prototype Pitching & Code Review.
+  - **Modul 9**: Advanced UI/UX 2: Drag & Drop Kanban Board (`@dnd-kit`).
+  - **Modul 10**: Manajemen Media & Aset dengan Cloudinary.
+  - **Modul 11**: Supabase Real-time (WebSocket Collaboration, Presence & Postgres Changes).
+  - **Modul 12**: Keamanan Database: Row Level Security (RLS) PostgreSQL & RBAC.
+  - **Modul 13**: Deployment ke Vercel, CI/CD Pipeline & Observability (GitHub CI/CD, Preview Branches, Env Sync, Error Boundaries `error.tsx`, dan Runtime Logs).
+  - **Modul 14**: Otomasi Serverless, Vercel Cron Jobs & Arsitektur Webhooks (Pola Background Jobs asinkron mengatasi timeout, proteksi token `CRON_SECRET`, verifikasi kriptografis HMAC SHA-256 payload Webhook via `node:crypto`, dan transaksi idempoten).
+  - **Modul 15**: Finalisasi Proyek, Performance Audit (Lighthouse $\ge 90$) & SEO OpenGraph.
+  - **Modul 16**: BOSS FIGHT 2: UAS – Final Production Live Demo.
+
+- **Struktur 7 Modul Praktikum Resmi (`/praktikum`) (Selesai 100% - Paket A)**:
+  - **Praktikum 1** (Ref: Kuliah M2): Next.js 16 App Router: Server vs Client Component & Hydration (Tema: Indigo).
+  - **Praktikum 2** (Ref: Kuliah M3): Server Actions & Validasi Skema Data dengan Zod (Tema: Emerald).
+  - **Praktikum 3** (Ref: Kuliah M4): Database Relasional PostgreSQL & Integrasi Supabase (Tema: Orange).
+  - **Praktikum 4** (Ref: Kuliah M5): Autentikasi Multi-Provider & Proteksi Rute Edge Middleware (Tema: Violet).
+  - **Praktikum 5** (Ref: Kuliah M6): Integrasi CRUD & Universal REST API Route Handlers (Tema: Amber).
+  - **Praktikum 6** (Ref: Kuliah M11): Supabase Real-time: Kolaborasi WebSocket & Presence (Tema: Cyan).
+  - **Praktikum 7** (Ref: Kuliah M12): Keamanan Database: Row Level Security (RLS) PostgreSQL (Tema: Rose).
 
 ---
 

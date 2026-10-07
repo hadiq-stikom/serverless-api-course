@@ -25,7 +25,10 @@ import {
   Lock,
   UserCheck,
   ShieldCheck,
-  FlaskConical
+  FlaskConical,
+  Activity,
+  AlertTriangle,
+  User
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -58,6 +61,10 @@ interface SubmissionRow {
   reset_count: number;
   total_score: number;
   status: string;
+  started_at?: string;
+  completed_at?: string;
+  updated_at?: string;
+  activity_logs?: { timestamp: string; type: string; message: string }[];
 }
 
 const getInitials = (name: string) => {
@@ -107,6 +114,9 @@ export default function DosenPortalPage() {
   const [selectedModule, setSelectedModule] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [detailModalStudent, setDetailModalStudent] = useState<StudentRow | null>(null);
+  const [detailModalTab, setDetailModalTab] = useState<"answers" | "logs">("answers");
+  const [expandedRubrics, setExpandedRubrics] = useState<Record<number, boolean>>({});
+  const [expandedAttempts, setExpandedAttempts] = useState<Record<number, boolean>>({});
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // State Modal Import Mahasiswa
@@ -569,7 +579,7 @@ export default function DosenPortalPage() {
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Kelas</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Status Modul {selectedModule}</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Kemajuan Soal</th>
-                  <th className="py-3.5 px-4 text-center uppercase tracking-wider text-[11px]">Skor Akhir</th>
+                  <th className="py-3.5 px-4 text-center uppercase tracking-wider text-[11px]" title="Rata-rata dari nilai tertinggi semua soal pertemuan ini">Nilai Modul (Rata-rata)</th>
                   <th className="py-3.5 px-4 text-center uppercase tracking-wider text-[11px]">Integritas / Reset</th>
                   <th className="py-3.5 px-4 text-right uppercase tracking-wider text-[11px]">Aksi Dosen</th>
                 </tr>
@@ -633,6 +643,11 @@ export default function DosenPortalPage() {
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               <span>Tuntas 100%</span>
                             </span>
+                          ) : resets > 0 && currentQ === 0 ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30" title="Mahasiswa ter-reset akibat pelanggaran fokus layar/waktu dan harus mengulang dari Soal 1">
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Ter-reset (Ulang Soal 1)</span>
+                            </span>
                           ) : currentQ > 0 ? (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -682,7 +697,7 @@ export default function DosenPortalPage() {
                           </div>
                         </td>
                         <td className="py-3.5 px-4 text-center">
-                          {score > 0 ? (
+                          {isCompleted && score > 0 ? (
                             <span
                               className={`inline-block font-mono font-bold text-xs px-2.5 py-0.5 rounded-md border ${
                                 score >= 80
@@ -693,7 +708,9 @@ export default function DosenPortalPage() {
                               {score}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground/60 text-xs font-mono">-</span>
+                            <span className="text-muted-foreground/60 text-xs font-mono" title={score > 0 ? `Nilai sementara: ${score} (Belum tuntas seluruh soal)` : "Belum ada nilai resmi"}>
+                              -
+                            </span>
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-center">
@@ -815,87 +832,563 @@ export default function DosenPortalPage() {
         </div>
       )}
 
-      {/* Modal Detail Jawaban Mahasiswa */}
-      {detailModalStudent && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl max-h-[85vh] flex flex-col border border-border shadow-2xl bg-card">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-500" />
-                <h3 className="font-bold text-sm text-foreground">
-                  Detail Rekam Jejak Jawaban: {detailModalStudent.fullName} ({detailModalStudent.nim})
-                </h3>
-              </div>
-              <button
-                onClick={() => setDetailModalStudent(null)}
-                className="text-muted-foreground hover:text-foreground text-sm font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
+      {/* Modal Detail Jawaban & Log Aktivitas Mahasiswa */}
+      {detailModalStudent && (() => {
+        const currentSub = submissions.find(
+          (sub) => sub.student_nim === detailModalStudent.nim && Number(sub.module_id) === Number(selectedModule)
+        );
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs">
-              <div className="p-3 rounded-xl bg-muted/50 border border-border flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-foreground">Modul {selectedModule}: </span>
-                  <span className="text-muted-foreground">{targetModule.title}</span>
+        const studentAnswers: any[] = answers.filter((a) => {
+          if (currentSub?.id && a.submission_id === currentSub.id) return true;
+          return a.student_nim === detailModalStudent.nim && Number(a.module_id) === Number(selectedModule);
+        });
+
+        // Kelompokkan jawaban berdasarkan nomor soal (1-based index)
+        const answersByQuestion = new Map<number, any[]>();
+        studentAnswers.forEach((a) => {
+          const qNum = Number(a.question_number);
+          const list = answersByQuestion.get(qNum) || [];
+          list.push(a);
+          answersByQuestion.set(qNum, list);
+        });
+
+        const totalQuestions = targetModule.quiz?.questions.length || 0;
+        const answeredQuestionsCount = answersByQuestion.size;
+
+        // Hitung nilai terbaik per soal dan nilai rata-rata modul
+        const bestScoresPerQ: number[] = [];
+        answersByQuestion.forEach((attempts) => {
+          const maxQ = Math.max(...attempts.map((a) => Number(a.score) || 0), 0);
+          bestScoresPerQ.push(maxQ);
+        });
+        const isCompleted = currentSub?.status === "completed" || (totalQuestions > 0 && answeredQuestionsCount >= totalQuestions);
+        const divisor = isCompleted && totalQuestions > 0 ? totalQuestions : (bestScoresPerQ.length || 1);
+        const calculatedModuleAvg =
+          bestScoresPerQ.length > 0
+            ? Math.round((bestScoresPerQ.reduce((acc, sc) => acc + sc, 0) / divisor) * 10) / 10
+            : Number(currentSub?.total_score) || 0;
+        const totalScore = calculatedModuleAvg;
+        const resetCount = currentSub?.reset_count || 0;
+
+        // Susun Linimasa Kronologis Aktivitas Mahasiswa
+        const timelineEvents: {
+          id: string;
+          timestamp: string;
+          type: "start" | "answer_passed" | "answer_failed" | "violation" | "completed";
+          title: string;
+          description: string;
+          badgeText?: string;
+          badgeColor?: string;
+        }[] = [];
+
+        // 1. Sesi Dimulai
+        if (currentSub?.started_at) {
+          timelineEvents.push({
+            id: "event-start",
+            timestamp: currentSub.started_at,
+            type: "start",
+            title: "Sesi Pengerjaan Kuis Dimulai",
+            description: `Mahasiswa membuka lembar kuis evaluasi Modul ${selectedModule}: ${targetModule.title}.`,
+            badgeText: "Mulai Sesi",
+            badgeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
+          });
+        }
+
+        // 2. Event Jawaban yang Dikirim Mahasiswa
+        studentAnswers.forEach((ans, aIdx) => {
+          const isPassed = ans.is_passed || Number(ans.score) >= 80;
+          timelineEvents.push({
+            id: `event-ans-${ans.id || aIdx}`,
+            timestamp: ans.created_at || currentSub?.updated_at || new Date().toISOString(),
+            type: isPassed ? "answer_passed" : "answer_failed",
+            title: `Mengirim Jawaban Soal #${ans.question_number}`,
+            description: `Skor Evaluasi: ${ans.score}/100 • Evaluator: ${ans.ai_provider || "Groq (Primary)"} • Status: ${isPassed ? "Tuntas (Lolos >= 80)" : "Belum Lolos (< 80, Perlu Revisi)"}`,
+            badgeText: `${ans.score} Poin`,
+            badgeColor: isPassed
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+              : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
+          });
+        });
+
+        // 3. Event Pelanggaran Integritas Ujian (Jika ada insiden reset)
+        if (resetCount > 0) {
+          timelineEvents.push({
+            id: "event-violation",
+            timestamp: currentSub?.updated_at || currentSub?.started_at || new Date().toISOString(),
+            type: "violation",
+            title: `Audit Integritas: ${resetCount}x Hard Reset Terdeteksi`,
+            description: `Sistem anti-cheat mencatat ${resetCount} kali insiden pelanggaran (layar peramban kehilangan fokus, berpindah tab/jendela, atau batas waktu habis). Sesi otomatis di-reset kembali ke Soal 1.`,
+            badgeText: `${resetCount}x Reset`,
+            badgeColor: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
+          });
+        }
+
+        // 4. Event Selesai Kuis
+        if (currentSub?.completed_at || currentSub?.status === "completed") {
+          timelineEvents.push({
+            id: "event-completed",
+            timestamp: currentSub?.completed_at || currentSub?.updated_at || new Date().toISOString(),
+            type: "completed",
+            title: "Kuis Selesai & Lulus 100%",
+            description: `Mahasiswa berhasil menuntaskan seluruh ${totalQuestions} soal esai dengan nilai akhir ${totalScore}/100.`,
+            badgeText: "100% Tuntas",
+            badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+          });
+        }
+
+        // Urutkan event terbaru di atas
+        timelineEvents.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+        return (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 animate-in fade-in duration-200">
+            <Card className="w-full max-w-4xl max-h-[92vh] flex flex-col border border-border shadow-2xl bg-card rounded-2xl overflow-hidden">
+              {/* Modal Header */}
+              <div className="p-4 md:p-5 border-b border-border flex items-center justify-between bg-muted/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm md:text-base text-foreground leading-snug">
+                      Detail Rekam Jejak Jawaban: {detailModalStudent.fullName}
+                    </h3>
+                    <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span>NIM: <strong className="font-mono text-foreground">{detailModalStudent.nim}</strong></span>
+                      <span>•</span>
+                      <Badge variant="outline" className="font-mono text-[10px] py-0 px-1.5">
+                        Kelas {detailModalStudent.classGroup}
+                      </Badge>
+                      <span>•</span>
+                      <span>Modul {selectedModule}: {targetModule.title}</span>
+                    </p>
+                  </div>
                 </div>
-                <Badge variant="outline" className="font-mono text-[10px]">
-                  Kelas {detailModalStudent.classGroup}
-                </Badge>
+                <button
+                  onClick={() => {
+                    setDetailModalStudent(null);
+                    setDetailModalTab("answers");
+                  }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-bold cursor-pointer transition-colors"
+                >
+                  ✕
+                </button>
               </div>
 
-              <div className="space-y-3">
-                <h4 className="font-bold text-foreground uppercase tracking-wide text-[11px]">
-                  Soal &amp; Jawaban Esai:
-                </h4>
-                {targetModule.quiz?.questions.map((q, idx) => (
-                  <div
-                    key={q.id}
-                    className="p-4 rounded-xl border border-border/80 bg-background/50 space-y-2"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-bold text-foreground">
-                        Soal #{idx + 1}: {q.question}
+              {/* Modal Body Container */}
+              <div className="p-4 md:p-6 overflow-y-auto space-y-5 text-xs flex-1">
+                {/* 4 Overview Metric Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {/* Metric 1: Status Sesi */}
+                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                    <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                      <span>Status Pengerjaan</span>
+                      <Clock className="w-3.5 h-3.5 text-blue-500" />
+                    </div>
+                    <div>
+                      {isCompleted ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Selesai &amp; Lolos
+                        </span>
+                      ) : answeredQuestionsCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400 text-xs">
+                          <Clock className="w-3.5 h-3.5" />
+                          Soal {answeredQuestionsCount} / {totalQuestions}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 font-semibold text-muted-foreground text-xs">
+                          Belum Dimulai
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {isCompleted ? "Seluruh soal tuntas" : `${totalQuestions - answeredQuestionsCount} soal tersisa`}
+                    </p>
+                  </div>
+
+                  {/* Metric 2: Skor Rata-rata Modul */}
+                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                    <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                      <span>Nilai Modul (Rata-rata)</span>
+                      <Award className="w-3.5 h-3.5 text-amber-500" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-base font-black ${
+                        totalScore >= 80 ? "text-emerald-600 dark:text-emerald-400" : totalScore > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                      }`}>
+                        {totalScore}
                       </span>
-                      <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-[10px]">
-                        Bobot: {q.weight} Poin
+                      <span className="text-[10px] text-muted-foreground font-mono">/ 100</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {totalScore >= 80 ? "Rata-rata Lulus (>= 80)" : totalScore > 0 ? "Rata-rata < 80" : "Belum Ada Nilai"}
+                    </p>
+                  </div>
+
+                  {/* Metric 3: Audit Integritas Anti-Cheat */}
+                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                    <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                      <span>Integritas Layar</span>
+                      {resetCount > 0 ? (
+                        <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+                      ) : (
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                      )}
+                    </div>
+                    <div>
+                      {resetCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-rose-600 dark:text-rose-400 text-xs">
+                          ⚠️ {resetCount}x Hard Reset
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                          0x Reset (Disiplin)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {resetCount > 0 ? "Pelanggaran fokus/waktu habis" : "Sesi pengerjaan disiplin"}
+                    </p>
+                  </div>
+
+                  {/* Metric 4: Aktivitas Terakhir */}
+                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                    <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                      <span>Aktivitas Terakhir</span>
+                      <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                    </div>
+                    <div className="font-semibold text-foreground text-xs truncate">
+                      {currentSub?.updated_at ? new Date(currentSub.updated_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB" : "-"}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {currentSub?.updated_at ? new Date(currentSub.updated_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "Belum ada riwayat"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Sub-Header Tabs */}
+                <div className="flex items-center gap-2 border-b border-border pb-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setDetailModalTab("answers")}
+                    className={`px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                      detailModalTab === "answers"
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Jawaban &amp; Evaluasi Esai</span>
+                    <Badge variant="outline" className={`ml-1 text-[10px] py-0 px-1 font-mono ${
+                      detailModalTab === "answers" ? "border-white/30 text-white" : ""
+                    }`}>
+                      {answeredQuestionsCount} / {totalQuestions}
+                    </Badge>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDetailModalTab("logs")}
+                    className={`px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                      detailModalTab === "logs"
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Activity className="w-3.5 h-3.5" />
+                    <span>Log Aktivitas &amp; Audit Integritas</span>
+                    <Badge variant="outline" className={`ml-1 text-[10px] py-0 px-1 font-mono ${
+                      detailModalTab === "logs" ? "border-white/30 text-white" : ""
+                    }`}>
+                      {timelineEvents.length} Event
+                    </Badge>
+                  </button>
+                </div>
+
+                {/* TAB 1: JAWABAN ESAI & EVALUASI AI */}
+                {detailModalTab === "answers" && (
+                  <div className="space-y-4">
+                    {/* Pedoman Perhitungan Nilai */}
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span>
+                          <strong>Standar Penilaian:</strong> Nilai tiap butir soal diambil dari <strong>skor tertinggi</strong> seluruh percobaan mahasiswa pada soal tersebut. Nilai modul adalah <strong>rata-rata dari nilai terbaik seluruh soal</strong>.
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] bg-background/80 shrink-0 font-mono">
+                        Rata-rata: {totalScore}/100
                       </Badge>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-muted-foreground text-[11px]">
-                      <p className="font-semibold text-foreground/80 mb-0.5">Rubrik Penilaian:</p>
-                      <p>{q.rubric}</p>
-                    </div>
+                    {targetModule.quiz?.questions.map((q, idx) => {
+                      const qAttempts = answersByQuestion.get(idx + 1) || [];
+                      const bestScore = qAttempts.length > 0 ? Math.max(...qAttempts.map((a) => Number(a.score) || 0)) : 0;
+                      const latestAns = qAttempts[qAttempts.length - 1];
+                      const isPassed = bestScore >= 80;
+                      const isExpandedRubric = !!expandedRubrics[q.id];
+                      const isExpandedAttempts = !!expandedAttempts[q.id];
 
-                    <div className="pt-1 flex flex-wrap gap-1">
-                      {q.keyConcepts.map((c, i) => (
-                        <span
-                          key={i}
-                          className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground"
+                      return (
+                        <div
+                          key={q.id}
+                          className="p-4 md:p-5 rounded-2xl border border-border bg-card/70 space-y-3 shadow-2xs"
                         >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                          {/* Header Soal & Status */}
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 pb-2 border-b border-border/70">
+                            <div className="space-y-1">
+                              <span className="font-bold text-foreground text-xs md:text-sm leading-snug block">
+                                Soal #{idx + 1}: {q.question}
+                              </span>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline" className="text-[10px] text-muted-foreground font-mono">
+                                  Bobot: {q.weight} Poin
+                                </Badge>
+                                {qAttempts.length > 1 && (
+                                  <Badge variant="outline" className="text-[10px] text-indigo-600 dark:text-indigo-400 border-indigo-500/30 font-mono">
+                                    {qAttempts.length}x Percobaan
+                                  </Badge>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedRubrics(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                                  className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                  {isExpandedRubric ? "Sembunyikan Rubrik ▲" : "Lihat Rubrik & Kata Kunci ▼"}
+                                </button>
+                              </div>
+                            </div>
 
-            <div className="p-4 border-t border-border flex justify-end">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setDetailModalStudent(null)}
-                className="text-xs cursor-pointer"
-              >
-                Tutup
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+                            <div className="shrink-0">
+                              {latestAns ? (
+                                isPassed ? (
+                                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-bold py-1 px-2.5">
+                                    ✓ Lolos (Skor Terbaik: {bestScore}/100)
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 text-[11px] font-bold py-1 px-2.5">
+                                    ✕ Perlu Revisi (Skor Terbaik: {bestScore}/100)
+                                  </Badge>
+                                )
+                              ) : (
+                                <Badge variant="outline" className="text-muted-foreground text-[10px]">
+                                  Belum Dijawab
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Collapsible Rubric */}
+                          {isExpandedRubric && (
+                            <div className="p-3 rounded-xl bg-muted/40 border border-border/70 space-y-2 animate-in fade-in duration-150">
+                              <div className="text-[11px] text-muted-foreground leading-relaxed">
+                                <span className="font-bold text-foreground block mb-0.5">Rubrik Penilaian Standar:</span>
+                                {q.rubric}
+                              </div>
+                              <div className="pt-1 flex flex-wrap gap-1 items-center">
+                                <span className="text-[10px] text-muted-foreground font-semibold mr-1">Konsep Kunci:</span>
+                                {q.keyConcepts.map((c, i) => (
+                                  <span
+                                    key={i}
+                                    className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground border border-border/50"
+                                  >
+                                    {c}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Kotak Teks Jawaban Mahasiswa */}
+                          {latestAns ? (
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-[11px] font-semibold text-foreground">
+                                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                                  <User className="w-3.5 h-3.5" />
+                                  Teks Jawaban Mahasiswa:
+                                </span>
+                                {latestAns.created_at && (
+                                  <span className="text-[10px] text-muted-foreground font-mono">
+                                    Disubmit: {new Date(latestAns.created_at).toLocaleString("id-ID")}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="p-3.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs leading-relaxed whitespace-pre-wrap font-sans text-zinc-900 dark:text-zinc-100 shadow-2xs select-text">
+                                {latestAns.student_answer}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-3.5 rounded-xl bg-muted/30 border border-dashed border-border text-center text-muted-foreground text-xs italic">
+                              Mahasiswa belum mengirimkan jawaban untuk soal ini.
+                            </div>
+                          )}
+
+                          {/* Kotak Hasil Evaluasi AI */}
+                          {latestAns && (
+                            <div className="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-200/80 dark:border-indigo-800/50 space-y-2">
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                  <span className="font-bold text-xs text-indigo-950 dark:text-indigo-200">
+                                    Skor Evaluasi AI: {latestAns.score} / 100
+                                  </span>
+                                  <Badge className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 text-[10px] font-mono">
+                                    Model: {latestAns.ai_provider || "Groq (Qwen 3.8 27B)"}
+                                  </Badge>
+                                </div>
+                                {qAttempts.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedAttempts(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                                    className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                  >
+                                    {isExpandedAttempts ? "Tutup Riwayat Percobaan ▲" : `Lihat ${qAttempts.length} Percobaan ▼`}
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-indigo-950/90 dark:text-indigo-200/90 leading-relaxed font-sans">
+                                {latestAns.ai_feedback}
+                              </p>
+
+                              {/* Riwayat Percobaan Sebelumnya */}
+                              {isExpandedAttempts && qAttempts.length > 1 && (
+                                <div className="mt-3 pt-3 border-t border-indigo-200/60 dark:border-indigo-800/40 space-y-2">
+                                  <span className="font-bold text-[11px] text-indigo-950 dark:text-indigo-200 block">
+                                    Riwayat Seluruh Percobaan:
+                                  </span>
+                                  {qAttempts.map((attempt, attIdx) => (
+                                    <div
+                                      key={attIdx}
+                                      className="p-2.5 rounded-lg bg-background/60 border border-border text-[11px] space-y-1"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <span className="font-semibold text-foreground">
+                                          Percobaan #{attIdx + 1}
+                                        </span>
+                                        <Badge className={`text-[10px] ${
+                                          attempt.score >= 80
+                                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                            : "bg-rose-500/10 text-rose-600 border-rose-500/20"
+                                        }`}>
+                                          Skor: {attempt.score}/100
+                                        </Badge>
+                                      </div>
+                                      <p className="text-muted-foreground font-mono text-[10px] truncate">
+                                        &quot;{attempt.student_answer}&quot;
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* TAB 2: LOG AKTIVITAS & AUDIT INTEGRITAS */}
+                {detailModalTab === "logs" && (
+                  <div className="space-y-4">
+                    {timelineEvents.length === 0 ? (
+                      <div className="p-8 rounded-2xl border border-dashed border-border text-center space-y-2">
+                        <Activity className="w-8 h-8 text-muted-foreground/50 mx-auto" />
+                        <h5 className="font-bold text-foreground text-sm">Belum Ada Aktivitas</h5>
+                        <p className="text-muted-foreground text-xs">
+                          Mahasiswa ini belum memulai atau mengirimkan jawaban kuis untuk Modul {selectedModule}.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
+                        {timelineEvents.map((evt) => {
+                          const dateObj = new Date(evt.timestamp);
+                          const formattedTime = !isNaN(dateObj.getTime())
+                            ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) + " WIB"
+                            : "-";
+                          const formattedDate = !isNaN(dateObj.getTime())
+                            ? dateObj.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                            : "";
+
+                          return (
+                            <div key={evt.id} className="relative group">
+                              {/* Bullet node */}
+                              <div className={`absolute -left-6 top-1 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-card ${
+                                evt.type === "completed"
+                                  ? "bg-emerald-500 text-white"
+                                  : evt.type === "answer_passed"
+                                  ? "bg-emerald-500 text-white"
+                                  : evt.type === "answer_failed"
+                                  ? "bg-amber-500 text-white"
+                                  : evt.type === "violation"
+                                  ? "bg-rose-500 text-white"
+                                  : "bg-blue-500 text-white"
+                              }`}>
+                                {evt.type === "completed" ? (
+                                  <Award className="w-2.5 h-2.5" />
+                                ) : evt.type === "answer_passed" ? (
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
+                                ) : evt.type === "answer_failed" ? (
+                                  <AlertTriangle className="w-2.5 h-2.5" />
+                                ) : evt.type === "violation" ? (
+                                  <ShieldAlert className="w-2.5 h-2.5" />
+                                ) : (
+                                  <Clock className="w-2.5 h-2.5" />
+                                )}
+                              </div>
+
+                              {/* Card detail event */}
+                              <div className="p-3.5 rounded-xl border border-border bg-card space-y-1 hover:border-foreground/20 transition-all">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <span className="font-bold text-foreground text-xs">
+                                    {evt.title}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    {evt.badgeText && (
+                                      <Badge className={`text-[10px] font-bold ${evt.badgeColor}`}>
+                                        {evt.badgeText}
+                                      </Badge>
+                                    )}
+                                    <span className="text-[10px] text-muted-foreground font-mono">
+                                      {formattedTime} • {formattedDate}
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {evt.description}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 border-t border-border flex items-center justify-between bg-muted/10">
+                <div className="text-[11px] text-muted-foreground">
+                  <span>Modul {selectedModule} • </span>
+                  <span>{answeredQuestionsCount} dari {totalQuestions} Soal Terjawab</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setDetailModalStudent(null);
+                    setDetailModalTab("answers");
+                  }}
+                  className="text-xs cursor-pointer"
+                >
+                  Tutup
+                </Button>
+              </div>
+            </Card>
+          </div>
+        );
+      })()}
 
       {/* Modal Ganti Password Dosen */}
       {showPasswordModal && (
