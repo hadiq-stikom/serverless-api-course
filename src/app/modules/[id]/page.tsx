@@ -662,6 +662,109 @@ function FormattedSubpointText({ text }: { text: string }) {
   );
 }
 
+// Konfigurasi Alur Kerja Eksekusi AI Agent di IDE (VS Code / Integrated IDE)
+const AI_AGENT_WORKFLOW: Record<
+  number,
+  {
+    theme: {
+      border: string;
+      bg: string;
+      badge: string;
+      stepBorder: string;
+      stepBadge: string;
+    };
+    step1: string;
+    step2: string;
+    step3: string;
+  }
+> = {
+  1: {
+    theme: {
+      border: "border-indigo-200 dark:border-indigo-900/60",
+      bg: "bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40",
+      badge: "bg-indigo-100/60 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800",
+      stepBorder: "border-indigo-100 dark:border-zinc-800",
+      stepBadge: "bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300",
+    },
+    step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE (Antigravity / Cursor / VS Code Copilot).",
+    step2: "AI Agent otomatis mengeksekusi instalasi CLI Next.js 16 jika folder proyek kosong, lalu menyusun berkas .gitignore, .env.example, dan README.md.",
+    step3: "Tinjau diff perubahan kode di editor, lalu jalankan npm run dev di terminal untuk memverifikasi starter Next.js 16 berjalan mulus.",
+  },
+  2: {
+    theme: {
+      border: "border-indigo-200 dark:border-indigo-900/60",
+      bg: "bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40",
+      badge: "bg-indigo-100/60 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800",
+      stepBorder: "border-indigo-100 dark:border-zinc-800",
+      stepBadge: "bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300",
+    },
+    step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE.",
+    step2: "AI Agent otomatis menginisialisasi Shadcn UI via terminal CLI jika belum ada, lalu merakit 5 berkas antarmuka manajemen tugas (termasuk landing page root di /).",
+    step3: "Tinjau diff komponen di editor, lalu akses rute http://localhost:3000/tasks di browser untuk menguji filter status dan hierarki layout.",
+  },
+  3: {
+    theme: {
+      border: "border-indigo-200 dark:border-indigo-900/60",
+      bg: "bg-gradient-to-br from-indigo-50/70 via-white to-violet-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40",
+      badge: "bg-indigo-100/60 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800",
+      stepBorder: "border-indigo-100 dark:border-zinc-800",
+      stepBadge: "bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300",
+    },
+    step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE.",
+    step2: "AI Agent otomatis memeriksa dependensi zod di terminal, lalu merakit 5 berkas Server Actions mutasi data dan hook formulir React 19.",
+    step3: "Tinjau diff berkas di editor, lalu uji kirim formulir di browser untuk memverifikasi feedback error Zod dan optimistik UI 0ms.",
+  },
+  4: {
+    theme: {
+      border: "border-emerald-200 dark:border-emerald-900/60",
+      bg: "bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-emerald-950/40",
+      badge: "bg-emerald-100/60 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800",
+      stepBorder: "border-emerald-100 dark:border-zinc-800",
+      stepBadge: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300",
+    },
+    step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE.",
+    step2: "AI Agent otomatis menginstal @supabase/ssr & @supabase/supabase-js via terminal CLI, menyusun skema DDL SQL 3 tabel, dan membuat utilitas klien/server async cookies.",
+    step3: "Jalankan skrip DDL di Supabase SQL Editor, tinjau kode di editor, dan verifikasi konektivitas query database di browser.",
+  },
+  5: {
+    theme: {
+      border: "border-rose-200 dark:border-rose-900/60",
+      bg: "bg-gradient-to-br from-rose-50/70 via-white to-pink-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-rose-950/40",
+      badge: "bg-rose-100/60 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800",
+      stepBorder: "border-rose-100 dark:border-zinc-800",
+      stepBadge: "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300",
+    },
+    step1: "Pilih metode eksekusi di bawah (Jalur Bertahap 5 Tahap atau Jalur All-in-One), lalu salin prompt ke panel AI Agent IDE Anda.",
+    step2: "AI Agent otomatis memeriksa dependensi @supabase/ssr & Shadcn, lalu merakit middleware session refresher, route handler callback, dan formulir login.",
+    step3: "Jalankan DDL trigger di Supabase SQL Editor, tinjau diff berkas di editor, dan verifikasi checkpoint autentikasi langsung di browser.",
+  },
+  6: {
+    theme: {
+      border: "border-cyan-200 dark:border-cyan-900/60",
+      bg: "bg-gradient-to-br from-cyan-50/70 via-white to-sky-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-cyan-950/40",
+      badge: "bg-cyan-100/60 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800",
+      stepBorder: "border-cyan-100 dark:border-zinc-800",
+      stepBadge: "bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300",
+    },
+    step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE.",
+    step2: "AI Agent otomatis menginstal use-debounce di terminal, lalu merakit 6 berkas REST API terproteksi Bearer JWT, penanganan CORS, dan sinkronisasi URL as State.",
+    step3: "Tinjau diff di editor, lalu uji query pencarian di browser dan verifikasi proteksi rute API menggunakan cURL / Postman.",
+  },
+};
+
+const DEFAULT_AI_AGENT_WORKFLOW = {
+  theme: {
+    border: "border-indigo-200 dark:border-indigo-900/60",
+    bg: "bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40",
+    badge: "bg-indigo-100/60 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800",
+    stepBorder: "border-indigo-100 dark:border-zinc-800",
+    stepBadge: "bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300",
+  },
+  step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE (Antigravity / Cursor / Copilot).",
+  step2: "AI Agent akan otomatis memeriksa dependensi CLI di terminal, lalu merakit struktur berkas modular ke workspace Anda.",
+  step3: "Tinjau diff perubahan kode di editor, lalu jalankan verifikasi checkpoint pengujian langsung di peramban.",
+};
+
 export default function ModuleDetailPage() {
   const params = useParams();
   const moduleId = Number(params.id) || 1;
@@ -671,6 +774,8 @@ export default function ModuleDetailPage() {
   const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
   const [mergeStrategy, setMergeStrategy] = useState<"terminal" | "pr">("terminal");
   const [expandedVisualizers, setExpandedVisualizers] = useState<Record<string, boolean>>({});
+  const [promptViewMode, setPromptViewMode] = useState<"stepped" | "all-in-one">("stepped");
+  const [steppedPromptIndex, setSteppedPromptIndex] = useState<number>(0);
 
   // State untuk Floating Timer Mode Open-Book (sinkronisasi dari ModuleQuizPanel)
   const [quizTimerSeconds, setQuizTimerSeconds] = useState<number>(0);
@@ -840,17 +945,100 @@ export default function ModuleDetailPage() {
               {currentModule.subtitle}
             </p>
 
-            {/* Target CPMK Box */}
-            <div className="bg-indigo-500/5 dark:bg-indigo-950/30 border border-indigo-500/20 rounded-2xl p-4 flex items-start gap-3">
-              <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 mb-0.5">
-                  Target Capaian Pembelajaran (CPMK):
-                </p>
-                <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 font-medium">
-                  {currentModule.cpmk}
-                </p>
+            {/* Target CPMK Box - Eye-Catching Structured View */}
+            <div className="relative rounded-2xl border border-indigo-500/25 dark:border-indigo-500/30 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 dark:from-indigo-950/30 dark:via-zinc-900/60 dark:to-purple-950/20 p-5 md:p-6 shadow-xs">
+              {/* Decorative background glow isolated in overflow-hidden */}
+              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl" />
               </div>
+
+              {/* Header Box */}
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-indigo-200/60 dark:border-indigo-900/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                        Target Capaian Pembelajaran (CPMK)
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60">
+                        {currentModule.cpmkPoints ? `${currentModule.cpmkPoints.length} Sub-CPMK Terukur` : "Standar Capaian"}
+                      </span>
+                      <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+                        🔍 Hover Zoom 1.2x
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                      Standar kompetensi dan capaian pembelajaran terukur setelah menuntaskan materi pertemuan ini:
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Points Content */}
+              {currentModule.cpmkPoints && currentModule.cpmkPoints.length > 0 ? (
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-3.5 mt-4">
+                  {currentModule.cpmkPoints.map((point, idx) => (
+                    <div
+                      key={idx}
+                      className="group relative p-4 rounded-xl border border-indigo-200/70 dark:border-indigo-900/50 bg-white dark:bg-zinc-900 hover:border-indigo-500 dark:hover:border-indigo-400 hover:scale-[1.2] hover:z-50 hover:shadow-[0_25px_60px_rgba(79,70,229,0.22)] dark:hover:shadow-[0_25px_60px_rgba(0,0,0,0.85)] transition-all duration-300 ease-out origin-center flex flex-col justify-between cursor-pointer"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"></span>
+                            {point.code}
+                          </span>
+                          {point.badge && (
+                            <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+                              {point.badge}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-xs md:text-sm font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {point.title}
+                        </h4>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed font-normal mt-1.5">
+                          {point.desc.split(/(`[^`]+`)/g).map((part, pIdx) => {
+                            if (part.startsWith("`") && part.endsWith("`")) {
+                              return (
+                                <code
+                                  key={pIdx}
+                                  className="px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20"
+                                >
+                                  {part.slice(1, -1)}
+                                </code>
+                              );
+                            }
+                            return part;
+                          })}
+                        </p>
+                      </div>
+
+                      {point.keywords && point.keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-zinc-100 dark:border-zinc-800/80">
+                          {point.keywords.map((kw, kwIdx) => (
+                            <span
+                              key={kwIdx}
+                              className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-700/60 group-hover:border-indigo-300/60 dark:group-hover:border-indigo-700/60 transition-colors"
+                            >
+                              #{kw}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3.5 p-4 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-indigo-200/60 dark:border-indigo-900/50">
+                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed">
+                    {currentModule.cpmk}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1003,6 +1191,25 @@ export default function ModuleDetailPage() {
                       Proteksi rute ditegakkan di layer Edge melalui{" "}
                       <InteractiveTerm term="middleware">Next.js 16 Middleware</InteractiveTerm>{" "}
                       yang me-refresh token secara transparan via updateSession() serta mengisolasi profil pengguna di tabel PostgreSQL dengan trigger otomatis.
+                    </div>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                      <span>💡</span>
+                      <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
+                    </p>
+                  </div>
+                ) : currentModule.id === 6 ? (
+                  <div className="space-y-2">
+                    <div className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
+                      Arsitektur komputasi modern menuntut fleksibilitas ganda: Web Dashboard yang cepat via Server Actions (BFF), serta{" "}
+                      <InteractiveTerm term="route-handler">Route Handlers (route.ts)</InteractiveTerm>{" "}
+                      sebagai gateway{" "}
+                      <InteractiveTerm term="rest-api">Universal REST API</InteractiveTerm>{" "}
+                      untuk Klien Mobile (Flutter/React Native). Seluruh endpoint publik diamankan dengan verifikasi{" "}
+                      <InteractiveTerm term="bearer-token">Bearer Token JWT</InteractiveTerm>,{" "}
+                      protokol keamanan lintas-domain{" "}
+                      <InteractiveTerm term="cors">CORS Preflight (OPTIONS)</InteractiveTerm>,{" "}
+                      dan penegakan isolasi data{" "}
+                      <InteractiveTerm term="rls">Row Level Security (RLS)</InteractiveTerm>.
                     </div>
                     <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
                       <span>💡</span>
@@ -1375,179 +1582,279 @@ export default function ModuleDetailPage() {
                   <span className="text-xs text-zinc-500 hidden sm:inline">Format Editor Prompt VS Code</span>
                 </div>
 
-                {/* Panduan Alur Kerja AI Tool Modul 1 */}
-                {currentModule.id === 1 && (
-                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
-                    <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent
+                {/* Alur Kerja Eksekusi AI Agent Terintegrasi di IDE (VS Code) */}
+                {(() => {
+                  const wf = AI_AGENT_WORKFLOW[currentModule.id] || DEFAULT_AI_AGENT_WORKFLOW;
+                  return (
+                    <div className={`p-4 rounded-xl border ${wf.theme.border} ${wf.theme.bg} text-xs space-y-3 shadow-2xs`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">🤖</span>
+                          <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                            Alur Kerja Eksekusi AI Agent di IDE (VS Code):
+                          </span>
+                          <Badge variant="outline" className={`text-[10px] ${wf.theme.badge}`}>
+                            Native AI Agent Workflow
+                          </Badge>
+                        </div>
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">
+                          Antigravity • Cursor • Copilot • Roo Code
                         </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. Jika dijalankan di folder proyek kosong, AI Agent akan otomatis mendeteksi dan mengeksekusi instalasi Next.js 16 via CLI terminal, lalu langsung melengkapi berkas <code className="font-mono text-indigo-600 dark:text-indigo-400">.gitignore</code>, <code className="font-mono text-indigo-600 dark:text-indigo-400">.env.example</code>, dan <code className="font-mono text-indigo-600 dark:text-indigo-400">README.md</code>.
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-0.5">
+                        {/* Langkah 1 */}
+                        <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                          <div className="flex items-center gap-2">
+                            <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
+                              1
+                            </span>
+                            <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                              Kirim ke Agent Panel
+                            </span>
+                          </div>
+                          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                            {wf.step1}
+                          </p>
+                        </div>
+
+                        {/* Langkah 2 */}
+                        <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                          <div className="flex items-center gap-2">
+                            <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
+                              2
+                            </span>
+                            <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                              Otomasi CLI &amp; Berkas
+                            </span>
+                          </div>
+                          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                            {wf.step2}
+                          </p>
+                        </div>
+
+                        {/* Langkah 3 */}
+                        <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                              3
+                            </span>
+                            <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                              Review Diff &amp; Checkpoint
+                            </span>
+                          </div>
+                          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                            {wf.step3}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Dual-Mode Prompt Switcher jika modul memiliki Stepped Prompts */}
+                {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 && (
+                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40 space-y-3 shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                          <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                            Pilih Metode Eksekusi Prompt AI:
+                          </h4>
+                          <Badge variant="outline" className="text-[10px] bg-indigo-100/60 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800">
+                            Dual-Track Architecture
+                          </Badge>
+                        </div>
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                          Gunakan <strong>Jalur Bertahap</strong> untuk pemahaman dan pengujian model per model tanpa kendala, atau <strong>Jalur Cepat (All-in-One)</strong> untuk perakitan instan.
                         </p>
                       </div>
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
-                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx create-next-app@latest</code>) untuk mengunduh engine Next.js. Setelah proyek terpasang, salin respons 3 berkas dari prompt ini ke dalam proyek Anda.
-                        </p>
+
+                      {/* Pill Switcher */}
+                      <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg self-start sm:self-center shrink-0 border border-zinc-200 dark:border-zinc-700">
+                        <button
+                          type="button"
+                          onClick={() => setPromptViewMode("stepped")}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                            promptViewMode === "stepped"
+                              ? "bg-indigo-600 text-white shadow-xs"
+                              : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+                          }`}
+                        >
+                          <span>🧩</span>
+                          <span>Jalur Bertahap ({currentModule.lab.aiPromptTemplate.steppedPrompts.length} Tahap)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPromptViewMode("all-in-one")}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                            promptViewMode === "all-in-one"
+                              ? "bg-indigo-600 text-white shadow-xs"
+                              : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+                          }`}
+                        >
+                          <span>⚡</span>
+                          <span>Jalur All-in-One</span>
+                        </button>
                       </div>
                     </div>
+
+                    {/* Stepped Tabs Bar jika Mode Stepped Aktif */}
+                    {promptViewMode === "stepped" && (
+                      <div className="pt-2 border-t border-indigo-100 dark:border-zinc-800 space-y-3">
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                          {currentModule.lab.aiPromptTemplate.steppedPrompts.map((st, idx) => (
+                            <button
+                              key={st.stepNumber}
+                              type="button"
+                              onClick={() => setSteppedPromptIndex(idx)}
+                              className={`px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-2 shrink-0 border text-xs ${
+                                steppedPromptIndex === idx
+                                  ? "bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-600 shadow-xs ring-1 ring-indigo-500/20"
+                                  : "bg-zinc-50 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                              }`}
+                            >
+                              <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+                                steppedPromptIndex === idx
+                                  ? "bg-indigo-600 text-white"
+                                  : "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
+                              }`}>
+                                {st.stepNumber}
+                              </span>
+                              <span>{st.badge}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Current Step Metadata Card */}
+                        {(() => {
+                          const currentStep = currentModule.lab.aiPromptTemplate.steppedPrompts[steppedPromptIndex] || currentModule.lab.aiPromptTemplate.steppedPrompts[0];
+                          return (
+                            <div className="p-3.5 rounded-lg bg-white/90 dark:bg-zinc-900/90 border border-indigo-100 dark:border-zinc-800 space-y-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-indigo-600 text-white font-mono text-[10px]">
+                                    Tahap {currentStep.stepNumber} dari {currentModule.lab.aiPromptTemplate.steppedPrompts.length}
+                                  </Badge>
+                                  <h5 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                                    {currentStep.title}
+                                  </h5>
+                                </div>
+                                <span className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                                  {currentStep.badge}
+                                </span>
+                              </div>
+                              <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                {currentStep.description}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                  <Code className="w-3.5 h-3.5" /> Target Berkas:
+                                </span>
+                                {currentStep.targetFiles.map((file) => (
+                                  <code
+                                    key={file}
+                                    className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 border border-zinc-200 dark:border-zinc-700"
+                                  >
+                                    {file}
+                                  </code>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Panduan Alur Kerja AI Tool Modul 2 */}
-                {currentModule.id === 2 && (
-                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
-                    <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent
+                {/* Render Prompt Berdasarkan Mode: Stepped vs All-in-One */}
+                {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 && promptViewMode === "stepped" ? (
+                  <div className="space-y-4">
+                    {(() => {
+                      const currentStep = currentModule.lab.aiPromptTemplate.steppedPrompts[steppedPromptIndex] || currentModule.lab.aiPromptTemplate.steppedPrompts[0];
+                      const totalSteps = currentModule.lab.aiPromptTemplate.steppedPrompts.length;
+                      return (
+                        <>
+                          <VsCodePrompt
+                            role={currentModule.lab.aiPromptTemplate.role}
+                            prompt={currentStep.prompt}
+                            tip={currentStep.tip || currentModule.lab.aiPromptTemplate.tip}
+                          />
+
+                          {/* Checkpoint Pengujian Langsung di Browser */}
+                          <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/30 space-y-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                  <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200">
+                                    🧪 Checkpoint Pengujian Langsung di Browser (Tahap {currentStep.stepNumber})
+                                  </span>
+                                </div>
+                                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed pl-6">
+                                  {currentStep.checkpoint}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Stepper Navigation Buttons */}
+                            <div className="flex items-center justify-between pt-2 border-t border-emerald-100 dark:border-emerald-900/50">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={steppedPromptIndex === 0}
+                                onClick={() => setSteppedPromptIndex((prev) => Math.max(0, prev - 1))}
+                                className="text-xs h-8 gap-1.5"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                                <span>Tahap Sebelumnya</span>
+                              </Button>
+
+                              <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                                Tahap {currentStep.stepNumber} / {totalSteps}
+                              </span>
+
+                              {steppedPromptIndex < totalSteps - 1 ? (
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => setSteppedPromptIndex((prev) => Math.min(totalSteps - 1, prev + 1))}
+                                  className="text-xs h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
+                                >
+                                  <span>Lanjut ke Tahap {steppedPromptIndex + 2}</span>
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </Button>
+                              ) : (
+                                <Badge className="bg-emerald-600 text-white text-xs px-2.5 py-1 flex items-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>Seluruh 5 Tahap Selesai!</span>
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 && (
+                      <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span>
+                          <strong>Mode All-in-One Aktif:</strong> Prompt di bawah ini menginstruksikan AI untuk merakit seluruh berkas sistem autentikasi sekaligus. Anda dapat beralih ke <strong>Jalur Bertahap</strong> kapan saja jika ingin menguji model per model.
                         </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mendeteksi apakah Shadcn UI sudah ada; jika belum, Agent akan menjalankan instalasi CLI (<code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn init</code> &amp; <code className="font-mono text-indigo-600 dark:text-indigo-400">shadcn add</code>) lalu merakit 5 berkas antarmuka premium (termasuk halaman landing di root <code className="font-mono text-indigo-600 dark:text-indigo-400">/</code> yang menghubungkan ke <code className="font-mono text-indigo-600 dark:text-indigo-400">/tasks</code>) ke workspace Anda.
-                        </p>
                       </div>
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
-                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 &amp; 2 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest init</code> dan <code className="font-mono text-zinc-800 dark:text-zinc-200">npx shadcn@latest add ...</code>) agar dependensi terpasang di proyek Anda sebelum menyalin 5 berkas kode yang dihasilkan AI.
-                        </p>
-                      </div>
-                    </div>
+                    )}
+                    <VsCodePrompt
+                      role={currentModule.lab.aiPromptTemplate.role}
+                      prompt={currentModule.lab.aiPromptTemplate.prompt}
+                      tip={currentModule.lab.aiPromptTemplate.tip}
+                    />
                   </div>
                 )}
-
-                {/* Panduan Alur Kerja AI Tool Modul 3 */}
-                {currentModule.id === 3 && (
-                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-xs space-y-2.5">
-                    <div className="flex items-center gap-2 font-bold text-indigo-900 dark:text-indigo-200">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-indigo-600 dark:text-indigo-400">zod</code> dan komponen form Shadcn UI; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit 5 berkas arsitektur form mutasi data ke workspace Anda.
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-indigo-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
-                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install zod</code> dan komponen form Shadcn UI) agar dependensi terpasang sebelum menyalin 5 berkas kode yang dihasilkan AI.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Panduan Alur Kerja AI Tool Modul 4 */}
-                {currentModule.id === 4 && (
-                  <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs space-y-2.5">
-                    <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-emerald-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-emerald-600 dark:text-emerald-400">@supabase/supabase-js</code> dan <code className="font-mono text-emerald-600 dark:text-emerald-400">@supabase/ssr</code> via terminal, lalu menyusun 5 berkas arsitektur database Supabase SSR (utilitas server dengan async cookies Next.js 16, utilitas client, skema DDL SQL 3 tabel, tipe TypeScript, dan landing page root) langsung ke workspace Anda.
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-emerald-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
-                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install @supabase/supabase-js @supabase/ssr</code>), eksekusi script DDL SQL di Supabase SQL Editor, lalu salin berkas kode TypeScript yang dihasilkan AI ke proyek Anda.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Panduan Alur Kerja AI Tool Modul 5 */}
-                {currentModule.id === 5 && (
-                  <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-xs space-y-2.5">
-                    <div className="flex items-center gap-2 font-bold text-rose-900 dark:text-rose-200">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-rose-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis memeriksa ketersediaan <code className="font-mono text-rose-600 dark:text-rose-400">@supabase/ssr</code> dan komponen Shadcn UI; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit <strong>6 berkas</strong> autentikasi (middleware, callback handler, server actions, login form, landing page root, dan konfigurasi env) langsung ke workspace Anda.
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-rose-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
-                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install @supabase/ssr @supabase/supabase-js</code> dan komponen Shadcn), daftarkan GitHub OAuth App, eksekusi DDL Trigger di Supabase SQL Editor, lalu salin 6 berkas kode yang dihasilkan AI ke proyek Anda.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Panduan Alur Kerja AI Tool Modul 6 */}
-                {currentModule.id === 6 && (
-                  <div className="p-4 rounded-xl border border-cyan-200 dark:border-cyan-900/60 bg-cyan-50/60 dark:bg-cyan-950/30 text-xs space-y-2.5">
-                    <div className="flex items-center gap-2 font-bold text-cyan-900 dark:text-cyan-200">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Petunjuk Eksekusi Berdasarkan Jenis AI Assistant Anda:</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-cyan-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 text-xs">
-                          <span>🤖</span> Jika Menggunakan AI Agent
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Prompt ini dirancang <strong>All-in-One</strong>. AI Agent akan otomatis mengecek dependensi <code className="font-mono text-cyan-600 dark:text-cyan-400">use-debounce</code>; jika belum ada, Agent akan menjalankan instalasi CLI di terminal lalu merakit <strong>6 berkas</strong> arsitektur ganda REST API terproteksi Bearer JWT, penanganan CORS, skema Zod terbagi, dan sinkronisasi URL as State ke workspace Anda.
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border border-cyan-100 dark:border-zinc-800 space-y-1 shadow-2xs">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-1.5 text-xs">
-                          <span>💬</span> Jika Menggunakan AI Chat (OpenCode / ChatGPT)
-                        </span>
-                        <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                          Jalankan terlebih dahulu perintah terminal di <strong>Langkah 1 Lab</strong> (<code className="font-mono text-zinc-800 dark:text-zinc-200">npm install use-debounce</code>), lalu salin ke-6 berkas kode (helper respons, auth bearer, route koleksi, route dinamis, search input, dan landing page) ke proyek Anda.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <VsCodePrompt
-                  role={currentModule.lab.aiPromptTemplate.role}
-                  prompt={currentModule.lab.aiPromptTemplate.prompt}
-                  tip={currentModule.lab.aiPromptTemplate.tip}
-                />
               </div>
 
               {/* Bottom Flow CTA: Proceed to Mission */}

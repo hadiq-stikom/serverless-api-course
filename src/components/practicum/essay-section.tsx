@@ -45,7 +45,7 @@ export function EssaySection({
   onEssayEvaluated,
 }: EssaySectionProps) {
   const isAnalysis = essayType === "analysis";
-  const title = isAnalysis ? "Seksi 3: Analisis Hasil Pengujian" : "Seksi 4: Kesimpulan Praktikum";
+  const title = isAnalysis ? "Seksi 4: Analisis Hasil Pengujian" : "Seksi 5: Kesimpulan Praktikum";
   const subtitle = isAnalysis
     ? "Bandingkan temuan empiris pada tabel pengamatan dengan teori dasar, arsitektur sistem, dan potensi kendala teknis."
     : "Rangkum capaian esensial, pemenuhan CPMK, dan pelajaran utama dari praktikum yang telah dilaksanakan.";
@@ -124,21 +124,21 @@ export function EssaySection({
   };
 
   return (
-    <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-xs overflow-hidden">
-      <CardHeader className="py-4 px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800/60">
+    <Card className="border border-slate-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-900/70 backdrop-blur-md shadow-xs overflow-hidden">
+      <CardHeader className="py-4 px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800/60">
         <div className="flex items-center gap-3">
           <div
             className={`w-9 h-9 rounded-xl flex items-center justify-center ${
               isAnalysis
-                ? "bg-violet-500/10 border border-violet-500/30 text-violet-600 dark:text-violet-400"
-                : "bg-teal-500/10 border border-teal-500/30 text-teal-600 dark:text-teal-400"
+                ? "bg-teal-500/10 border border-teal-500/25 text-teal-700 dark:text-teal-300"
+                : "bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400"
             }`}
           >
             {isAnalysis ? <Brain className="w-4 h-4" /> : <Award className="w-4 h-4" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100">
                 {title}
               </CardTitle>
               {isPassed ? (
@@ -152,18 +152,18 @@ export function EssaySection({
                   Belum Lulus (&lt; 70)
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-zinc-400 text-[10px] font-mono">
+                <Badge variant="outline" className="text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-800 text-[10px] font-mono">
                   Belum Diperiksa
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{subtitle}</p>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{subtitle}</p>
           </div>
         </div>
 
         {score !== null && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/70 border border-zinc-200 dark:border-zinc-700 shrink-0">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">Skor AI:</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800/70 border border-slate-200 dark:border-zinc-700 shrink-0">
+            <span className="text-xs text-slate-500 dark:text-zinc-400">Skor AI:</span>
             <span className={`text-base font-extrabold font-mono ${getScoreColor(score)}`}>
               {score}/100
             </span>
@@ -174,8 +174,8 @@ export function EssaySection({
       <CardContent className="p-6 space-y-5">
         {/* Error notification */}
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -183,10 +183,10 @@ export function EssaySection({
         {/* Textarea Input */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+            <span className="font-semibold text-slate-800 dark:text-zinc-200">
               Uraian Pemikiran Anda:
             </span>
-            <span className="text-zinc-400 font-mono text-[11px]">
+            <span className="text-slate-400 dark:text-zinc-500 font-mono text-[11px]">
               {text.trim().split(/\s+/).filter(Boolean).length} kata • {text.length} karakter
             </span>
           </div>
@@ -196,27 +196,27 @@ export function EssaySection({
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={placeholder}
-            className="w-full text-xs sm:text-sm p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:opacity-60 disabled:cursor-not-allowed leading-relaxed font-sans"
+            className="w-full text-xs sm:text-sm p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500/50 disabled:opacity-60 disabled:cursor-not-allowed leading-relaxed font-sans transition-all"
           />
         </div>
 
         {/* Action Button & Evaluation Trigger */}
         {!isLocked && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+            <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
               <span>
-                Threshold kelulusan: <strong className="text-zinc-700 dark:text-zinc-300">Skor ≥ 70</strong>. AI mengevaluasi kedalaman, akurasi konsep & objektivitas empiris.
+                Threshold kelulusan: <strong className="text-slate-700 dark:text-zinc-300">Skor ≥ 70</strong>. AI mengevaluasi kedalaman, objektivitas data, & akurasi konsep.
               </span>
             </div>
 
             <Button
               onClick={handleEvaluate}
               disabled={loading || text.trim().length < 50}
-              className={`text-xs font-semibold gap-2 shadow-xs ${
+              className={`text-xs font-semibold gap-2 shadow-xs rounded-xl h-10 px-4 transition-all ${
                 isPassed
-                  ? "bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-200 dark:hover:bg-zinc-300 dark:text-zinc-900"
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  ? "bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-200 dark:hover:bg-slate-300 dark:text-slate-900"
+                  : "bg-slate-900 hover:bg-teal-700 text-white dark:bg-slate-800 dark:hover:bg-teal-600"
               }`}
             >
               {loading ? (
@@ -227,11 +227,11 @@ export function EssaySection({
               ) : isPassed ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Uji Ulang / Revisi AI</span>
+                  <span>Uji Ulang / Perbaiki Analisis</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3.5 h-3.5 text-teal-300" />
                   <span>Periksa dengan AI Evaluator</span>
                 </>
               )}
@@ -241,18 +241,18 @@ export function EssaySection({
 
         {/* AI Evaluation Results Panel */}
         {score !== null && (
-          <div className="p-4 md:p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/60 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/60 dark:border-zinc-800/60 pb-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                <Brain className="w-4 h-4 text-indigo-500" />
+          <div className="p-4 md:p-5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-slate-50/70 dark:bg-zinc-950/60 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-zinc-100">
+                <Brain className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <span>Hasil Penilaian AI Evaluator</span>
                 {provider && (
-                  <Badge variant="outline" className="text-[10px] font-mono text-zinc-500">
+                  <Badge variant="outline" className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-800">
                     Engine: {provider}
                   </Badge>
                 )}
               </div>
-              <div className="text-xs text-zinc-500 font-mono">
+              <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono">
                 Percobaan ke-{attemptCount}
               </div>
             </div>

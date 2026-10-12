@@ -69,10 +69,10 @@ export default async function PracticumDetailPage({ params }: PracticumPageProps
   // If not logged in as student, display the Login Gate with instant test login option
   if (!student) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 md:p-10 lg:p-12 transition-colors duration-300 selection:bg-indigo-500 selection:text-white">
+      <div className="min-h-screen bg-slate-50/60 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 p-6 md:p-10 lg:p-12 transition-colors duration-300 selection:bg-teal-500 selection:text-white">
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-          <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 -right-40 w-96 h-96 bg-violet-500/10 dark:bg-violet-600/15 rounded-full blur-3xl" />
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/5 dark:bg-teal-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-32 w-96 h-96 bg-slate-400/5 dark:bg-teal-600/5 rounded-full blur-3xl" />
         </div>
 
         <PracticumLoginGate
@@ -89,15 +89,15 @@ export default async function PracticumDetailPage({ params }: PracticumPageProps
 
   if (!res.success || !res.data) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-        <div className="p-8 max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl border border-rose-500/30 text-center space-y-4">
-          <div className="text-rose-500 font-bold text-lg">Gagal Membuka Praktikum</div>
-          <p className="text-xs text-zinc-500 leading-relaxed">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50/60 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100">
+        <div className="p-8 max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl border border-rose-500/30 text-center space-y-4 shadow-lg">
+          <div className="text-rose-600 dark:text-rose-400 font-bold text-lg">Gagal Membuka Praktikum</div>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
             {res.error ?? "Terjadi kendala saat memuat data laporan praktikum dari database."}
           </p>
           <a
             href="/practicum"
-            className="inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold"
+            className="inline-block px-4 py-2.5 bg-slate-900 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all"
           >
             Kembali ke Daftar Praktikum
           </a>
@@ -107,17 +107,20 @@ export default async function PracticumDetailPage({ params }: PracticumPageProps
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 md:p-10 lg:p-12 transition-colors duration-300 selection:bg-indigo-500 selection:text-white">
-      {/* Background glow effects */}
+    <div className="min-h-screen bg-slate-50/60 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 p-6 md:p-10 lg:p-12 transition-colors duration-300 selection:bg-teal-500 selection:text-white">
+      {/* Zen Ambient Background Gradients */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-violet-500/10 dark:bg-violet-600/15 rounded-full blur-3xl" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/5 dark:bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -right-32 w-96 h-96 bg-slate-400/5 dark:bg-teal-600/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-emerald-500/5 dark:bg-emerald-600/5 rounded-full blur-3xl" />
       </div>
 
       <PracticumWorkspace
         practicum={practicum}
         initialData={res.data}
         student={student}
+        isLecturer={isLecturer}
+        lecturerName={lecturerName}
       />
     </div>
   );

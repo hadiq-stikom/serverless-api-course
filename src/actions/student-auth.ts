@@ -185,6 +185,71 @@ export async function logoutStudentAction(): Promise<{ success: boolean; message
 }
 
 /**
+ * Dosen masuk ke mode praktikum menggunakan identitas dosen sebagai instruktur kelas
+ */
+export async function loginAsLecturerGuideAction(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const lecturerCookie = cookieStore.get("lecturer_session")?.value;
+    if (!lecturerCookie) {
+      return {
+        success: false,
+        message: "Sesi dosen tidak ditemukan. Silakan login ke Portal Dosen terlebih dahulu.",
+      };
+    }
+    const lecturer = JSON.parse(lecturerCookie);
+    const instructorStudent: StudentSession = {
+      nim: lecturer.nidn || "0012345678",
+      fullName: lecturer.fullName || "Dosen Pengampu",
+      classGroup: "Dosen Pengampu",
+    };
+
+    // Upsert ke database students jika live supabase agar aman relasi foreign key
+    const isLiveSupabase =
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+    if (isLiveSupabase) {
+      try {
+        const supabase = await createClient();
+        await supabase.from("students").upsert(
+          {
+            nim: instructorStudent.nim,
+            full_name: instructorStudent.fullName,
+            class_group: instructorStudent.classGroup,
+            password_hash: instructorStudent.nim,
+          },
+          { onConflict: "nim" }
+        );
+      } catch (err) {
+        console.warn("Gagal upsert akun instruktur dosen ke tabel students:", err);
+      }
+    }
+
+    cookieStore.set("student_session", JSON.stringify(instructorStudent), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return {
+      success: true,
+      message: `Mode panduan aktif untuk ${instructorStudent.fullName}`,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Terjadi kesalahan sistem saat mengaktifkan mode instruktur dosen.",
+    };
+  }
+}
+
+/**
  * Ubah Kata Sandi Mandiri oleh Mahasiswa
  */
 export async function changeStudentPasswordAction(

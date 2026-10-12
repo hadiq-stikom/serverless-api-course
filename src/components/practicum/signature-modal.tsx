@@ -130,16 +130,16 @@ export function SignatureModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-700 dark:text-teal-300">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                 Pengesahan Laporan Praktikum
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-slate-500 dark:text-zinc-400">
                 Bubuhkan tanda tangan digital Anda sebelum mengirim laporan ke dosen
               </p>
             </div>
@@ -147,7 +147,7 @@ export function SignatureModal({
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -156,20 +156,20 @@ export function SignatureModal({
         {/* Modal Body */}
         <div className="p-6 space-y-5 overflow-y-auto">
           {/* Identity confirmation notice */}
-          <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/80 dark:border-zinc-800/80 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-zinc-950/60 border border-slate-200/80 dark:border-zinc-800/80 text-xs flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-zinc-500 dark:text-zinc-400">Praktikan Pengirim:</span>
-              <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-slate-500 dark:text-zinc-400">Praktikan Pengirim:</span>
+              <div className="font-semibold text-slate-900 dark:text-zinc-100">
                 {studentName} ({studentNim})
               </div>
             </div>
-            <Badge variant="outline" className="text-indigo-600 dark:text-indigo-400 font-mono text-[10px]">
+            <Badge variant="outline" className="text-teal-700 dark:text-teal-300 border-teal-500/30 bg-teal-500/5 font-mono text-[10px]">
               Otentikasi Terverifikasi
             </Badge>
           </div>
 
           {/* Tab Selection */}
-          <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-xs font-semibold">
+          <div className="flex p-1 rounded-xl bg-slate-100 dark:bg-zinc-800/80 text-xs font-semibold">
             <button
               type="button"
               onClick={() => {
@@ -178,8 +178,8 @@ export function SignatureModal({
               }}
               className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
                 activeTab === "draw"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
               }`}
             >
               <PenTool className="w-3.5 h-3.5" />
@@ -193,8 +193,8 @@ export function SignatureModal({
               }}
               className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
                 activeTab === "upload"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
               }`}
             >
               <Upload className="w-3.5 h-3.5" />
@@ -212,24 +212,24 @@ export function SignatureModal({
           {/* TAB 1: DRAW CANVAS */}
           {activeTab === "draw" && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
                 <span>Goreskan tanda tangan menggunakan mouse, stylus, atau jari:</span>
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                  className="text-xs text-teal-700 dark:text-teal-300 hover:underline flex items-center gap-1 font-medium"
                 >
                   <RotateCcw className="w-3 h-3" />
                   Hapus / Ulangi
                 </button>
               </div>
 
-              <div className="relative border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-950 overflow-hidden h-48 flex items-center justify-center">
+              <div className="relative border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl bg-slate-50/50 dark:bg-zinc-950 overflow-hidden h-48 flex items-center justify-center">
                 <canvas
                   ref={canvasRef}
                   className="w-full h-full cursor-crosshair touch-none"
                 />
-                <div className="absolute bottom-2 left-3 pointer-events-none text-[10px] text-zinc-400">
+                <div className="absolute bottom-2 left-3 pointer-events-none text-[10px] text-slate-400 dark:text-zinc-500">
                   Area Tanda Tangan Digital
                 </div>
               </div>
@@ -249,28 +249,28 @@ export function SignatureModal({
 
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20 transition-all space-y-2"
+                className="border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl p-6 text-center cursor-pointer hover:border-teal-500 hover:bg-teal-500/5 dark:hover:bg-teal-950/20 transition-all space-y-2"
               >
-                <div className="w-10 h-10 mx-auto rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <div className="w-10 h-10 mx-auto rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 flex items-center justify-center">
                   <Upload className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                <div className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
                   Klik untuk memilih file tanda tangan
                 </div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="text-[11px] text-slate-400 dark:text-zinc-500">
                   Format PNG, JPG atau JPEG (Disarankan background putih/transparan, maks 2MB)
                 </div>
               </div>
 
               {uploadedImage && (
-                <div className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-between">
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
                       src={uploadedImage}
                       alt="Preview Tanda Tangan"
-                      className="h-12 max-w-[120px] object-contain border border-zinc-200 dark:border-zinc-700 rounded bg-white p-1"
+                      className="h-12 max-w-[120px] object-contain border border-slate-200 dark:border-zinc-700 rounded bg-white p-1"
                     />
-                    <div className="text-xs text-zinc-700 dark:text-zinc-300">
+                    <div className="text-xs text-slate-700 dark:text-zinc-300">
                       File siap digunakan
                     </div>
                   </div>
@@ -287,19 +287,19 @@ export function SignatureModal({
             </div>
           )}
 
-          <div className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed bg-zinc-50 dark:bg-zinc-950/50 p-3 rounded-xl border border-zinc-200/70 dark:border-zinc-800/70">
+          <div className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50 dark:bg-zinc-950/50 p-3 rounded-xl border border-slate-200/80 dark:border-zinc-800/80">
             ℹ️ <strong>Pernyataan Kejujuran Akademik:</strong> Dengan menyetujui dan membubuhkan tanda tangan ini, Anda menyatakan bahwa seluruh catatan pengamatan, analisis, dan kesimpulan dalam laporan ini adalah hasil pengerjaan Anda sendiri secara objektif.
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="p-5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-2.5">
+        <div className="p-5 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-end gap-2.5">
           <Button
             variant="outline"
             size="sm"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-xs text-zinc-600 dark:text-zinc-300"
+            className="text-xs text-slate-600 dark:text-zinc-300 rounded-xl"
           >
             Batal
           </Button>
@@ -307,7 +307,7 @@ export function SignatureModal({
             size="sm"
             onClick={handleConfirmSubmit}
             disabled={isSubmitting}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs gap-1.5 shadow-sm"
+            className="bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs gap-1.5 shadow-xs rounded-xl h-9 px-4 transition-all"
           >
             {isSubmitting ? (
               <>

@@ -68,6 +68,30 @@ Setiap halaman modul perkuliahan (`/modules/[id]`) menerapkan standar navigasi d
 
 ---
 
+## 2.1. Standar Desain & Interaksi Banner Target Capaian Pembelajaran (CPMK)
+
+Setiap banner hero modul perkuliahan (`/modules/[id]`) wajib menyajikan Target Capaian Pembelajaran (CPMK) dengan standar keterbacaan tinggi dan interaktivitas modern:
+
+- **Struktur Poin-Poin Terukur (Anti-Wall-of-Text)**:
+  - **DILARANG KERAS** menyajikan CPMK sebagai satu blok paragraf panjang teks polos yang melelahkan mata mahasiswa.
+  - **WAJIB** dipecah menjadi 3 hingga 4 Sub-CPMK terukur menggunakan properti modular `cpmkPoints: CpmkPoint[]` yang memuat:
+    - `code`: Penomoran Sub-CPMK terstruktur (contoh: `CPMK 5.1`, `CPMK 6.1`).
+    - `badge`: Kategori taksonomi kompetensi (contoh: `BFF vs Universal REST`, `Analisis & Taksonomi`, `Keamanan Edge`).
+    - `title`: Judul capaian berbasis Kata Kerja Operasional (KKO) yang dicetak tebal.
+    - `desc`: Uraian capaian terukur yang mendukung *inline syntax highlighting* menggunakan backticks (`` `...` ``) untuk fungsi API, nama berkas, dan perintah teknis.
+    - `keywords`: Array kata kunci inti yang dirender sebagai baris *chip pill* tagar (`#Keyword`).
+- **Efek Wajib Hover Zoom 1.2x & Stacking Context (`hover:scale-[1.2]` & `hover:z-50`)**:
+  - Setiap kartu Sub-CPMK wajib merespons hover kursor dengan pembesaran skala 1.2x (`hover:scale-[1.2]`, `transition-all duration-300 ease-out origin-center`, `cursor-pointer`).
+  - **Elevasi Lapisan Maksimal**: Wajib menyertakan `hover:z-50` agar kartu yang sedang diteliti melayang di atas kartu-kartu lain di sebelahnya.
+  - **Latar Belakang Solid Anti-Tembus Pandang**: Kartu wajib menggunakan warna latar solid (`bg-white dark:bg-zinc-900`) agar teks atau kartu di belakangnya tidak bocor/berbayang saat membesar.
+  - **Bayangan Elevasi Adaptif**: `hover:shadow-[0_25px_60px_rgba(79,70,229,0.22)]` di Light Mode dan `dark:hover:shadow-[0_25px_60px_rgba(0,0,0,0.85)]` di Dark Mode.
+- **Aturan Bebas Terpotong (Zero Clipping Rule)**:
+  - Kontainer luar pembungkus CPMK **DILARANG** menggunakan `overflow-hidden`.
+  - Efek pendaran cahaya dekoratif (*ambient gradient blur*) wajib diisolasi di dalam sub-wrapper tersendiri bertipe `absolute inset-0 rounded-2xl overflow-hidden pointer-events-none`. Hal ini menjamin kartu yang membesar 1.2x tidak terpotong tepi kontainer.
+  - Dilengkapi badge panduan visual: `🔍 Hover Zoom 1.2x` pada sub-header banner CPMK.
+
+---
+
 ## 3. Aturan Metodologi Prompting AI (Framework C-R-E-T & Pola All-in-One)
 
 Setiap template prompt AI yang disajikan kepada mahasiswa wajib mematuhi 4 unsur presisi **C-R-E-T** dengan pola otomatisasi modern:
@@ -88,10 +112,11 @@ Setiap template prompt AI yang disajikan kepada mahasiswa wajib mematuhi 4 unsur
     3. *Micro-interactions & Hover Effects*: Elevasi halus (`hover:-translate-y-1`, `hover:shadow-lg`, `transition-all`).
     4. *Hierarki Tipografi & Status Badges*: Variasi kontras semantik yang adaptif penuh pada Dark Mode dan Light Mode.
 
-> **Banner Panduan Visual Alur Kerja AI Tool di UI**:
-> Di atas setiap kotak prompt, wajib disediakan kartu petunjuk dual-mode:
-> - 🤖 **AI Agent (Antigravity / Cursor)**: Menjelaskan otomasi All-in-One (deteksi dependensi, eksekusi CLI terminal, dan scaffolding berkas).
-> - 💬 **AI Chat (OpenCode / ChatGPT)**: Menginstruksikan mahasiswa menjalankan langkah CLI di terminal terlebih dahulu secara manual, baru menyalin kode berkas yang dihasilkan.
+> **Standar Alur Kerja Eksekusi AI Agent di IDE (VS Code)**:
+> Di atas setiap kotak prompt, disajikan kartu ringkas 3 langkah pipeline AI Agent terintegrasi:
+> 1. **Kirim ke Agent Panel**: Salin formula prompt ke AI Agent IDE terintegrasi (Antigravity / Cursor / Copilot / Roo Code).
+> 2. **Otomasi CLI & Berkas**: AI Agent secara mandiri memeriksa dependensi di terminal dan merakit struktur berkas ke workspace.
+> 3. **Review Diff & Checkpoint**: Mahasiswa bertindak sebagai *Code Reviewer*: meninjau diff di editor dan memverifikasi checkpoint pengujian langsung di peramban.
 > 
 > **Penamaan Prompt**: Gunakan judul profesional generik: **"Formula Prompt AI Teruji"** (hindari penamaan vendor di judul). Seluruh teks prompt harus *copy-ready*.
 
@@ -233,22 +258,27 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - Prompt All-in-One 5 Berkas (`src/utils/supabase/server.ts`, `client.ts`, `supabase/migrations/01_initial_schema.sql`, `src/types/database.types.ts`, `src/app/page.tsx` Root Navigation) + Panduan Dual-Mode & Standar Estetika UI Premium.
   - Misi Snowballing: Branch `feature/supabase-database-schema` dengan 5 kriteria DoD terukur dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur.
-- **Modul 5 (Selesai 100%)**: Autentikasi & Otorisasi Pengguna (GitHub OAuth & Email Supabase Auth, Next.js 16 Middleware Session Protector, dan User Profiles).
+- **Modul 5 (Selesai 100%)**: Autentikasi & Otorisasi Pengguna (Multi-Provider Unified Portal, Edge Middleware Session Protector, dan User Profiles Sync).
+  - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#5 Model Autentikasi`, `#Next.js 16 Edge Middleware`, dll.), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
+  - Spektrum 5 Model Autentikasi Industri (ID Institusi NIM/NIP, Email/Password, Social OAuth 2.0 GitHub, Passwordless Magic Link, Enterprise SSO) beserta matriks Decision Framework.
   - 11 Simulator Interaktif lengkap: Stateless JWT & Rotasi Kriptografis (`JwtLifecycleAnimator`), GitHub OAuth 2.0 6 Langkah (`OauthFlowAnimator`), Passwordless Magic Link & OTP (`MagicLinkAnimator`), Intersepsi Edge Middleware & Matcher Regex (`MiddlewareInterceptionAnimator`), Keamanan Sesi getUser() vs getSession() Anti-Pattern (`SessionRefresherAnimator`), Matriks Hak Akses Rute Public/Private/Auth (`RouteProtectionMatrixAnimator`), Pembacaan Sesi RSC Zero Client Bundle (`ServerSessionReaderAnimator`), Mutasi Auth Server Actions Login/Signup/Logout (`AuthActionsFlowAnimator`), Route Handler OAuth Callback `/auth/callback` (`AuthCallbackRouteAnimator`), Pemisahan Skema Database `auth.users` vs `public.profiles` (`AuthUsersVsProfilesAnimator`), serta Otomasi Trigger PostgreSQL `on_auth_user_created` (`AutoProfileTriggerAnimator`).
   - Interactive Terms: Badges interaktif `supabase-auth`, `oauth`, `jwt`, `middleware`, dan `rls` di ringkasan konsep.
   - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
   - Lab Praktikum: 5 Langkah terpadu dari setup GitHub OAuth App, Helper Middleware `updateSession()`, Callback Route Handler, Auth Server Actions, hingga SQL Trigger `handle_new_user()`.
   - Prompt All-in-One 6 Berkas (`src/utils/supabase/middleware.ts`, `src/middleware.ts`, `src/app/auth/callback/route.ts`, `src/actions/auth.ts`, `src/app/(auth)/login/page.tsx` + `login-form.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
   - Misi Snowballing: Branch `feature/auth-and-middleware` dengan 5 kriteria DoD terukur dan progress bar interaktif.
-  - 6 Soal Esai Uji Pemahaman konsep arsitektur.
+  - 7 Soal Esai Uji Pemahaman konsep arsitektur dengan passing threshold $\ge 80$.
+  - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_05.md` (150 menit timetable, skrip perkuliahan, arsitektur 7 berkas, dan uji bukti eksekusi).
 - **Modul 6 (Selesai 100%)**: Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers (Mobile-Ready Backend) & Keamanan API.
+  - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#Dual Architecture`, `#Route Handlers`, `#Shared Zod Schemas`, `#Bearer Token JWT`, `#URL as State`), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
   - 10 Simulator Interaktif lengkap: Arsitektur Ganda BFF vs Universal REST (`DualArchAnimator`), Skema Validasi Terbagi Web & API (`SharedZodSchemaAnimator`), Standarisasi Respons RFC 7807 & Status Codes (`RestResponseContractAnimator`), Otentikasi Stateless Bearer Token JWT (`BearerAuthFlowAnimator`), Mekanisme CORS Preflight OPTIONS (`CorsPreflightAnimator`), Evaluasi Keamanan RLS vs Bahaya Service Role Key (`RlsVsServiceRoleAnimator`), Route Handler Koleksi GET & POST (`CollectionRouteAnimator`), Route Handler Item Spesifik Async Params Next.js 16 (`ItemRouteAnimator`), Sinkronisasi URL as State & Debounce (`UrlStateSyncAnimator`), serta Rumus Matematika Supabase Pagination Range Query (`PaginationRangeAnimator`).
-  - Interactive Terms: Badges interaktif `route-handler`, `rest-api`, `bearer-token`, dan `cors` di ringkasan konsep dengan diagram alur pipeline visual.
+  - Interactive Terms: Badges interaktif `route-handler`, `rest-api`, `bearer-token`, `cors`, dan `rls` di ringkasan konsep dengan diagram alur pipeline visual.
   - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
   - Lab Praktikum: 5 Langkah terpadu dari helper respons standar & CORS, verifikasi Bearer Token JWT, Route Handler koleksi, Route Handler dinamis async params, hingga pengujian endpoint cURL / Thunder Client.
   - Prompt All-in-One 6 Berkas (`src/lib/api-response.ts`, `src/lib/api-auth.ts`, `src/app/api/v1/tasks/route.ts`, `src/app/api/v1/tasks/[id]/route.ts`, `src/components/tasks/task-search-input.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
   - Misi Snowballing: Branch `feature/crud-rest-api-security` dengan 5 kriteria DoD terukur dan progress bar interaktif.
-  - 6 Soal Esai Uji Pemahaman konsep arsitektur & keamanan API.
+  - 7 Soal Esai Uji Pemahaman konsep arsitektur & keamanan API dengan passing threshold $\ge 80$.
+  - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_06.md` (150 menit timetable, skrip perkuliahan, arsitektur 6 berkas, dan uji bukti eksekusi cURL).
 - **Implementasi Tab 4 & Sistem Autentikasi (Selesai 100%)**:
   - Tab 4 "Uji Pemahaman" (Mastery Learning $\ge 80$, Anti-Cheat Reset Instan, Triad Multi-Provider AI Groq/Gemini/DeepSeek/Heuristic).
   - Autentikasi Mahasiswa berbasis NIM & Dosen berbasis NIDN dengan cookie HTTP-only Next.js 16.
@@ -266,18 +296,86 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - **Modul 15**: Finalisasi Proyek, Performance Audit (Lighthouse $\ge 90$) & SEO OpenGraph.
   - **Modul 16**: BOSS FIGHT 2: UAS – Final Production Live Demo.
 
-- **Struktur 7 Modul Praktikum Resmi (`/praktikum`) (Selesai 100% - Paket A)**:
-  - **Praktikum 1** (Ref: Kuliah M2): Next.js 16 App Router: Server vs Client Component & Hydration (Tema: Indigo).
-  - **Praktikum 2** (Ref: Kuliah M3): Server Actions & Validasi Skema Data dengan Zod (Tema: Emerald).
-  - **Praktikum 3** (Ref: Kuliah M4): Database Relasional PostgreSQL & Integrasi Supabase (Tema: Orange).
-  - **Praktikum 4** (Ref: Kuliah M5): Autentikasi Multi-Provider & Proteksi Rute Edge Middleware (Tema: Violet).
-  - **Praktikum 5** (Ref: Kuliah M6): Integrasi CRUD & Universal REST API Route Handlers (Tema: Amber).
-  - **Praktikum 6** (Ref: Kuliah M11): Supabase Real-time: Kolaborasi WebSocket & Presence (Tema: Cyan).
-  - **Praktikum 7** (Ref: Kuliah M12): Keamanan Database: Row Level Security (RLS) PostgreSQL (Tema: Rose).
+- **Struktur 7 Modul Praktikum Resmi (`/practicum`) (Selesai 100% - Paket A)**:
+  - Mengikuti standar kurikulum terpadu 7 Modul Praktikum (Praktikum 1 s.d. Praktikum 7) yang berpusat pada pengujian empiris, analisis berbantuan AI, dan pembuatan laporan digital resmi dengan pengesahan tanda tangan.
 
 ---
 
-## 9. Aturan Lingkungan & Development Server
+## 9. Standar Arsitektur & Kurikulum Studio Praktikum Terpadu (`/practicum`)
+
+Studio Praktikum merupakan laboratorium komputasi serverless interaktif terpadu yang memadukan pengujian empiris, bimbingan AI analitis, dan penandatanganan laporan digital resmi:
+
+### 9.1. Standar Desain Katalog Modul ("Compact 3-Column Studio Grid")
+- **Layout Grid 3-Kolom Proporsional**:
+  - Halaman katalog (`/practicum`) menerapkan layout 3 kolom di desktop (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6`).
+  - Dilarang menggunakan layout 2 kolom melebar (*horizontal bloat*) yang menyebabkan kartu tampak kebesaran dan menyisakan banyak ruang kosong pasif.
+- **Visual Anchor & Ikonografi Tematik**:
+  - Setiap kartu modul dilengkapi wadah ikon unik 36×36 px beraksen warna pilar (`Layers` untuk P-01, `ShieldCheck` untuk P-02, `Database` untuk P-03, `KeyRound` untuk P-04, `Globe` untuk P-05, `Zap` untuk P-06, `Lock` untuk P-07).
+  - Dilengkapi *ambient gradient glow* halus di pojok atas yang membesar dinamis saat di-hover.
+- **Keseimbangan Akademik RPS & Adrenalin Industri**:
+  - **Deretan Tech Pills Industri**: Setiap kartu menampilkan 3–4 tag alat/teknologi nyata (`Next.js 16`, `RSC (0 kB)`, `DevTools`, `Zod 3`, `React 19 Forms`, `PostgreSQL`, `Supabase BaaS`, `OAuth 2.0`, dll.) untuk memicu antusiasme eksplorasi mahasiswa.
+  - **Kalimat Aksi Ringkas (*Mission Hook*)**: 1 kalimat tantangan aksi berikon `Target` yang menyajikan inti eksperimen secara hidup dan menarik.
+  - **Target Capaian RPS Resmi Tetap Dipertahankan**: Kalimat capaian pembelajaran resmi silabus tetap ditampilkan dengan label rapi `🎯 Capaian RPS (Modul X Kuliah)` (2 baris *line-clamp* proporsional) demi menjaga marwah dan bobot akademis kurikulum.
+- **Meta Bar & Tombol Aksi Sleek**:
+  - Menampilkan estimasi waktu (`⏱️ ~45 mnt`), jumlah langkah (`5 Langkah Uji`), dan level (`Fundamental`, `Intermediate`, `Advanced`).
+  - Tombol aksi menggunakan bentuk ramping `h-10 rounded-xl` beraksen tema modul dengan mikro-animasi panah `ChevronRight` yang meluncur dinamis saat di-hover.
+
+### 9.2. Standar Landasan Teori Komprehensif (1:1 Mapping ke Langkah Praktikum)
+- **Hierarki Baku 6 Seksi Lembar Kerja Praktikum**:
+  1. **Seksi 1: Target Capaian Pembelajaran Praktikum (CPMK & Sub-CPMK)** (`PracticumCpmk`): Kartu pengantar kompetensi akademik dan daftar Sub-CPMK bernomor (`01` s.d. `05`).
+  2. **Seksi 2: Landasan Teori & Panduan Konsep Praktikum** (`PracticumTheory`): Modul teori 3-tab (5 Konsep Kunci, Matriks Komparasi 7 Baris, Aturan Emas & Anti-Pattern).
+  3. **Seksi 3: Prosedur Uji Coba & Hasil Pengamatan** (`ObservationTable`): Tabel 5 langkah pengujian empiris dan input pengamatan mahasiswa.
+  4. **Seksi 4: Analisis Hasil Pengujian** (`EssaySection` tipe `analysis`): Formulir esai analitis ilmiah dengan koreksi AI dan evaluasi mendalam.
+  5. **Seksi 5: Kesimpulan Praktikum** (`EssaySection` tipe `conclusion`): Formulir rangkuman esensial dan refleksi ketercapaian CPMK.
+  6. **Seksi 6: Pengesahan & Pengiriman Laporan Praktikum**: Panel status kelulusan, tanda tangan digital dosen & mahasiswa, dan ekspor PDF resmi ber-stempel.
+- **Standar Penyajian Capaian Pembelajaran Baku (CPMK & Sub-CPMK - Seksi 1)**:
+  - CPMK disajikan sesuai kaidah baku silabus akademik OBE (Outcome-Based Education):
+    1. Diawali kalimat pembuka resmi: *"Setelah menyelesaikan seluruh tahapan modul praktikum ini, mahasiswa diharapkan mampu:"*.
+    2. Diikuti deretan kartu poin Sub-CPMK bernomor urut rapi (`01`, `02`, `03`, dst.).
+    3. Setiap poin diawali Kata Kerja Operasional (KKO) Taksonomi Bloom yang dicetak tebal (`font-semibold`) seperti **Membedakan Lingkungan Eksekusi**, **Mengamati Mekanisme Streaming**, **Menginspeksi Bobot Bundle**, dst., diikuti uraian capaian yang terukur (*measurable & observable*).
+  - **Dilarang keras** menampilkan CPMK sebagai satu paragraf teks panjang polos tanpa poin-poin terstruktur.
+- **Prinsip Keselarasan 100% (1:1 Mapping)**:
+  - Setiap langkah pengujian pada tabel observasi praktikum **WAJIB** berakar pada landasan teori yang eksplisit dan lengkap. Tidak boleh ada langkah eksperimen yang tidak tercakup secara teoritis.
+  - Teori berfungsi sebagai acuan resmi mahasiswa sebelum melakukan pengujian dan saat menyusun analisis esai ilmiah.
+- **Format Antarmuka 3-Tab Interaktif (`PracticumTheory` - Seksi 2)**:
+  - **Tab 1: 5 Konsep Kunci Acuan Eksperimen**:
+    - Nomor urut & badge topik (`01` • `0 kB Client Bundle`).
+    - *Pill Kata Kunci* (*Keywords Highlighting*) untuk mempermudah pemindaian konsep penting.
+    - *Kotak Intisari Konsep* (*Key Takeaway / 3-Detik Paham*): Ringkasan cepat berlatar warna tema.
+    - *Penjelasan Teori Mendalam (Anti-Wall-of-Text)*: Disajikan dalam format kartu poin bernomor vertikal (`1.`, `2.`, `3.`, dst.) dengan penekanan visual kuat pada kata kunci penting (`**bold**`), istilah komputasi, dan kode inline (`` `code` ``) berlatar badge monospace agar mudah dipindai secara visual (*scannable*). Dilarang menyajikan teks teori sebagai paragraf monolitik panjang yang menjemukan.
+    - *Cuplikan Kode / Panduan DevTools*: Komponen editor bergaya VS Code (`VsCodeSnippet` dengan aturan wajib `enableZoom={false}`).
+    - *Kotak Acuan Langkah Praktikum (Amber Box)*: Penunjuk spesifik yang mengarahkan mahasiswa ke nomor baris tabel observasi terkait.
+  - **Tab 2: Matriks Komparasi Arsitektural**:
+    - Tabel perbandingan multi-baris (Zebra striping, analisis verdict, status badge) untuk referensi cepat mahasiswa membandingkan dua pendekatan komputasi.
+  - **Tab 3: Aturan Emas & Anti-Pattern**:
+    - Komparasi visual berdampingan antara ❌ *Anti-Pattern (Kesalahan Umum Mahasiswa)* vs ✅ *Best Practice (Standar Industri)* dengan cuplikan kode VS Code.
+- **Penyimpanan Terpusat di `src/data/practicum-theories.ts`**:
+  - Seluruh data konsep pilar, matriks komparasi, dan aturan emas disimpan secara terstruktur dan modular dalam berkas terdedikasi `src/data/practicum-theories.ts`.
+
+### 9.3. Standar Akses Dosen: "Mode Panduan Dosen (Instruktur Kelas)"
+- **Dual-Mode Gerbang Masuk (`PracticumLoginGate`)**:
+  - Gerbang login praktikum menyediakan dua tab: `[🎓 Akun Mahasiswa]` dan `[🎖️ Mode Panduan Dosen]`.
+  - Dosen dilarang masuk menggunakan akun dummy mahasiswa ("Budi Santoso").
+- **Deteksi Otomatis & Sesi 1-Klik**:
+  - Jika dosen telah memiliki sesi aktif (`lecturer_session`), sistem menampilkan kartu verifikasi emas dengan tombol 1-klik: `[Masuk Mode Panduan (Nama Dosen) ➔]`.
+  - Jika belum memiliki sesi, dosen dapat menggunakan login instan NIDN pengampu default (`0012345678`).
+- **Profil Resmi Instruktur di Lembar Kerja**:
+  - Header lembar kerja praktikum (`PracticumHeader`) menampilkan profil resmi dosen: Nama Dosen, badge **Dosen**, dan NIDN, disertai badge khusus **"Mode Panduan Kelas"**.
+  - Dosen leluasa menginput sampel observasi dan men-generate analisis AI langsung di layar proyektor untuk percontohan kelas tanpa merusak/mencampuri data mahasiswa.
+  - Dilengkapi tombol pintasan cepat `[🎖️ Portal Dosen]` untuk memantau setoran mahasiswa secara real-time dan `[🚪 Ganti Akun]` untuk berganti ke mode mahasiswa biasa.
+
+### 9.4. Daftar 7 Modul Praktikum Resmi (Paket A):
+1. **Praktikum 1** (Ref: Kuliah M2): Next.js 16 App Router: Server vs Client Component & Hydration (Tema: Teal).
+2. **Praktikum 2** (Ref: Kuliah M3): Server Actions & Validasi Skema Data dengan Zod (Tema: Emerald).
+3. **Praktikum 3** (Ref: Kuliah M4): Database Relasional PostgreSQL & Integrasi Supabase (Tema: Cyan).
+4. **Praktikum 4** (Ref: Kuliah M5): Autentikasi Multi-Provider & Proteksi Rute Edge Middleware (Tema: Indigo).
+5. **Praktikum 5** (Ref: Kuliah M6): Integrasi CRUD & Universal REST API Route Handlers (Tema: Amber).
+6. **Praktikum 6** (Ref: Kuliah M11): Supabase Real-time: Kolaborasi WebSocket & Presence (Tema: Teal).
+7. **Praktikum 7** (Ref: Kuliah M12): Keamanan Database: Row Level Security (RLS) PostgreSQL (Tema: Rose).
+
+---
+
+## 10. Aturan Lingkungan & Development Server
 
 - Jangan pernah menjalankan `next build` bersamaan ketika dev server (`next dev`) sedang berjalan, karena dapat merusak cache internal Turbopack.
 - Jika browser menampilkan cache usang (*stale*), bersihkan direktori `.next/` lalu jalankan ulang dev server dan lakukan *hard refresh* (`Ctrl + Shift + R`).

@@ -12,13 +12,17 @@ export interface PracticumModule {
   id: number;
   title: string;
   lectureModule: number; // Modul kuliah referensi
-  capaian: string;
+  capaian: string; // Deskripsi resmi capaian RPS
   dasarTeori: string;
   steps: PracticumStep[];
   theme: {
-    color: "cyan" | "indigo" | "emerald" | "amber" | "violet" | "rose" | "orange";
+    color: "teal" | "cyan" | "indigo" | "emerald" | "amber" | "violet" | "rose" | "orange" | "slate";
     badge: string;
   };
+  actionHook: string; // Kalimat aksi ringkas pemicu semangat
+  techPills: string[]; // Deretan pill teknologi nyata
+  level: "Fundamental" | "Intermediate" | "Advanced";
+  durationMinutes: number;
 }
 
 export const PRACTICUM_MODULES: PracticumModule[] = [
@@ -29,7 +33,7 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
     capaian:
       "Mahasiswa mampu membedakan perilaku Server Component dan Client Component di Next.js App Router melalui pengujian langsung, mengamati perbedaan output streaming HTML, inspeksi ukuran JavaScript bundle di DevTools, serta menerapkan pola komposisi Interleaving.",
     dasarTeori:
-      "Next.js App Router menggunakan React Server Components (RSC) secara default (0 kB client JS bundle). Server Components dirender sepenuhnya di server — memungkinkan akses langsung ke database dan environment variables rahasia, namun tidak dapat menggunakan hooks (useState, useEffect) atau event handler. Client Components ditandai dengan direktif 'use client' di baris pertama file — komponen ini dikirimkan sebagai JavaScript bundle ke browser untuk proses hydration interaktif. Pemisahan yang tepat antara RSC dan Client Component adalah kunci utama performa dan skalabilitas aplikasi Next.js modern.",
+      "Arsitektur Next.js 16 App Router membagi pohon komponen menjadi dua ranah komputasi: React Server Components (RSC) dan Client Components. Secara default, setiap komponen adalah RSC yang dieksekusi 100% di server (Node.js runtime) dan menghasilkan streaming HTML murni dengan dampak bundle 0 kB ke sisi klien. Output console.log() pada RSC dieksekusi di server dan hanya tampil pada terminal CLI, bukan di browser console. Sebaliknya, Client Component ditandai dengan direktif 'use client' di baris paling awal, menandakan batas (boundary) bahwa kode komponen beserta dependensinya wajib dibundle dan dikirimkan ke peramban untuk proses hydration interaktif (mengaitkan event listeners dan state dinamis). Pada DevTools Network, halaman RSC murni hanya mengunduh runtime dasar Next.js (~85 KB), sementara halaman Client Component memuat bundle tambahan (~120 KB+). Pemanggilan hooks seperti useState di RSC dilarang keras dan memicu compiler guardrail error. Untuk menggabungkan komponen server di dalam komponen client tanpa mengorbankan sifat 0 kB bundle, diterapkan pola Interleaving (komposisi via props children).",
     steps: [
       {
         step: 1,
@@ -63,7 +67,11 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
           "ServerWrapper render di server, ClientCounter dengan tombol increment berjalan di browser",
       },
     ],
-    theme: { color: "indigo", badge: "Frontend Architecture" },
+    actionHook: "Uji live streaming HTML, inspeksi bundle 0 kB di DevTools, dan rakit pola Interleaving RSC.",
+    techPills: ["Next.js 16", "RSC (0 kB)", "DevTools Network", "Interleaving"],
+    level: "Fundamental",
+    durationMinutes: 45,
+    theme: { color: "teal", badge: "Frontend Architecture" },
   },
   {
     id: 2,
@@ -72,7 +80,7 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
     capaian:
       "Mahasiswa mampu membuat Server Action di Next.js untuk memproses mutasi data secara aman, mengimplementasikan validasi schema menggunakan Zod, menangani error validasi fieldErrors, serta mengelola siklus feedback form menggunakan React 19 form hooks.",
     dasarTeori:
-      "Server Actions adalah fungsi asinkron yang berjalan eksklusif di server, ditandai dengan direktif 'use server'. Fungsi ini dipanggil langsung dari Client Component seperti RPC (Remote Procedure Call), namun eksekusinya terjadi di server — membuat operasi mutasi database aman tanpa membuat API route manual. Zod adalah library TypeScript-first untuk deklarasi dan validasi schema data. Metode safeParse() mengembalikan objek {success: boolean, data?, error?} yang memungkinkan penanganan error validasi tanpa melempar exception — sangat ideal untuk validasi form yang mengharapkan input pengguna yang mungkin tidak valid.",
+      "Server Actions adalah fungsi asinkron yang berjalan eksklusif di lingkungan server Node.js, ditandai dengan direktif 'use server'. Arsitektur ini mengabstraksi mutasi HTTP POST menjadi Remote Procedure Call (RPC) tipe-aman tanpa perlu membuat berkas API route (/api/...) secara manual. Zod bertindak sebagai Single Source of Truth yang menggabungkan validasi runtime JavaScript dengan type inference TypeScript statis (z.infer). Metode safeParse() menerapkan pola zero-exception defensive programming, mengembalikan objek diskriminatif yang memetakan error secara presisi per input field via result.error.flatten().fieldErrors. Pada sisi antarmuka, hook resmi React 19 useActionState mengotomasi seluruh siklus pengiriman formulir (idle → pending → settled) dan menyediakan boolean isPending untuk mencegah insiden double-submission secara bawaan.",
     steps: [
       {
         step: 1,
@@ -106,6 +114,10 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
         contoh_output: "State 'idle' → 'pending' → 'success'/'error' berjalan dengan benar",
       },
     ],
+    actionHook: "Eksekusi mutasi RPC server-side via Server Actions, validasi skema Zod, dan kelola React 19 form hooks.",
+    techPills: ["Server Actions", "Zod 3", "React 19 Forms", "fieldErrors"],
+    level: "Fundamental",
+    durationMinutes: 45,
     theme: { color: "emerald", badge: "Backend & Validation" },
   },
   {
@@ -150,7 +162,11 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
           "File database.types.ts berisi interface Tables<'tasks'> dengan field id, category_id, dll.",
       },
     ],
-    theme: { color: "orange", badge: "Database Relasional" },
+    actionHook: "Rancang DDL tabel berelasi CASCADE, query JOIN relasional, dan otomatisasi Supabase SSR typegen.",
+    techPills: ["PostgreSQL", "Supabase BaaS", "UUID v4", "Typegen TS"],
+    level: "Intermediate",
+    durationMinutes: 50,
+    theme: { color: "cyan", badge: "Database Relasional" },
   },
   {
     id: 4,
@@ -197,7 +213,11 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
           "Navbar menampilkan avatar dan email pengguna yang sedang login, diambil dari session server",
       },
     ],
-    theme: { color: "violet", badge: "Auth & Security" },
+    actionHook: "Pasang autentikasi Email & GitHub OAuth 2.0, proteksi rute privat dengan Next.js 16 Edge Middleware.",
+    techPills: ["Supabase Auth", "GitHub OAuth", "Edge Middleware", "JWT Sessions"],
+    level: "Intermediate",
+    durationMinutes: 50,
+    theme: { color: "indigo", badge: "Auth & Security" },
   },
   {
     id: 5,
@@ -240,6 +260,10 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
           "URL /tasks?status=done dapat dibagikan dan menghasilkan tampilan yang identik di tab/browser berbeda",
       },
     ],
+    actionHook: "Implementasikan dual-architecture Server Actions + Universal REST API dengan proteksi Bearer JWT token.",
+    techPills: ["Route Handlers", "Universal REST", "Bearer Token", "Async Params"],
+    level: "Intermediate",
+    durationMinutes: 50,
     theme: { color: "amber", badge: "CRUD & REST API" },
   },
   {
@@ -282,7 +306,11 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
         contoh_output: "Badge menampilkan '2 Online', otomatis berkurang menjadi '1 Online' saat tab kedua ditutup",
       },
     ],
-    theme: { color: "cyan", badge: "Real-time & WebSocket" },
+    actionHook: "Sinkronisasi live data via listener WAL PostgreSQL 'postgres_changes' dan lacak user aktif via Presence API.",
+    techPills: ["Supabase Realtime", "WebSocket", "WAL Broadcast", "Presence API"],
+    level: "Advanced",
+    durationMinutes: 55,
+    theme: { color: "teal", badge: "Real-time & WebSocket" },
   },
   {
     id: 7,
@@ -326,6 +354,10 @@ export const PRACTICUM_MODULES: PracticumModule[] = [
           "User admin melihat semua task dari semua pengguna, sementara user biasa tetap hanya melihat miliknya",
       },
     ],
+    actionHook: "Kunci tabel dengan PostgreSQL RLS, susun policy isolasi multi-tenant berbasis auth.uid(), dan uji bypass admin.",
+    techPills: ["Postgres RLS", "Security Policies", "auth.uid()", "Multi-Tenant"],
+    level: "Advanced",
+    durationMinutes: 55,
     theme: { color: "rose", badge: "Database Security & RLS" },
   },
 ];
@@ -346,67 +378,94 @@ export const THEME_COLORS: Record<
     ring: string;
   }
 > = {
+  teal: {
+    bg: "bg-teal-500/10",
+    border: "border-teal-500/25",
+    text: "text-teal-700 dark:text-teal-300",
+    badge: "bg-teal-500/10 text-teal-800 dark:text-teal-300 border-teal-500/25",
+    button: "bg-teal-700 hover:bg-teal-800 text-white dark:bg-teal-600 dark:hover:bg-teal-500",
+    accent: "bg-teal-600 dark:bg-teal-500",
+    ring: "ring-teal-500/30",
+  },
   cyan: {
     bg: "bg-cyan-500/10",
-    border: "border-cyan-500/30",
-    text: "text-cyan-600 dark:text-cyan-400",
-    badge: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30",
-    button: "bg-cyan-600 hover:bg-cyan-700 text-white",
-    accent: "bg-cyan-500",
-    ring: "ring-cyan-500/40",
-  },
-  indigo: {
-    bg: "bg-indigo-500/10",
-    border: "border-indigo-500/30",
-    text: "text-indigo-600 dark:text-indigo-400",
-    badge: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
-    button: "bg-indigo-600 hover:bg-indigo-700 text-white",
-    accent: "bg-indigo-500",
-    ring: "ring-indigo-500/40",
+    border: "border-cyan-500/25",
+    text: "text-cyan-700 dark:text-cyan-300",
+    badge: "bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border-cyan-500/25",
+    button: "bg-cyan-700 hover:bg-cyan-800 text-white dark:bg-cyan-600 dark:hover:bg-cyan-500",
+    accent: "bg-cyan-600 dark:bg-cyan-500",
+    ring: "ring-cyan-500/30",
   },
   emerald: {
     bg: "bg-emerald-500/10",
-    border: "border-emerald-500/30",
-    text: "text-emerald-600 dark:text-emerald-400",
-    badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-    button: "bg-emerald-600 hover:bg-emerald-700 text-white",
-    accent: "bg-emerald-500",
-    ring: "ring-emerald-500/40",
+    border: "border-emerald-500/25",
+    text: "text-emerald-700 dark:text-emerald-300",
+    badge: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/25",
+    button: "bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500",
+    accent: "bg-emerald-600 dark:bg-emerald-500",
+    ring: "ring-emerald-500/30",
   },
   amber: {
     bg: "bg-amber-500/10",
-    border: "border-amber-500/30",
-    text: "text-amber-600 dark:text-amber-400",
-    badge: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-    button: "bg-amber-600 hover:bg-amber-700 text-white",
-    accent: "bg-amber-500",
-    ring: "ring-amber-500/40",
+    border: "border-amber-500/25",
+    text: "text-amber-800 dark:text-amber-300",
+    badge: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/25",
+    button: "bg-amber-700 hover:bg-amber-800 text-white dark:bg-amber-600 dark:hover:bg-amber-500",
+    accent: "bg-amber-600 dark:bg-amber-500",
+    ring: "ring-amber-500/30",
+  },
+  slate: {
+    bg: "bg-slate-500/10",
+    border: "border-slate-500/25",
+    text: "text-slate-700 dark:text-slate-300",
+    badge: "bg-slate-500/10 text-slate-800 dark:text-slate-300 border-slate-500/25",
+    button: "bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600",
+    accent: "bg-slate-600 dark:bg-slate-500",
+    ring: "ring-slate-500/30",
+  },
+  indigo: {
+    bg: "bg-indigo-500/10",
+    border: "border-indigo-500/25",
+    text: "text-indigo-700 dark:text-indigo-300",
+    badge: "bg-indigo-500/10 text-indigo-800 dark:text-indigo-300 border-indigo-500/25",
+    button: "bg-indigo-700 hover:bg-indigo-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500",
+    accent: "bg-indigo-600 dark:bg-indigo-500",
+    ring: "ring-indigo-500/30",
   },
   violet: {
     bg: "bg-violet-500/10",
-    border: "border-violet-500/30",
-    text: "text-violet-600 dark:text-violet-400",
-    badge: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
-    button: "bg-violet-600 hover:bg-violet-700 text-white",
-    accent: "bg-violet-500",
-    ring: "ring-violet-500/40",
+    border: "border-violet-500/25",
+    text: "text-violet-700 dark:text-violet-300",
+    badge: "bg-violet-500/10 text-violet-800 dark:text-violet-300 border-violet-500/25",
+    button: "bg-violet-700 hover:bg-violet-800 text-white dark:bg-violet-600 dark:hover:bg-violet-500",
+    accent: "bg-violet-600 dark:bg-violet-500",
+    ring: "ring-violet-500/30",
   },
   rose: {
     bg: "bg-rose-500/10",
-    border: "border-rose-500/30",
-    text: "text-rose-600 dark:text-rose-400",
-    badge: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
-    button: "bg-rose-600 hover:bg-rose-700 text-white",
-    accent: "bg-rose-500",
-    ring: "ring-rose-500/40",
+    border: "border-rose-500/25",
+    text: "text-rose-700 dark:text-rose-300",
+    badge: "bg-rose-500/10 text-rose-800 dark:text-rose-300 border-rose-500/25",
+    button: "bg-rose-700 hover:bg-rose-800 text-white dark:bg-rose-600 dark:hover:bg-rose-500",
+    accent: "bg-rose-600 dark:bg-rose-500",
+    ring: "ring-rose-500/30",
   },
   orange: {
-    bg: "bg-orange-500/10",
-    border: "border-orange-500/30",
-    text: "text-orange-600 dark:text-orange-400",
-    badge: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
-    button: "bg-orange-600 hover:bg-orange-700 text-white",
-    accent: "bg-orange-500",
-    ring: "ring-orange-500/40",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/25",
+    text: "text-amber-800 dark:text-amber-300",
+    badge: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/25",
+    button: "bg-amber-700 hover:bg-amber-800 text-white dark:bg-amber-600 dark:hover:bg-amber-500",
+    accent: "bg-amber-600 dark:bg-amber-500",
+    ring: "ring-amber-500/30",
   },
 };
+
+export const DEFAULT_PRACTICUM_THEME = THEME_COLORS.teal;
+
+export function getPracticumTheme(color?: string) {
+  if (color && color in THEME_COLORS) {
+    return THEME_COLORS[color as keyof typeof THEME_COLORS];
+  }
+  return DEFAULT_PRACTICUM_THEME;
+}
