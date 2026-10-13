@@ -6,6 +6,19 @@ export interface CpmkPoint {
   keywords?: string[];
 }
 
+export interface ManualActionItem {
+  required: boolean;
+  title: string;
+  location?: string;
+  description: string;
+  codeSnippet?: {
+    code: string;
+    language: string;
+  };
+  simulatorKey?: string;
+  note?: string;
+}
+
 export interface SteppedPromptItem {
   stepNumber: number;
   title: string;
@@ -15,6 +28,7 @@ export interface SteppedPromptItem {
   prompt: string;
   checkpoint: string;
   tip?: string;
+  manualAction?: ManualActionItem;
 }
 
 export interface ModuleData {
@@ -67,6 +81,9 @@ export interface ModuleData {
       code?: string;
       language?: string;
       explanation?: string;
+      badge?: string;
+      actionType?: "manual" | "prompt" | "hybrid";
+      targetPromptStep?: number;
     }[];
     aiPromptTemplate: {
       role: string;
@@ -2532,9 +2549,9 @@ Batasan Teknis Wajib:
     worldId: "world-1",
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 5,
-    title: "Autentikasi & Otorisasi Pengguna: Multi-Provider Unified Portal & Edge Middleware",
-    subtitle: "Spektrum 5 model autentikasi, implementasi Unified Auth Portal (GitHub OAuth 1-Click, Email/Password, Magic Link), Next.js 16 Middleware, dan PostgreSQL Trigger sync.",
-    cpmk: "Mahasiswa mampu menganalisis 5 model autentikasi industri (ID Institusi, Email/Password, Social OAuth, Passwordless, Enterprise SSO), merancang Unified Auth Portal multi-provider, memproteksi rute privat via Next.js 16 Edge Middleware, serta mengotomasi sinkronisasi profil pengguna menggunakan PostgreSQL Triggers.",
+    title: "Autentikasi & Otorisasi Pengguna: Multi-Provider Unified Portal & Next.js 16 Proxy",
+    subtitle: "Spektrum 5 model autentikasi, implementasi Unified Auth Portal (GitHub OAuth 1-Click, Email/Password, Magic Link), Next.js 16 Proxy (Evolusi Middleware), dan PostgreSQL Trigger sync.",
+    cpmk: "Mahasiswa mampu menganalisis 5 model autentikasi industri (ID Institusi, Email/Password, Social OAuth, Passwordless, Enterprise SSO), merancang Unified Auth Portal multi-provider, memproteksi rute privat via Next.js 16 Proxy (src/proxy.ts), serta mengotomasi sinkronisasi profil pengguna menggunakan PostgreSQL Triggers.",
     cpmkPoints: [
       {
         code: "CPMK 5.1",
@@ -2552,10 +2569,10 @@ Batasan Teknis Wajib:
       },
       {
         code: "CPMK 5.3",
-        badge: "Keamanan Edge",
-        title: "Proteksi Rute Privat & Refresh Sesi di Edge Middleware",
-        desc: "Mengamankan rute privat `/dashboard` di Edge Network menggunakan `Next.js 16 Edge Middleware` (`updateSession`), menegakkan verifikasi resmi `getUser()` untuk menangkal stale session, serta menyinkronkan `Dual-Cookie`.",
-        keywords: ["Next.js 16 Edge Middleware", "getUser()", "Dual-Cookie Sync", "Route Protection"]
+        badge: "Batas Jaringan & Proxy",
+        title: "Proteksi Rute Privat & Refresh Sesi via Next.js 16 Proxy",
+        desc: "Mengamankan rute privat `/dashboard` menggunakan konvensi resmi `Next.js 16 Proxy` (`src/proxy.ts` yang menggantikan `middleware.ts`), menegakkan verifikasi resmi `getUser()` untuk menangkal stale session, serta menyinkronkan `Dual-Cookie`.",
+        keywords: ["Next.js 16 Proxy", "src/proxy.ts", "getUser()", "Dual-Cookie Sync", "Route Protection"]
       },
       {
         code: "CPMK 5.4",
@@ -2568,14 +2585,14 @@ Batasan Teknis Wajib:
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 350,
     concepts: {
-      summary: "Sistem autentikasi modern serverless mengombinasikan multi-provider Supabase Auth (GitHub OAuth 2.0, Email & Password, serta Passwordless Magic Link) dengan token sesi Stateless JWT RFC 7519. Proteksi rute ditegakkan di layer Edge melalui Next.js 16 Middleware yang me-refresh token secara transparan via updateSession() serta mengisolasi profil pengguna di tabel PostgreSQL dengan trigger otomatis on_auth_user_created.",
+      summary: "Sistem autentikasi modern serverless mengombinasikan multi-provider Supabase Auth (GitHub OAuth 2.0, Email & Password, serta Passwordless Magic Link) dengan token sesi Stateless JWT RFC 7519. Proteksi rute ditegakkan di batas jaringan aplikasi melalui Next.js 16 Proxy (src/proxy.ts) yang me-refresh token secara transparan via updateSession() serta mengisolasi profil pengguna di tabel PostgreSQL dengan trigger otomatis on_auth_user_created.",
       points: [
         { title: "Spektrum Model Autentikasi & Decision Framework", desc: "Menganalisis 5 model autentikasi industri (ID Institusi NIM/NIP, Email & Password, Social OAuth, Passwordless, Enterprise SSO) beserta matriks use-case dan profil risikonya." },
         { title: "Stateless JWT & GitHub OAuth 2.0 Code Flow", desc: "Verifikasi identitas pengguna menggunakan token kriptografis HMAC-SHA256 tanpa lookup database berulang, serta alur pertukaran kode otorisasi 6 langkah GitHub." },
-        { title: "Next.js 16 Middleware & Dual-Cookie Session Sync", desc: "Intersepsi rute di Edge Network menggunakan getUser() resmi untuk menangkal token basi, menyinkronkan request.cookies dan response.cookies secara simultan." },
+        { title: "Next.js 16 Proxy & Dual-Cookie Session Sync", desc: "Intersepsi rute pada layer Proxy (src/proxy.ts) menggunakan getUser() resmi untuk menangkal token basi, menyinkronkan request.cookies dan response.cookies secara simultan." },
         { title: "Pemisahan Skema auth.users vs public.profiles", desc: "Isolasi kredensial internal Supabase dengan data domain aplikasi, disinkronkan secara atomik via PostgreSQL BEFORE/AFTER INSERT Triggers." }
       ],
-      diagramNote: "Browser (Unified Auth Portal) ➔ Route Handler (/auth/callback) ➔ Supabase Auth (Exchange Code to JWT) ➔ Next.js 16 Middleware (getUser() Refresher) ➔ PostgreSQL Trigger (public.profiles Sync)",
+      diagramNote: "Browser (Unified Auth Portal) ➔ Route Handler (/auth/callback) ➔ Supabase Auth (Exchange Code to JWT) ➔ Next.js 16 Proxy (getUser() Refresher) ➔ PostgreSQL Trigger (public.profiles Sync)",
       deepDiveSections: [
         {
           title: "1. Spektrum Model Autentikasi Modern & Arsitektur Supabase Auth Engine",
@@ -2584,11 +2601,11 @@ Batasan Teknis Wajib:
           subpoints: [
             {
               label: "Dekonstruksi 5 Model Autentikasi Industri & Use Case Nyata",
-              text: "1. Model ID Internal Institusi (NIM, NIDN, NIP, NIK): Digunakan pada jaringan tertutup (*Gated/Closed System*) seperti SIAKAD kampus, LMS akademik, dan portal kepegawaian. Akun dibuat terpusat oleh institusi, memiliki kontrol verifikasi fisik 100%, dan bebas dari ketergantungan pihak ketiga.\n\n" +
-                    "2. Model Email & Password Konvensional: Standar universal aplikasi B2C publik dan e-commerce. Menjangkau seluruh pengguna internet, namun membawa liabilitas keamanan tinggi terhadap kebocoran database (*hash leaks*) dan serangan *Credential Stuffing* akibat kebiasaan pengguna memakai password yang sama.\n\n" +
-                    "3. Model Social Login / Federated Identity (OAuth 2.0 - GitHub, Google, Apple): Standar emas aplikasi SaaS modern. Menawarkan pendaftaran 1-klik (*frictionless*, menaikkan konversi hingga 40-50%) dan *Zero Password Liability* karena aplikasi sama sekali tidak menyimpan password pengguna.\n\n" +
-                    "4. Model Passwordless (Magic Link Email & OTP WhatsApp/SMS): Populer pada aplikasi produktivitas (Notion, Slack, Medium) dan FinTech. Meniadakan keharusan mengingat password, namun memiliki kendala latensi antrean email atau biaya per pesan OTP.\n\n" +
-                    "5. Model Enterprise Single Sign-On (SSO / SAML 2.0 / OIDC): Standar korporasi B2B (Okta, Microsoft Entra ID). Memungkinkan tim IT mencabut akses akun karyawan yang keluar dalam 1 klik di direktori pusat (*centralized de-provisioning*).",
+              text: "1. Model ID Internal Institusi (NIM, NIDN, NIP, NIK): Beroperasi pada jaringan tertutup (*Gated/Closed System* — sistem terproteksi di mana pendaftaran akun ditutup untuk umum dan hanya diterbitkan secara terpusat oleh administrator kampus/organisasi). Keunggulannya adalah *Zero Third-Party Dependency* (bebas 100% dari ketergantungan API atau uptime vendor eksternal) dan verifikasi identitas fisik terjamin. Menggunakan pengacakan *Bcrypt 10 salt rounds* ($2^{10} = 1024$ iterasi hashing komputasi lambat) untuk menangkal serangan pencocokan kata sandi.\n\n" +
+                    "2. Model Email & Password Konvensional: Standar universal aplikasi B2C publik dan e-commerce. Membawa *Password Liability* (beban tanggung jawab hukum, finansial, dan reputasi yang dipikul pengembang aplikasi jika database pengguna bocor). Sangat rentan terhadap *Credential Stuffing* (serangan otomatis peretas yang menguji jutaan kombinasi email & password hasil kebocoran situs lain) dan *Rainbow Table Attack* (pencocokan hash terhadap tabel kamus pra-kalkulasi) akibat kebiasaan pengguna mendaur ulang satu sandi untuk banyak akun.\n\n" +
+                    "3. Model Social Login / Federated Identity (OAuth 2.0 - GitHub, Google, Apple): Pendelegasian pembuktian identitas ke penyedia pihak ketiga terpercaya tanpa aplikasi pernah mengetahui kata sandi pengguna. Menghadirkan *Zero Friction* (pengalaman pendaftaran 1-klik tanpa mengisi formulir bertele-tele, menaikkan tingkat konversi pengguna baru hingga 40-50%) dan *Zero Password Liability* (bebas 100% dari risiko kebocoran kata sandi karena server aplikasi sama sekali tidak menyimpan string kata sandi).\n\n" +
+                    "4. Model Passwordless (Magic Link Email & OTP WhatsApp/SMS): Metode masuk tanpa kata sandi menggunakan *Time-Based Single-Use Token* (token kriptografis unik satu kali pakai berbatas waktu 10-15 menit). Mengeliminasi fenomena *Password Fatigue* (kelelahan kognitif dan frustrasi mental pengguna akibat keharusan menghafal puluhan kata sandi rumit di internet), namun memiliki trade-off latensi antrean pengiriman email SMTP dan biaya SMS/WhatsApp API per pesan.\n\n" +
+                    "5. Model Enterprise Single Sign-On (SSO / SAML 2.0 / OIDC): Standar korporasi B2B (Okta, Microsoft Entra ID) di mana satu kredensial akun kantor digunakan untuk mengakses puluhan aplikasi kerja sekaligus. Memungkinkan *Instant Access Revocation / Centralized De-provisioning* (kemampuan administrator IT untuk mencabut hak akses seluruh aplikasi karyawan yang keluar dalam 1 klik di direktori pusat tanpa harus membuka aplikasi satu per satu).",
               code: `// Spektrum Perbandingan Implementasi di Supabase Auth SDK:
 // 1. Social OAuth (GitHub 1-Click)
 await supabase.auth.signInWithOAuth({ provider: 'github' });
@@ -2603,9 +2620,9 @@ await supabase.auth.signInWithOtp({ email });`,
             },
             {
               label: "Stateful Session vs Stateless JWT (JSON Web Tokens RFC 7519)",
-              text: "1. Keterbatasan Arsitektur Serverless: Pada server monolith (Express/Rails), session ID disimpan di memori RAM atau Redis. Ketika serverless function menyala dan mati dalam milidetik, tidak ada memori persisten bersama antar-eksekusi (*shared memory*).\n\n" +
-                    "2. Dekonstruksi Kriptografis RFC 7519: JWT memuat data klaim pengguna langsung di dalam string token (`Header.Payload.Signature`). Serverless Function memverifikasi keaslian token secara instan hanya dengan menghitung ulang signature menggunakan `JWT_SECRET` rahasia tanpa membebani database dengan kueri tabel sesi.\n\n" +
-                    "3. Masa Aktif Pendek & Refresh Token Rotation: Access Token hanya berumur 3600 detik (1 jam) untuk meminimalisasi risiko penyalahgunaan token yang dicuri. Ketika habis, klien mengirim Refresh Token satu kali pakai (*single-use*) untuk memperoleh pasangan token baru.",
+              text: "1. Keterbatasan Stateful Session di Arsitektur Serverless: *Stateful Session* adalah model autentikasi tradisional di mana server menyimpan status sesi aktif di memori RAM atau basis data pusat (misal Redis), dan peramban hanya menyimpan Session ID di cookie. Pada arsitektur Serverless yang memiliki sifat *Scale-to-Zero* (kontainer mati saat tidak ada request dan menyala instan saat request baru tiba) dan *No Shared In-Memory State* (tidak ada memori RAM bersama antar-kontainer yang hidup-mati), stateful session memicu *Connection Exhaustion* (kehabisan batas koneksi database akibat ribuan fungsi serverless membuka koneksi mandiri secara bersamaan) serta latensi tinggi saat *Cold Starts*.\n\n" +
+                    "2. Dekonstruksi Kriptografis Stateless JWT (RFC 7519): *Stateless JWT* adalah format token string kompak mandiri (*self-contained*) dengan struktur tiga bagian: `Header.Payload.Signature`. Serverless Function memverifikasi keaslian identitas secara instan tanpa perlu kueri database berulang, cukup dengan memvalidasi tanda tangan kriptografis (*Tamper-Proof HMAC-SHA256 Signature*) menggunakan kunci rahasia `JWT_SECRET`. Jika seorang penyerang memanipulasi klaim Payload (misalnya mengubah `role: student` menjadi `role: admin`), kalkulasi signature otomatis tidak cocok dan token ditolak seketika.\n\n" +
+                    "3. Masa Aktif Pendek & Refresh Token Rotation: Untuk meminimalkan risiko jika token dicuri, *Access Token* memiliki masa aktif singkat (misal 3600 detik / 1 jam). Pembaruan sesi dilakukan melalui *Refresh Token Rotation* (mekanisme keamanan di mana Refresh Token lama langsung hangus seketika begitu ditukarkan untuk memperoleh pasangan token baru), menjamin token curian tidak dapat digunakan berulang kali (*replay attack prevention*).",
               code: `// Anatomi JSON Web Token (Base64URL Decoded):
 // 1. HEADER (Algoritma & Tipe)
 { "alg": "HS256", "typ": "JWT" }
@@ -2625,9 +2642,9 @@ await supabase.auth.signInWithOtp({ email });`,
             },
             {
               label: "Matriks Keputusan Arsitektur Autentikasi (Architecture Decision Framework)",
-              text: "1. Evaluasi Berdasarkan Domain Aplikasi: Memilih metode autentikasi yang salah dapat menyebabkan friksi pengguna tinggi (drop-off registrasi) atau celah keamanan fatal.\n\n" +
-                    "2. Pendekatan Hibrida (Unified Auth Hub): Solusi industri terbaik adalah menggabungkan Social OAuth (untuk kecepatan), Email/Password (untuk opsi mandiri), dan Magic Link (untuk kemudahan pemulihan) dalam 1 antarmuka tabbed.\n\n" +
-                    "3. Zero Friction Onboarding: Menempatkan tombol OAuth (GitHub/Google) di posisi teratas halaman login terbukti secara metrik UX mempercepat waktu pendaftaran pengguna baru menjadi kurang dari 5 detik.",
+              text: "1. Architecture Decision Framework (Kerangka Keputusan Arsitektur): Pendekatan sistematis untuk memilih metode autentikasi berdasarkan evaluasi tiga dimensi: *Trust Domain* (apakah pengguna dari lingkungan internal terpercaya atau publik umum), *Threat Model* (vektor ancaman dan nilai aset data yang dilindungi), serta *User Friction* (kemudahan pendaftaran pengguna). Memilih metode yang salah memicu *User Drop-Off Rate* tinggi (calon pengguna membatalkan pendaftaran karena proses pengisian formulir yang lambat dan rumit).\n\n" +
+                    "2. Pendekatan Hibrida (Unified Auth Hub): Standar industri terbaik yang memadukan beberapa model autentikasi dalam satu antarmuka terpadu—menempatkan tombol Social OAuth di posisi teratas untuk efisiensi *Zero Friction*, didampingi pilihan tab Email/Password konvensional dan Magic Link untuk pengguna yang memerlukan privasi atau fleksibilitas tanpa akun pihak ketiga.\n\n" +
+                    "3. Normalisasi Identitas Terpusat: Seluruh variasi metode login pada antarmuka dinormalisasi oleh Supabase GoTrue Auth Engine menjadi satu representasi entitas pengguna tunggal (`UUID v4` di `auth.users`), menjamin konsistensi integrasi ke seluruh tabel domain aplikasi.",
               code: `// Matriks Evaluasi Arsitektur Autentikasi:
 // • Developer SaaS (Vercel/Railway) ➔ GitHub OAuth (Wajib) + Email
 // • Mass Consumer Web (Canva/Spotify) ➔ Google OAuth + Email/Password
@@ -2661,9 +2678,9 @@ await supabase.auth.signInWithOtp({ email });`,
           subpoints: [
             {
               label: "Alur Kerja 6 Langkah GitHub OAuth 2.0 Authorization Code Flow",
-              text: "1. Eliminasi Liabilitas Kata Sandi (*Zero Password Liability*): Aplikasi kita tidak pernah menyentuh atau menyimpan kata sandi akun GitHub pengguna. Seluruh verifikasi kredensial dikerjakan oleh server GitHub yang aman.\n\n" +
-                    "2. Pertukaran Kode Sementara (*Authorization Code Grant*): GitHub tidak mengirimkan access token langsung ke browser (mencegah penyerangan URL hash leakage). GitHub hanya mengirimkan kode acak sementara yang berumur 10 menit ke Route Handler `/auth/callback`.\n\n" +
-                    "3. Pertukaran Aman Server-to-Server: Route Handler backend menukarkan kode tersebut ke Supabase Auth Gateway menggunakan `Client Secret` rahasia melalui saluran HTTPS terenkripsi.",
+              text: "1. Authorization Code Grant vs Implicit Flow: Protokol pertukaran izin akses standar industri di mana peramban klien HANYA menerima kode otorisasi sementara (*temporary code* dengan masa berlaku ketat 10 menit), BUKAN access token langsung. Mekanisme ini mengeliminasi risiko *URL Hash Leakage* (kebocoran token di riwayat peramban atau log proksi yang sering terjadi pada model usang *Implicit Flow*).\n\n" +
+                    "2. Komunikasi Saluran Privat Server-ke-Server (*Backchannel Communication*): Kode otorisasi sementara dikirimkan via URL callback ke Route Handler backend (`/auth/callback`). Backend kemudian melakukan pertukaran langsung (*backchannel*) ke server Supabase/GitHub menggunakan `Client Secret` (kunci rahasia aplikasi yang hanya disimpan di environment variable server dan haram dibocorkan ke browser bundle) melalui saluran HTTPS terenkripsi untuk mendapatkan token JWT asli.\n\n" +
+                    "3. Pembatasan Hak Akses (*OAuth Scopes*): Aplikasi menerapkan prinsip *least privilege* dengan meminta cakupan izin minimal dari akun GitHub pengguna (misal hanya profil publik `read:user` dan alamat email primer `user:email`), menjamin privasi pengguna tetap aman tanpa akses ke repositori privat.",
               code: `// Inisiasi Login OAuth GitHub dari Client Component
 "use client";
 
@@ -2688,9 +2705,9 @@ export function LoginGithubButton() {
             },
             {
               label: "Email Magic Link & Passwordless Authentication",
-              text: "1. Eliminasi Serangan Kamus & Credential Stuffing: 80% insiden keamanan data berasal dari kata sandi pengguna yang lemah atau dipakai berulang di berbagai situs web. Passwordless authentication sepenuhnya meniadakan vektor serangan ini.\n\n" +
-                    "2. One-Time Token Kriptografis (OTP): Supabase Auth membuat token acak kriptografis berumur 15 menit dan mengirimkannya ke kotak masuk email pengguna dalam wujud tautan sekali klik (*magic link*).\n\n" +
-                    "3. Pembuktian Kepemilikan Email Riil: Mengklik tautan ajaib sekaligus memvalidasi bahwa email tersebut aktif dan benar-benar milik pengguna yang bersangkutan tanpa perlu alur aktivasi terpisah.",
+              text: "1. Passwordless Authentication (Autentikasi Tanpa Sandi): Metode pembuktian identitas tanpa menggunakan kata sandi sama sekali, mengeliminasi 100% risiko serangan *Credential Stuffing* dan bahaya kebocoran hash kata sandi pada basis data aplikasi.\n\n" +
+                    "2. Mekanisme Time-Based Single-Use Token (Nonce): Supabase Auth membangkitkan token acak kriptografis sekali pakai (*Number Used Once / Nonce*) dengan masa berlaku 10–15 menit, lalu menyematkannya ke dalam URL tautan unik (*magic link*). Begitu tautan diklik satu kali, token langsung hangus secara permanen di server, mencegah serangan pemutaran ulang (*replay attack*).\n\n" +
+                    "3. Verifikasi Jalur Luar (*Out-of-Band Verification*): Mengonfirmasi kepemilikan akun melalui kanal komunikasi sekunder (kotak masuk email pribadi pengguna). Proses ini secara otomatis memvalidasi bahwa email tersebut benar-benar aktif dan dapat diakses oleh pemiliknya tanpa memerlukan alur verifikasi email terpisah yang memakan waktu.",
               code: `// Mengirimkan Tautan Ajaib (Magic Link) via Server Action
 import { createClient } from "@/utils/supabase/server";
 
@@ -2711,9 +2728,9 @@ export async function sendMagicLinkAction(email: string) {
             },
             {
               label: "Unified Auth Portal: Arsitektur Multi-Provider Terintegrasi",
-              text: "1. Antarmuka Tabbed Modern: Memadukan tombol GitHub OAuth di baris atas, dan tab switcher antara Email/Password konvensional dan Magic Link passwordless di baris bawah.\n\n" +
-                    "2. Backend Terpadu (@supabase/ssr): Semua metode otentikasi bermuara ke mesin GoTrue Supabase yang sama, menghasilkan token sesi JWT yang identik, dan diverifikasi oleh satu Middleware yang sama.\n\n" +
-                    "3. Feedback Status Interaktif: Menggunakan komponen status reaktif Shadcn UI yang menampilkan animasi loading spinner dan pesan error validasi Zod secara instan.",
+              text: "1. Desain Antarmuka Multi-Provider Terpadu (*Unified Multi-Provider Interface*): Antarmuka masuk tunggal yang memadukan tombol 1-klik GitHub OAuth di posisi teratas (memaksimalkan konversi *Zero Friction*) dan tab switcher di bawahnya yang memungkinkan pengguna berpindah mulus antara formulir Email/Password konvensional dan Magic Link.\n\n" +
+                    "2. Normalisasi Mesin GoTrue (@supabase/ssr): Mesin autentikasi Supabase menyatukan seluruh metode masuk yang berbeda ke dalam satu model sesi terpadu berbasis Stateless JWT (`sb-access-token` dan `sb-refresh-token`), sehingga lapisan otorisasi backend dan Proxy memperlakukan sesi pengguna secara identik tanpa perkecualian.\n\n" +
+                    "3. Reaktivitas Status & Validasi Zod: Validasi skema input formulir di sisi klien dan server menggunakan pustaka Zod, didukung oleh komponen reaktif Shadcn UI yang menampilkan status loading, animasi spinner, dan umpan balik kesalahan secara real-time.",
               code: `// Struktur Logika Unified Auth Portal (src/components/auth/unified-auth-card.tsx)
 <Card className="max-w-md mx-auto p-6 backdrop-blur-md">
   {/* Opsi 1: 1-Click Social Login */}
@@ -2739,21 +2756,22 @@ export async function sendMagicLinkAction(email: string) {
           ]
         },
         {
-          title: "3. Proteksi Rute di Next.js 16 (Middleware Session Refresher)",
-          badge: "Pilar 3: Proteksi Akses & Edge",
-          content: "Next.js Middleware beroperasi di layer Vercel Edge Network, mencegat setiap request HTTP sebelum Server Component atau Route Handler dirender. Di sinilah garis pertahanan pertama didirikan untuk memeriksa status sesi dan me-refresh token yang kedaluwarsa.",
+          title: "3. Proteksi Rute di Next.js 16: Arsitektur Proxy (Evolusi Resmi Middleware)",
+          badge: "Pilar 3: Proteksi Akses & Proxy",
+          content: "Pada Next.js 16, konvensi berkas middleware.ts resmi didepresiasi dan berganti nama menjadi proxy.ts. Proxy beroperasi sebagai reverse proxy / network boundary di depan aplikasi sebelum Server Component atau Route Handler dirender, berjalan pada Node.js runtime bawaan untuk memeriksa status sesi dan me-refresh token yang kedaluwarsa.",
           subpoints: [
             {
-              label: "Arsitektur Next.js 16 Middleware & Edge Request Interception",
-              text: "1. Intersepsi Pra-Render Tanpa Latensi: Middleware berjalan di Edge yang paling dekat dengan lokasi fisik pengguna, mengevaluasi hak akses sebelum server pusat merender Server Component sehingga mencegah insiden kedipan halaman (*flash of unauthenticated content*).\n\n" +
-                    "2. Filter Regex Matcher: Diharuskan menggunakan negative lookahead regex agar aset statis (`/_next/static`, `favicon.ico`, gambar) dilewati secara langsung tanpa memicu eksekusi kode middleware yang boros CPU.\n\n" +
-                    "3. Kontrak Eksekusi Tunggal: Seluruh aplikasi Next.js hanya memiliki satu berkas `src/middleware.ts` di level root direktori proyek.",
-              code: `// src/middleware.ts (Root Interceptor)
+              label: "Evolusi Next.js 16: Dari middleware.ts ke src/proxy.ts (Network Boundary)",
+              text: "1. Depresiasi Resmi middleware.ts ke src/proxy.ts: Di Next.js 16, konvensi berkas `middleware.ts` resmi didepresiasi dan digantikan oleh `src/proxy.ts` dengan ekspor fungsi utama `export async function proxy(request: NextRequest)`. Penamaan ini menegaskan perannya sebagai *Reverse Proxy / Network Boundary* (gerbang batas jaringan terdepan) yang mengevaluasi setiap *incoming request* sebelum mencapai Server Components atau Route Handlers.\n\n" +
+                    "2. Peralihan Lingkungan ke Node.js Runtime: Berbeda dengan middleware lama yang dipaksa berjalan pada Edge runtime dengan banyak limitasi API, `proxy.ts` di Next.js 16 berjalan secara bawaan pada lingkungan *Node.js Runtime*, memberikan akses penuh ke seluruh ekosistem modul Node.js standar tanpa kompromi kompatibilitas.\n\n" +
+                    "3. Filter Regex Matcher (Negative Lookahead): Konfigurasi filter rute pada objek `config.matcher` menggunakan ekspresi reguler negatif untuk mengecualikan berkas statis (`_next/static`, `_next/image`, favicon, gambar) agar langsung dilewati tanpa memicu eksekusi kode proxy yang boros komputasi CPU.\n\n" +
+                    "4. Zero Flash of Unauthenticated Content (FOUC): Jaminan keamanan antarmuka di mana konten halaman privat yang dilindungi tidak akan pernah sempat terkirim atau terlihat sekilas di browser pengguna yang belum login, karena proxy langsung mencegat dan mengalihkan *request* sebelum proses rendering server dimulai.",
+              code: `// src/proxy.ts (Konvensi Resmi Next.js 16, Menggantikan middleware.ts)
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
 
-export async function middleware(request: NextRequest) {
-  // Jalankan refresher sesi dan evaluasi proteksi rute
+export async function proxy(request: NextRequest) {
+  // Jalankan refresher sesi dan evaluasi proteksi rute via Proxy
   return await updateSession(request);
 }
 
@@ -2764,14 +2782,14 @@ export const config = {
   ]
 };`,
               language: "typescript",
-              caption: "Konfigurasi src/middleware.ts dan Regex Matcher di Next.js 16"
+              caption: "Konfigurasi src/proxy.ts dan Regex Matcher Resmi di Next.js 16"
             },
             {
-              label: "Sinkronisasi & Rotasi Token Sesi di Middleware (updateSession)",
-              text: "1. Larangan Mutlak getSession(): Jangan pernah menggunakan `supabase.auth.getSession()` di Middleware! Metode ini hanya membaca payload cookie lokal tanpa memvalidasi ke server Supabase; akun yang sudah diblokir atau kata sandinya diubah tetap dianggap valid!\n\n" +
-                    "2. Wajib Menggunakan auth.getUser(): Metode `supabase.auth.getUser()` mengirim token ke auth server Supabase untuk verifikasi kriptografis resmi dan otomatis me-refresh token jika masa aktif habis.\n\n" +
-                    "3. Dual Cookie Synchronization: Ketika token baru diterbitkan, middleware wajib menyalin cookies ke `request.cookies` (agar RSC menerima token mutakhir) dan ke `response.cookies` (agar browser menyimpan Set-Cookie).",
-              code: `// src/utils/supabase/middleware.ts
+              label: "Sinkronisasi & Rotasi Token Sesi di Proxy (updateSession)",
+              text: "1. Bahaya Kritis getSession() vs Keamanan auth.getUser(): Metode `supabase.auth.getSession()` adalah *anti-pattern* fatal di layer Proxy karena hanya membaca payload cookie lokal tanpa menghubungi server Supabase—sehingga akun yang telah diblokir administrator atau kata sandinya telah diganti tetap dianggap aktif! Sebaliknya, `supabase.auth.getUser()` melakukan verifikasi kriptografis real-time langsung ke server Supabase Auth dan otomatis me-refresh token jika masa aktif mendekati habis.\n\n" +
+                    "2. Mekanisme Dual-Cookie Synchronization (Sinkronisasi Ganda Cookie): Helper `updateSession` wajib menulis pasangan token baru hasil rotasi ke DUA tempat sekaligus: ke `request.cookies` (agar React Server Component di hilir membaca identitas terbaru pada siklus render saat ini) dan ke `response.cookies` (agar peramban menyimpan cookie terbaru melalui header HTTP `Set-Cookie`).\n\n" +
+                    "3. Pencegahan Session Desynchronization (Session Desync): Kondisi anomali fatal di mana token pada cookie peramban sudah kedaluwarsa sementara Server Component menganggap sesi masih aktif (atau sebaliknya), yang memicu kegagalan sistemik seperti *infinite redirect loop* atau sesi pengguna terputus mendadak di tengah aktivitas.",
+              code: `// src/utils/supabase/middleware.ts (Helper Session Refresher)
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -2827,9 +2845,9 @@ export async function updateSession(request: NextRequest) {
             },
             {
               label: "Proteksi Rute Dinamis: Public vs Private vs Auth Routes",
-              text: "1. Pemisahan Kategori Rute: Aplikasi dibagi menjadi Rute Publik (`/`), Rute Khusus Auth (`/login`, `/register`), dan Rute Privat (`/dashboard`, `/tasks`).\n\n" +
-                    "2. Mekanisme State Preservation (?next=): Saat tamu mencoba mengakses `/dashboard/projects/101`, middleware menyematkan query parameter `?next=/dashboard/projects/101` ke URL login sehingga setelah login berhasil, user otomatis dikembalikan ke halaman tujuannya.\n\n" +
-                    "3. HTTP 307 Temporary Redirect: Menggunakan kode status 307 untuk menjamin metode HTTP (GET/POST) dan body payload tetap dipertahankan selama pengalihan rute.",
+              text: "1. Triad Klasifikasi Rute Aplikasi: Pemisahan arsitektur rute web menjadi tiga kategori terisolasi: Rute Publik (`/` bebas diakses siapa pun), Rute Khusus Auth (`/login`, `/register` hanya boleh diakses tamu yang belum masuk), dan Rute Privat (`/dashboard`, `/tasks` terkunci khusus pengguna terautentikasi).\n\n" +
+                    "2. Mekanisme State Preservation (?next=): Teknik penyimpanan URL tujuan asli ke dalam query parameter saat tamu dialihkan paksa ke halaman login (misalnya tamu membuka `/dashboard/tasks?filter=urgent`, maka dialihkan ke `/login?next=%2Fdashboard%2Ftasks%3Ffilter%3Durgent`). Setelah proses autentikasi berhasil, aplikasi membaca parameter ini dan langsung mengembalikan pengguna ke halaman yang dituju tanpa tersesat.\n\n" +
+                    "3. Protokol HTTP 307 Temporary Redirect: Kode status pengalihan HTTP yang secara ketat mempertahankan metode pemanggilan (GET tetap GET, POST tetap POST) dan muatan data (*body payload*) asli tanpa mengubahnya menjadi metode GET, menjaga integritas alur pengiriman formulir.",
               code: `// Logika Seleksi Matriks Rute di updateSession:
 const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
 const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard");
@@ -2855,14 +2873,14 @@ if (user && isAuthRoute) {
               ["Validasi Sumber", "Lokal (decode cookie saja)", "Server Supabase (network call)"],
               ["Deteksi Akun Diblokir", "Tidak bisa", "Bisa real-time"],
               ["Deteksi Password Diubah", "Tidak bisa", "Bisa real-time"],
-              ["Keamanan Middleware", "BERBAHAYA", "AMAN"],
-              ["Latensi Tambahan", "0ms (lokal)", "~50ms (Edge network)"],
+              ["Keamanan Sesi di Proxy (src/proxy.ts)", "BERBAHAYA", "AMAN"],
+              ["Latensi Tambahan", "0ms (lokal)", "~50ms (Network call)"],
               ["Standar Resmi Supabase", "Tidak direkomendasikan", "Wajib digunakan"]
             ]
           },
           callout: {
             type: "warning",
-            title: "⚠️ Anti-Pattern Kritis: DILARANG KERAS getSession() di Middleware!",
+            title: "⚠️ Anti-Pattern Kritis: DILARANG KERAS getSession() di Next.js 16 Proxy (src/proxy.ts)!",
             text: "supabase.auth.getSession() hanya mendekode JWT dari cookie lokal tanpa menghubungi auth server Supabase. Akun yang sudah diblokir admin atau password yang diubah TETAP dianggap valid sampai token kedaluwarsa. Selalu gunakan getUser() yang melakukan verifikasi kriptografis real-time ke server Supabase."
           }
         },
@@ -2873,9 +2891,9 @@ if (user && isAuthRoute) {
           subpoints: [
             {
               label: "Pemisahan auth.users (Sistem) dan public.profiles (Aplikasi)",
-              text: "1. Batas Isolasi Sistem vs Domain: Skema `auth.users` dikelola eksklusif oleh daemon GoTrue Supabase. Menambahkan kolom kustom ke `auth.users` adalah pelanggaran arsitektur berat yang dapat merusak update Supabase.\n\n" +
-                    "2. Tabel public.profiles: Dibuat di skema `public` dengan primary key `id UUID REFERENCES auth.users(id) ON DELETE CASCADE`. Setiap kali baris di `auth.users` dihapus, profil di `public.profiles` otomatis terhapus bersih.\n\n" +
-                    "3. Proteksi Mandiri Row Level Security: Tabel `public.profiles` dilindungi RLS sehingga semua pengguna publik boleh membaca nama/avatar (SELECT), tetapi hanya pemilik ID yang boleh mengubah datanya sendiri (`auth.uid() = id`).",
+              text: "1. Prinsip Isolasi Skema Sistem vs Domain: Skema `auth.users` dikelola secara eksklusif oleh *GoTrue Engine* Supabase dan dilindungi dari modifikasi langsung. Menambahkan kolom kustom ke `auth.users` adalah pelanggaran arsitektur berat yang dapat merusak skema migrasi bawaan Supabase. Seluruh data domain bisnis aplikasi (nama lengkap, foto avatar, bio, role) wajib diisolasi di skema aplikasi `public.profiles`.\n\n" +
+                    "2. Integritas Relasional Foreign Key ON DELETE CASCADE: Tabel `public.profiles` dihubungkan ke `auth.users(id)` dengan relasi berantai (*cascade cleanup*), menjamin bahwa ketika sebuah akun dihapus dari sistem autentikasi, seluruh data profil terkait otomatis terhapus bersih dari basis data tanpa menyisakan baris data sampah (*orphaned data*).\n\n" +
+                    "3. Keamanan Tingkat Baris Row Level Security (RLS): Fitur keamanan bawaan mesin PostgreSQL di mana setiap baris tabel memiliki aturan evaluasi mandiri (*security policy*). Data profil dapat dibaca oleh publik (`SELECT true`), tetapi mutasi data (`UPDATE`) hanya diizinkan jika `auth.uid() = id`, menjamin pengguna tidak bisa memanipulasi profil milik pengguna lain.",
               code: `-- Skema Tabel Profil Pengguna (public.profiles)
 CREATE TABLE public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -2901,9 +2919,9 @@ CREATE POLICY "Users can update their own profile."
             },
             {
               label: "PostgreSQL Trigger Otomatis: on_auth_user_created",
-              text: "1. Eliminasi Kegagalan Sinkronisasi Aplikasi: Jika pembuatan profil ditulis manual di kode aplikasi, pengguna yang mendaftar via GitHub OAuth atau Magic Link bisa gagal memiliki baris profil jika koneksi internet terputus saat redirect.\n\n" +
-                    "2. Penegakan di Tingkat Kernel Database: Trigger PostgreSQL `AFTER INSERT ON auth.users` menjamin bahwa setiap kali ada akun baru yang tercipta, fungsi stored procedure `handle_new_user()` otomatis dieksekusi secara transaksional.\n\n" +
-                    "3. Ekstraksi Metadata OAuth: Fungsi trigger mengekstrak nama dan avatar yang dikirimkan oleh GitHub dari kolom JSONB `raw_user_meta_data` dan menyalinnya ke kolom `public.profiles`.",
+              text: "1. Kelemahan Pembuatan Profil di Layer Aplikasi: Jika pembuatan baris profil dijalankan secara manual di kode frontend atau backend aplikasi, risiko *Network Partition* (gangguan jaringan saat redirect) atau kegagalan eksekusi aplikasi dapat menyebabkan akun tercipta di `auth.users` namun profilnya gagal terbuat di `public.profiles`, menghasilkan fenomena *Orphaned User Anomaly*.\n\n" +
+                    "2. Jaminan ACID Atomicity di Tingkat Kernel Database: Pemicu (*Database Trigger*) `AFTER INSERT ON auth.users` mengeksekusi fungsi stored procedure `handle_new_user()` langsung di dalam mesin PostgreSQL. Eksekusi ini berada dalam satu transaksi ACID atomik—jika pembuatan profil gagal, transaksi pembuatan akun ikut dibatalkan (*rollback*), menjamin 100% konsistensi relasi data.\n\n" +
+                    "3. Hak Akses Khusus SECURITY DEFINER: Klausa keamanan pada fungsi PL/pgSQL yang menginstruksikan PostgreSQL untuk mengeksekusi kode fungsi menggunakan privilese pemilik fungsi (superuser/postgres) bukan pengguna biasa yang sedang login. Hal ini mutlak diperlukan karena skema `auth` berada di area terisolasi yang tidak dapat diakses langsung oleh *anonymous role* atau pengguna biasa saat membaca metadata `raw_user_meta_data`.",
               code: `-- Fungsi Trigger Otomasi Profil Pengguna
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
@@ -2937,7 +2955,7 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
     references: [
       { title: "Supabase Next.js Auth Server-Side Guide", url: "https://supabase.com/docs/guides/auth/server-side/nextjs", source: "Supabase Docs" },
       { title: "GitHub OAuth Apps Configuration Manual", url: "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app", source: "GitHub Docs" },
-      { title: "Next.js 16 Middleware & Edge Routing", url: "https://nextjs.org/docs/app/building-your-application/routing/middleware", source: "Next.js Docs" },
+      { title: "Next.js 16 Proxy File Convention (Replacement for middleware.ts)", url: "https://nextjs.org/docs/app/api-reference/file-conventions/proxy", source: "Next.js Docs" },
       { title: "Supabase Managing User Data & Triggers", url: "https://supabase.com/docs/guides/auth/managing-user-data", source: "Supabase Docs" }
     ],
     lab: {
@@ -2949,107 +2967,11 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
       steps: [
         {
           stepNumber: 1,
-          instruction: "Konfigurasi GitHub OAuth App di GitHub Developer Settings & Supabase Dashboard",
-          code: `# 1. Buka GitHub ➔ Settings ➔ Developer Settings ➔ OAuth Apps ➔ New OAuth App
-# - Application Name: The Serverless Odyssey Dev
-# - Homepage URL: http://localhost:3000
-# - Authorization callback URL: https://<PROJECT-REF>.supabase.co/auth/v1/callback
-
-# 2. Salin Client ID dan Generate Client Secret baru
-# 3. Buka Supabase Dashboard ➔ Authentication ➔ Providers ➔ GitHub
-# - Aktifkan sakelar GitHub Enabled
-# - Tempel Client ID dan Client Secret
-# - Klik Save`,
-          language: "bash",
-          explanation: "Menghubungkan gateway autentikasi Supabase Cloud dengan akun OAuth provider GitHub resmi."
-        },
-        {
-          stepNumber: 2,
-          instruction: "Buat Helper Middleware Supabase di src/utils/supabase/middleware.ts dan pasang di src/middleware.ts",
-          code: `// src/middleware.ts
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
-
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
-}
-
-export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
-  ]
-};`,
-          language: "typescript",
-          explanation: "Mencegat seluruh request aplikasi untuk memperbarui token sesi JWT dan melindungi rute /dashboard dari akses unauthenticated."
-        },
-        {
-          stepNumber: 3,
-          instruction: "Buat Auth Route Handler Callback di src/app/auth/callback/route.ts",
-          code: `import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
-
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(\`\${origin}\${next}\`);
-    }
-  }
-
-  return NextResponse.redirect(\`\${origin}/auth/auth-code-error\`);
-}`,
-          language: "typescript",
-          explanation: "Menerima kode otorisasi sementara dari GitHub dan menukarkannya dengan sesi kuki HTTP-Only resmi Supabase."
-        },
-        {
-          stepNumber: 4,
-          instruction: "Buat Server Actions Multi-Provider di src/actions/auth.ts (Email, Magic Link & SignOut)",
-          code: `// src/actions/auth.ts
-"use server";
-
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-
-export async function loginWithEmailAction(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { success: false, error: error.message };
-  revalidatePath("/", "layout");
-  redirect("/dashboard");
-}
-
-export async function sendMagicLinkAction(formData: FormData) {
-  const email = formData.get("email") as string;
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: \`\${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback\` }
-  });
-  if (error) return { success: false, error: error.message };
-  return { success: true, message: "Tautan login telah dikirim ke email Anda!" };
-}
-
-export async function signOutAction() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  revalidatePath("/", "layout");
-  redirect("/login");
-}`,
-          language: "typescript",
-          explanation: "Menyediakan fungsi server RPC terpusat untuk login password, magic link OTP, dan pembersihan sesi saat logout."
-        },
-        {
-          stepNumber: 5,
-          instruction: "Eksekusi DDL Migration di Supabase SQL Editor untuk public.profiles dan Trigger Otomatis",
-          code: `-- Eksekusi di Supabase Cloud SQL Editor
+          badge: "Fondasi Proxy & DB (Tahap 1)",
+          actionType: "hybrid",
+          targetPromptStep: 1,
+          instruction: "Tahap 1: Eksekusi DDL Trigger di Supabase & Pasang Proxy Session Refresher",
+          code: `-- 1. EKSEKUSI DI SUPABASE DASHBOARD > SQL EDITOR:
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT NOT NULL DEFAULT 'Explorer',
@@ -3060,14 +2982,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can update their own profile." ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Public profiles are viewable by everyone."
-  ON public.profiles FOR SELECT USING (true);
-
-CREATE POLICY "Users can update their own profile."
-  ON public.profiles FOR UPDATE USING (auth.uid() = id);
-
--- Fungsi & Trigger
+-- Fungsi trigger handle_new_user() SECURITY DEFINER
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -3085,24 +3003,109 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();`,
           language: "sql",
-          explanation: "Menciptakan tabel profil aplikasi ber-RLS dan memasang trigger AFTER INSERT auth.users untuk sinkronisasi atomik data profil."
+          explanation: "1) Langkah Manual: Eksekusi skrip SQL di atas pada Supabase SQL Editor untuk membuat tabel profil dan trigger atomik. 2) Eksekusi AI Agent: Salin Prompt Tahap 1 di bawah ke panel AI Agent untuk merakit src/utils/supabase/middleware.ts, src/proxy.ts, dan halaman login gateway sementara. 3) Checkpoint: Buka http://localhost:3000/dashboard, peramban harus otomatis mengalihkan Anda ke /login?next=%2Fdashboard."
         },
         {
-          stepNumber: 6,
-          instruction: "Rakit Komponen Unified Auth Portal (GitHub OAuth 1-Click + Tab Kredensial)",
-          code: `// src/app/(auth)/login/page.tsx & src/components/auth/unified-auth-card.tsx
-// Tampilkan kartu login terpadu dengan 3 opsi:
-// 1. Tombol 1-Click "Masuk dengan GitHub"
-// 2. Tab "Email & Password" (LoginForm)
-// 3. Tab "Magic Link" (Passwordless OTP Form)`,
+          stepNumber: 2,
+          badge: "Model 1: Email & Password (Tahap 2)",
+          actionType: "prompt",
+          targetPromptStep: 2,
+          instruction: "Tahap 2: Rakit Server Actions & Formulir Autentikasi Email & Password",
+          code: `// src/actions/auth.ts (Server Actions 'use server')
+export async function loginWithEmailAction(prevState: unknown, formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return { success: false, error: error.message };
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
+export async function signupWithEmailAction(prevState: unknown, formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const fullName = formData.get("fullName") as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: fullName } }
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: true, message: "Pendaftaran berhasil! Silakan masuk." };
+}`,
+          language: "typescript",
+          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 2 di bawah untuk merakit Server Actions dan form src/components/auth/email-password-form.tsx. 2) Uji Coba: Buka http://localhost:3000/login, daftarkan akun baru dengan email dan password. 3) Verifikasi DB: Buka Supabase Studio ➔ Table Editor ➔ public.profiles, pastikan data profil otomatis terbuat via trigger!"
+        },
+        {
+          stepNumber: 3,
+          badge: "Model 2: GitHub OAuth 2.0 (Tahap 3)",
+          actionType: "hybrid",
+          targetPromptStep: 3,
+          instruction: "Tahap 3: Konfigurasi OAuth GitHub & Rakit Route Handler Penukar Kode Sesi",
+          code: `# 1. LANGKAH MANUAL SETUP DASHBOARD (Gunakan Simulator di Bawah):
+# - Buka GitHub ➔ Settings ➔ Developer Settings ➔ OAuth Apps ➔ New OAuth App
+# - Application Name: The Serverless Odyssey Dev
+# - Homepage URL: http://localhost:3000
+# - Authorization callback URL: https://<PROJECT-REF>.supabase.co/auth/v1/callback
+# - Generate Client Secret & Salin ke Supabase ➔ Auth ➔ Providers ➔ GitHub (Enabled)
+# - Tambahkan http://localhost:3000/auth/callback ke Supabase Redirect URLs`,
+          language: "bash",
+          explanation: "1) Langkah Manual: Ikuti panduan visual pada simulator interaktif di bawah untuk menghubungkan GitHub dan Supabase. 2) Eksekusi AI Agent: Salin Prompt Tahap 3 di bawah untuk merakit Route Handler src/app/auth/callback/route.ts, signInWithGithubAction, dan tombol GithubLoginButton. 3) Checkpoint: Klik 'Masuk dengan GitHub' di /login, lalu verifikasi berhasil dialihkan ke /dashboard."
+        },
+        {
+          stepNumber: 4,
+          badge: "Model 3: Magic Link OTP (Tahap 4)",
+          actionType: "prompt",
+          targetPromptStep: 4,
+          instruction: "Tahap 4: Tambahkan Otentikasi Passwordless Berbasis Magic Link OTP",
+          code: `// src/actions/auth.ts (Penambahan sendMagicLinkAction)
+export async function sendMagicLinkAction(prevState: unknown, formData: FormData) {
+  const email = formData.get("email") as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: \`\${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback\`
+    }
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: true, message: "Tautan masuk ajaib telah dikirimkan ke email Anda!" };
+}`,
+          language: "typescript",
+          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 4 di bawah untuk menambahkan Server Action dan komponen form src/components/auth/magic-link-form.tsx. 2) Uji Coba: Masukkan email Anda di form Magic Link di http://localhost:3000/login, cek inbox email (atau Inbucket di CLI), klik tautan, dan peramban otomatis masuk ke /dashboard tanpa mengetik password!"
+        },
+        {
+          stepNumber: 5,
+          badge: "Unified Portal & Polishing (Tahap 5)",
+          actionType: "prompt",
+          targetPromptStep: 5,
+          instruction: "Tahap 5: Satukan ke Unified Auth Portal (Tabs Shadcn) & Terapkan Root Navigation Rule",
+          code: `// src/components/auth/unified-auth-card.tsx & src/app/page.tsx
+// Struktur Komposisi Antarmuka Terpadu Satu Pintu:
+<Card className="max-w-md w-full backdrop-blur-md bg-card/80 border-border/80 shadow-2xl">
+  <CardHeader>
+    <GithubLoginButton /> {/* 1-Click Social OAuth di Tingkat Teratas */}
+    <Separator label="Atau pilih metode login" />
+    <Tabs defaultValue="password">
+      <TabsList className="grid grid-cols-2">
+        <TabsTrigger value="password">Email & Password</TabsTrigger>
+        <TabsTrigger value="magic-link">Magic Link</TabsTrigger>
+      </TabsList>
+      <TabsContent value="password"><EmailPasswordForm /></TabsContent>
+      <TabsContent value="magic-link"><MagicLinkForm /></TabsContent>
+    </Tabs>
+  </CardHeader>
+</Card>`,
           language: "tsx",
-          explanation: "Membangun pengalaman masuk modern multi-provider berstandar industri dengan token semantik Shadcn UI."
+          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 5 di bawah untuk mengonsolidasikan ketiga model ke dalam kartu UnifiedAuthCard dengan Tabs Shadcn UI dan memperbarui halaman root src/app/page.tsx sesuai ROOT NAVIGATION RULE. 2) Checkpoint Akhir: Buka http://localhost:3000/ untuk melihat tombol CTA cerdas, lalu buka /login untuk memastikan ketiga model autentikasi berfungsi harmonis tanpa bug!"
         }
       ],
       aiPromptTemplate: {
         role: "Senior Full-Stack Security Engineer & Next.js 16 Specialist",
         prompt: `Bertindaklah sebagai Senior Full-Stack Security Engineer & Next.js 16 Specialist.
-Tugas Anda adalah mengimplementasikan sistem Unified Multi-Provider Authentication Portal lengkap (GitHub OAuth 1-Click, Email & Password, dan Passwordless Magic Link) menggunakan @supabase/ssr pada proyek "The Serverless Odyssey", memproteksi rute privat dengan Next.js 16 Middleware Session Refresher, dan menyinkronkan profil pengguna via PostgreSQL Trigger.
+Tugas Anda adalah mengimplementasikan sistem Unified Multi-Provider Authentication Portal lengkap (GitHub OAuth 1-Click, Email & Password, dan Passwordless Magic Link) menggunakan @supabase/ssr pada proyek "The Serverless Odyssey", memproteksi rute privat dengan Next.js 16 Proxy Session Refresher (src/proxy.ts, konvensi resmi pengganti middleware.ts), dan menyinkronkan profil pengguna via PostgreSQL Trigger.
 
 LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
 1. Periksa apakah @supabase/ssr dan @supabase/supabase-js sudah ada di package.json. Jika belum, eksekusi:
@@ -3113,20 +3116,22 @@ LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
 BATASAN ARSITEKTUR KETAT (DILARANG DILANGGAR):
 1. Next.js 16 Async APIs: Wajib menggunakan \`const cookieStore = await cookies()\` di semua Server Components dan Route Handlers.
 2. Direktif 'use client' HANYA boleh berada di komponen daun interaktif (UnifiedAuthCard, LogoutButton). DILARANG di page.tsx dan layout.tsx.
-3. Keamanan Sesi: WAJIB \`supabase.auth.getUser()\` di Middleware dan RSC. DILARANG KERAS \`getSession()\`.
-4. Dual-Cookie Synchronization: Middleware harus menulis token baru ke request.cookies (untuk RSC) DAN response.cookies (untuk browser Set-Cookie).
+3. Keamanan Sesi: WAJIB \`supabase.auth.getUser()\` di Proxy (src/proxy.ts) dan RSC. DILARANG KERAS \`getSession()\`.
+4. Dual-Cookie Synchronization: Helper updateSession harus menulis token baru ke request.cookies (untuk RSC) DAN response.cookies (untuk browser Set-Cookie).
 5. UI Estetika Premium: Glassmorphism (backdrop-blur-md), micro-interactions (hover:-translate-y-0.5), Dark/Light mode penuh via semantic tokens Tailwind/Shadcn.
 6. Zero TypeScript 'any' types. Semua tipe data eksplisit.
 
 STRUKTUR 6 BERKAS YANG WAJIB DIBUAT/DIPERBARUI (SIAP JALAN 100%, TANPA POTONGAN KODE):
 
 BERKAS 1: src/utils/supabase/middleware.ts
-- Fungsi updateSession(request: NextRequest) dengan dual-cookie sync lengkap (getAll, setAll ke request dan response).
+- Helper fungsi updateSession(request: NextRequest) dengan dual-cookie sync lengkap (getAll, setAll ke request dan response).
 - Logika proteksi rute: redirect tamu dari /dashboard ke /login?next=<path>, redirect user login dari /login ke /dashboard.
 - Parameter ?next= dipertahankan untuk state preservation setelah login.
 
-BERKAS 2: src/middleware.ts
-- Import dan delegasi ke updateSession() dari berkas utils/supabase/middleware.
+BERKAS 2: src/proxy.ts (KONVENSI RESMI NEXT.JS 16 - MENGGANTIKAN middleware.ts)
+- Buat berkas src/proxy.ts dengan ekspor fungsi 'export async function proxy(request: NextRequest)'.
+- PERHATIAN: DILARANG menamai berkas src/middleware.ts karena telah resmi didepresiasi di Next.js 16 dan menimbulkan warning terminal.
+- Import dan delegasikan eksekusi ke updateSession() dari berkas utils/supabase/middleware.
 - Config matcher dengan regex negative lookahead yang mengecualikan _next/static, _next/image, favicon.ico, dan semua aset statis.
 
 BERKAS 3: src/app/auth/callback/route.ts
@@ -3135,8 +3140,8 @@ BERKAS 3: src/app/auth/callback/route.ts
 - Fallback redirect ke /auth/auth-code-error jika kode kosong atau penukaran gagal.
 
 BERKAS 4: src/actions/auth.ts ('use server')
-- loginWithEmailAction(formData: FormData): Validasi email & password via Zod, panggil signInWithPassword, revalidatePath dan redirect('/dashboard').
-- signupWithEmailAction(formData: FormData): Validasi via Zod, panggil signUp, redirect('/check-email').
+- loginWithEmailAction(formData: FormData): Baca identifier (Email atau NIM) dan password. Deteksi tipe: jika NIM (tanpa @), petakan ke {nim}@student.ac.id. Validasi via Zod, panggil signInWithPassword, revalidatePath dan redirect('/dashboard').
+- signupWithEmailAction(formData: FormData): Validasi email/NIM via Zod, panggil signUp, redirect('/check-email').
 - sendMagicLinkAction(formData: FormData): Validasi email, panggil signInWithOtp, return { success: true, message: '...' }.
 - signOutAction(): Panggil signOut(), revalidatePath('/', 'layout'), redirect('/login').
 
@@ -3145,7 +3150,7 @@ BERKAS 5: src/app/(auth)/login/page.tsx + src/components/auth/unified-auth-card.
 - unified-auth-card.tsx ('use client'): Kartu login terpadu tiga opsi:
   1. Tombol GitHub OAuth ("Masuk dengan GitHub") dengan ikon brand GitHub.
   2. Garis pemisah semantik "Atau pilih metode kredensial".
-  3. Tabs Shadcn: Tab "Email & Password" dan Tab "Magic Link" (Passwordless).
+  3. Tabs Shadcn: Tab "Kredensial (Email / NIM)" dan Tab "Magic Link" (Passwordless).
 - Feedback status interaktif: loading spinner isPending, pesan error Zod/Supabase, dan notifikasi sukses kirim Magic Link.
 
 BERKAS 6: supabase/migrations/02_auth_profiles_trigger.sql
@@ -3159,17 +3164,59 @@ BERKAS 7: src/app/page.tsx (ROOT NAVIGATION RULE)
         steppedPrompts: [
           {
             stepNumber: 1,
-            title: "Tahap 1: Fondasi Keamanan Edge & Database Trigger Profil",
-            badge: "Fondasi Middleware & DB",
-            description: "Mempersiapkan pengamanan rute pada tingkat Edge (Next.js 16 Middleware) dengan sinkronisasi dual-cookie, serta otomatisasi replikasi profil pengguna ke PostgreSQL melalui Database Trigger.",
+            title: "Tahap 1: Fondasi Keamanan Proxy & Database Trigger Profil",
+            badge: "Fondasi Proxy & DB",
+            description: "Mempersiapkan pengamanan rute pada tingkat Network Boundary (Next.js 16 Proxy - src/proxy.ts) dengan sinkronisasi dual-cookie, serta otomatisasi replikasi profil pengguna ke PostgreSQL melalui Database Trigger.",
+            manualAction: {
+              required: true,
+              title: "Eksekusi Skrip DDL Profil & Trigger di Supabase SQL Editor",
+              location: "Supabase Dashboard ➔ SQL Editor",
+              description: "Sebelum menjalankan kode aplikasi Next.js, Anda wajib mengeksekusi skrip SQL berikut di Supabase Dashboard untuk membuat tabel public.profiles dan trigger otomatis handle_new_user() yang menyalin data pengguna baru dari auth.users.",
+              codeSnippet: {
+                language: "sql",
+                code: `-- 1. EKSEKUSI DI SUPABASE DASHBOARD > SQL EDITOR:
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL DEFAULT 'Explorer',
+  avatar_url TEXT DEFAULT '',
+  role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'lecturer', 'admin')),
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can update their own profile." ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+-- Fungsi trigger handle_new_user() SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, avatar_url)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', 'Explorer'),
+    COALESCE(new.raw_user_meta_data->>'avatar_url', '')
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();`
+              },
+              simulatorKey: "supabase-sql-editor",
+              note: "⚠️ Salin dan jalankan skrip SQL di atas langsung di Supabase SQL Editor (bukan di editor VS Code). Setelah sukses dijalankan, lanjutkan ke Eksekusi Prompt AI di bawah."
+            },
             targetFiles: [
               "src/utils/supabase/middleware.ts",
-              "src/middleware.ts",
+              "src/proxy.ts",
               "supabase/migrations/02_auth_profiles_trigger.sql",
               "src/app/(auth)/login/page.tsx"
             ],
             prompt: `Bertindaklah sebagai Senior Full-Stack Security Engineer & Next.js 16 Specialist.
-Tugas Anda adalah mengimplementasikan Tahap 1 dari arsitektur autentikasi pada proyek "The Serverless Odyssey": Fondasi Keamanan Edge (Next.js 16 Middleware Session Refresher) dan PostgreSQL User Profile Sync Trigger.
+Tugas Anda adalah mengimplementasikan Tahap 1 dari arsitektur autentikasi pada proyek "The Serverless Odyssey": Fondasi Keamanan Network Boundary (Next.js 16 Proxy Session Refresher - src/proxy.ts) dan PostgreSQL User Profile Sync Trigger.
 
 LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
 1. Periksa apakah @supabase/ssr dan @supabase/supabase-js sudah ada di package.json. Jika belum, eksekusi:
@@ -3178,11 +3225,12 @@ LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
    npx shadcn@latest add card button badge
 
 BATASAN ARSITEKTUR KETAT:
-1. Next.js 16 Middleware: Gunakan createServerClient dari @supabase/ssr dengan dual-cookie synchronization (tulis token baru ke request.cookies DAN response.cookies).
-2. Keamanan Sesi: Wajib panggil supabase.auth.getUser() di Middleware. DILARANG KERAS getSession().
-3. Proteksi Rute: Jika user belum login mengakses rute privat /dashboard, alihkan ke /login?next=<path>. Jika sudah login mengakses /login, alihkan ke /dashboard.
-4. Halaman Login Sementara (Tahap 1): Buat src/app/(auth)/login/page.tsx sebagai Server Component yang menampilkan kartu status "Authentication Gateway: Fondasi Keamanan Edge Aktif" dengan badge status, agar proyek dapat langsung dikompilasi dan diuji alur redirect-nya tanpa error.
-5. Zero TypeScript 'any' types.
+1. Next.js 16 Proxy File Convention: Wajib menggunakan berkas src/proxy.ts dengan 'export async function proxy(request: NextRequest)'. DILARANG KERAS menggunakan nama middleware.ts karena telah resmi didepresiasi di Next.js 16.
+2. Keamanan Sesi: Wajib panggil supabase.auth.getUser() di updateSession helper. DILARANG KERAS getSession().
+3. Dual-Cookie Synchronization: Tulis token baru ke request.cookies DAN response.cookies secara simultan.
+4. Proteksi Rute: Jika user belum login mengakses rute privat /dashboard, alihkan ke /login?next=<path>. Jika sudah login mengakses /login, alihkan ke /dashboard.
+5. Halaman Login Sementara (Tahap 1): Buat src/app/(auth)/login/page.tsx sebagai Server Component yang menampilkan kartu status "Authentication Gateway: Fondasi Keamanan Proxy Aktif" dengan badge status, agar proyek dapat langsung dikompilasi dan diuji alur redirect-nya tanpa error.
+6. Zero TypeScript 'any' types.
 
 STRUKTUR 4 BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
 
@@ -3190,8 +3238,8 @@ BERKAS 1: src/utils/supabase/middleware.ts
 - Fungsi updateSession(request: NextRequest) yang menangani pembacaan dan penulisan cookies secara aman.
 - Cek user via getUser(), lalu lakukan redirect cerdas dengan parameter ?next= untuk preserving target URL.
 
-BERKAS 2: src/middleware.ts
-- Delegasikan eksekusi ke updateSession(request) dari src/utils/supabase/middleware.ts.
+BERKAS 2: src/proxy.ts (KONVENSI RESMI NEXT.JS 16 - PENGGANTI middleware.ts)
+- Ekspor 'export async function proxy(request: NextRequest)' yang mendelegasikan eksekusi ke updateSession(request) dari src/utils/supabase/middleware.ts.
 - Konfigurasi config matcher dengan pola regex negative lookahead untuk mengecualikan _next/static, _next/image, favicon.ico, dan ekstensi file statis.
 
 BERKAS 3: supabase/migrations/02_auth_profiles_trigger.sql
@@ -3202,22 +3250,30 @@ BERKAS 3: supabase/migrations/02_auth_profiles_trigger.sql
 
 BERKAS 4: src/app/(auth)/login/page.tsx
 - Server Component: Cek status getUser(). Jika sudah ada user, redirect ke /dashboard.
-- Jika belum login, render kartu sambutan status fondasi autentikasi aktif dengan indikator badge "Tahap 1: Edge Refresher Siap" dan petunjuk melanjutkan ke Tahap 2.`,
-            checkpoint: "Jalankan dev server, lalu buka http://localhost:3000/dashboard di browser. Peramban harus otomatis mengalihkan Anda ke http://localhost:3000/login?next=%2Fdashboard dan menampilkan kartu gateway status Tahap 1 tanpa error.",
+- Jika belum login, render kartu sambutan status fondasi autentikasi aktif dengan indikator badge "Tahap 1: Proxy Refresher Siap" dan petunjuk melanjutkan ke Tahap 2.`,
+            checkpoint: "Jalankan dev server, lalu buka http://localhost:3000/dashboard di browser. Proxy Next.js 16 harus otomatis mengalihkan Anda ke http://localhost:3000/login?next=%2Fdashboard dan menampilkan kartu gateway status Tahap 1 tanpa error serta bebas dari peringatan deprecation middleware.",
             tip: "Jalankan migrasi SQL supabase/migrations/02_auth_profiles_trigger.sql di Supabase Dashboard (SQL Editor) sebelum melanjutkan ke pembuatan user!"
           },
           {
             stepNumber: 2,
-            title: "Tahap 2: Model 1 — Kredensial Mandiri (Email & Password)",
-            badge: "Model 1: Email & Password",
-            description: "Membangun otentikasi konvensional berbasis email & password dengan Server Actions Next.js 16, validasi Zod ketat, penanganan error, serta integrasi formulir interaktif.",
+            title: "Tahap 2: Model 1 — Kredensial Mandiri & ID Institusi (Email atau NIM & Password)",
+            badge: "Model 1: Dual-Auth (Email / NIM)",
+            description: "Membangun otentikasi kredensial fleksibel yang mendukung Email Publik maupun Nomor Induk Mahasiswa (NIM) dengan Server Actions Next.js 16, validasi Zod ketat, penanganan error, serta pemetaan transparan domain kampus.",
+            manualAction: {
+              required: true,
+              title: "Arsitektur Login NIM Institusi & Toggle 'Confirm email' (Dev Mode)",
+              location: "Supabase Studio ➔ Auth Settings & Visual Architecture Guide",
+              description: "Buka simulator interaktif di bawah untuk mempelajari bagaimana sistem kampus memetakan NIM secara otomatis ke domain institusi ({nim}@student.ac.id), serta pastikan toggle 'Confirm email' dimatikan di Supabase Studio selama masa development lokal.",
+              simulatorKey: "nim-auth-architecture",
+              note: "💡 Tips: Di lingkungan production (saat deploy ke Vercel), toggle 'Confirm email' wajib dinyalakan kembali demi keamanan akun."
+            },
             targetFiles: [
               "src/actions/auth.ts",
               "src/components/auth/email-password-form.tsx",
               "src/app/(auth)/login/page.tsx"
             ],
             prompt: `Bertindaklah sebagai Senior Full-Stack Security Engineer & Next.js 16 Specialist.
-Tugas Anda adalah mengimplementasikan Tahap 2: Model Autentikasi 1 (Email & Password) dengan Server Actions Next.js 16 dan validasi Zod pada proyek "The Serverless Odyssey".
+Tugas Anda adalah mengimplementasikan Tahap 2: Model Autentikasi 1 (Kredensial Mandiri & ID Institusi: Email atau NIM & Password) dengan Server Actions Next.js 16 dan validasi Zod pada proyek "The Serverless Odyssey".
 
 LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
 1. Periksa apakah zod sudah ada di package.json. Jika belum, eksekusi:
@@ -3228,32 +3284,44 @@ LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
 BATASAN ARSITEKTUR KETAT:
 1. Server Actions ('use server'): Buat di src/actions/auth.ts.
 2. Next.js 16 Async Cookies: Gunakan createServerClient dengan const cookieStore = await cookies() di dalam Server Action.
-3. Validasi Zod: Email wajib berformat valid, password minimal 8 karakter. Tangani Zod error dengan aman.
-4. Client Component: Komponen form src/components/auth/email-password-form.tsx menggunakan 'use client' dengan useActionState atau form status pending untuk indikator loading.
-5. Pertahankan middleware dan skema database dari Tahap 1 tanpa gangguan.
+3. Fitur Cerdas Dual-Identifier (Email / NIM):
+   - Jika identifier mengandung '@', proses sebagai email publik normal.
+   - Jika identifier TIDAK mengandung '@' (karakter angka/huruf tanpa '@', misal NIM '202401001'), petakan secara otomatis di server ke domain kampus: \`\${identifier.trim()}@student.ac.id\`.
+4. Validasi Zod: Identifier minimal 3 karakter, password minimal 8 karakter.
+5. Client Component: Komponen form src/components/auth/email-password-form.tsx menggunakan 'use client' dengan useActionState atau form status pending untuk indikator loading.
+6. Pertahankan src/proxy.ts dan skema database dari Tahap 1 tanpa gangguan.
 
 STRUKTUR 3 BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
 
 BERKAS 1: src/actions/auth.ts
-- loginWithEmailAction(prevState: unknown, formData: FormData): Validasi email & password via Zod, panggil supabase.auth.signInWithPassword, revalidatePath('/', 'layout'), lalu redirect ke target next atau /dashboard.
-- signupWithEmailAction(prevState: unknown, formData: FormData): Validasi email, password, dan nama lengkap via Zod. Panggil supabase.auth.signUp dengan options data { full_name }. Kembalikan pesan sukses verifikasi email atau alihkan ke /dashboard jika auto-confirm aktif.
+- loginWithEmailAction(prevState: unknown, formData: FormData): Baca identifier (Email atau NIM) dan password. Deteksi tipe: jika NIM, ubah menjadi {nim}@student.ac.id. Panggil supabase.auth.signInWithPassword, revalidatePath('/', 'layout'), lalu redirect ke target next atau /dashboard.
+- signupWithEmailAction(prevState: unknown, formData: FormData): Validasi email/NIM, password, dan nama lengkap via Zod. Panggil supabase.auth.signUp dengan options data { full_name }. Kembalikan pesan sukses verifikasi email atau alihkan ke /dashboard jika auto-confirm aktif.
 - signOutAction(): Panggil supabase.auth.signOut(), revalidatePath('/', 'layout'), redirect('/login').
 
 BERKAS 2: src/components/auth/email-password-form.tsx ('use client')
 - Formulir toggle antara mode "Masuk" dan "Daftar Akun Baru".
-- Input email, password, dan nama lengkap (pada mode pendaftaran).
+- Label input cerdas: "Email atau NIM (Nomor Induk Mahasiswa)". Placeholder: "budi@gmail.com atau 202401001".
+- Input password, dan nama lengkap (pada mode pendaftaran).
 - Feedback visual: status loading spinner saat submit, banner pesan error jika kredensial salah, dan pesan sukses jika pendaftaran berhasil.
 
 BERKAS 3: src/app/(auth)/login/page.tsx
 - Perbarui halaman login untuk merender EmailPasswordForm di dalam kartu login yang rapi dan elegan (glassmorphism Tailwind).`,
-            checkpoint: "Buka http://localhost:3000/login, isi formulir pendaftaran dengan email dan password baru (min 8 karakter). Setelah sukses daftar atau login, Anda akan dialihkan ke /dashboard. Periksa Supabase Studio ➔ Table Editor ➔ public.profiles untuk memastikan profil otomatis terbuat!",
-            tip: "Jika email confirmation aktif di Supabase, Anda dapat mematikannya di Auth Settings ➔ Email ➔ Confirm email (uncheck) untuk kemudahan pengujian cepat di lingkungan development lokal."
+            checkpoint: "Buka http://localhost:3000/login. Coba masuk menggunakan NIM institusi (misal 202401001) atau email biasa beserta password. Server Action akan mendeteksi tipe identifier, memetakan NIM ke email kampus secara transparan, dan mengarahkan Anda ke /dashboard setelah sukses!",
+            tip: "Di Supabase Studio, Anda juga dapat membuka simulator interaktif di atas untuk memahami perbandingan Pola Virtual Domain Alias vs Custom Roster Table."
           },
           {
             stepNumber: 3,
             title: "Tahap 3: Model 2 — 1-Click Social OAuth 2.0 GitHub",
             badge: "Model 2: GitHub OAuth 2.0",
             description: "Mengintegrasikan login sosial 1-Click menggunakan GitHub OAuth 2.0 dengan penukaran kode otorisasi PKCE (exchangeCodeForSession) pada Route Handler Next.js 16.",
+            manualAction: {
+              required: true,
+              title: "Konfigurasi GitHub OAuth App & Supabase Auth Provider",
+              location: "GitHub Developer Settings & Supabase Dashboard",
+              description: "Hubungkan GitHub dengan Supabase dengan mendaftarkan New OAuth App di GitHub Developer Settings, lalu salin Client ID & Client Secret ke Supabase Studio (Authentication ➔ Providers ➔ GitHub). Buka simulator interaktif di bawah untuk panduan visual langkah demi langkah.",
+              simulatorKey: "github-oauth-setup",
+              note: "⚠️ PENTING: Authorization callback URL di GitHub wajib mengarah ke https://<PROJECT-REF>.supabase.co/auth/v1/callback (bukan localhost). Dan pastikan http://localhost:3000/auth/callback terdaftar di Supabase Redirect URLs!"
+            },
             targetFiles: [
               "src/app/auth/callback/route.ts",
               "src/actions/auth.ts",
@@ -3298,6 +3366,14 @@ BERKAS 4: src/app/(auth)/login/page.tsx
             title: "Tahap 4: Model 3 — Passwordless Magic Link OTP",
             badge: "Model 3: Magic Link OTP",
             description: "Mengimplementasikan autentikasi tanpa kata sandi (Passwordless Magic Link) berbasis OTP dan penukaran tautan email berbatas waktu yang ramah pengguna.",
+            manualAction: {
+              required: true,
+              title: "Pengujian Magic Link via Simulasi Webmail Inbox & Whitelist URL",
+              location: "Supabase Studio ➔ URL Configuration & Webmail Inbox",
+              description: "Pastikan Site URL dan Redirect URLs (http://localhost:3000/**) sudah terdaftar di Supabase Studio. Buka simulator Webmail interaktif di bawah untuk menguji alur pengiriman Magic Link, menyalin OTP 6-digit, dan memverifikasi parameter token PKCE.",
+              simulatorKey: "magic-link-inbox",
+              note: "⚠️ Karena batasan rate limit Supabase Cloud (~3-4 email per jam pada tier gratis), simulator Webmail di bawah memungkinkan Anda menguji mekanisme token tanpa khawatir kuota SMTP habis."
+            },
             targetFiles: [
               "src/actions/auth.ts",
               "src/components/auth/magic-link-form.tsx",
@@ -3334,6 +3410,11 @@ BERKAS 3: src/app/(auth)/login/page.tsx
             title: "Tahap 5: Penyatuan Antarmuka (Unified Auth Portal) & Navigasi Root",
             badge: "Unified Portal & Polishing",
             description: "Mengonsolidasikan ketiga model autentikasi ke dalam satu kartu elegan terpadu (UnifiedAuthCard) dengan Tabs Shadcn UI, serta memperbarui Root Landing Page (src/app/page.tsx) dengan navigasi adaptif.",
+            manualAction: {
+              required: false,
+              title: "Tidak Perlu Koding Manual — 100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan mengonsolidasikan seluruh metode login ke dalam satu kartu terpadu (src/components/auth/unified-auth-card.tsx) berbasis Shadcn Tabs, serta memperbarui landing page src/app/page.tsx sesuai Root Navigation Rule."
+            },
             targetFiles: [
               "src/components/auth/unified-auth-card.tsx",
               "src/app/(auth)/login/page.tsx",
@@ -3348,7 +3429,7 @@ LANGKAH PRE-KONDISI & DEPENDENSI:
 
 BATASAN ARSITEKTUR KETAT:
 1. UI Estetika Premium: UnifiedAuthCard harus memukau (glassmorphism bg-card/80 backdrop-blur-md, border tipis border-border/80, shadow-xl, transisi halus).
-2. Tab Switcher: Tab 1 "Email & Password" dan Tab 2 "Magic Link" di bawah tombol GitHub OAuth 1-Click.
+2. Tab Switcher: Tab 1 "Kredensial (Email / NIM)" dan Tab 2 "Magic Link" di bawah tombol GitHub OAuth 1-Click.
 3. Root Navigation Rule (WAJIB): src/app/page.tsx (halaman root /) TIDAK BOLEH membiarkan user bingung. Cek sesi di Server Component: jika sudah login tampilkan CTA "Buka Dashboard Tugas →" (/dashboard), jika belum tampilkan Hero CTA "Mulai Perjalanan Serverless →" (/login).
 4. Sempurnakan seluruh tipe TypeScript tanpa ada tipe 'any'.
 
@@ -3357,8 +3438,8 @@ STRUKTUR 3 BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
 BERKAS 1: src/components/auth/unified-auth-card.tsx ('use client')
 - Satukan GithubLoginButton di bagian atas dengan badge "1-Click Social OAuth".
 - Garis pemisah estetik Separator dengan label "Atau pilih metode login".
-- Tabs Shadcn UI dengan tab trigger: "Kredensial Password" (ikon Kunci) dan "Magic Link" (ikon Sparkles/Mail).
-- Pasang EmailPasswordForm di Tab 1 dan MagicLinkForm di Tab 2.
+- Tabs Shadcn UI dengan tab trigger: "Kredensial (Email / NIM)" (ikon Kunci) dan "Magic Link" (ikon Sparkles/Mail).
+- Pasang EmailPasswordForm di Tab 1 (mendukung input Email publik maupun NIM) dan MagicLinkForm di Tab 2.
 
 BERKAS 2: src/app/(auth)/login/page.tsx
 - Server Component: Validasi getUser(). Jika user aktif, redirect('/dashboard').
@@ -3367,7 +3448,7 @@ BERKAS 2: src/app/(auth)/login/page.tsx
 BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
 - Server Component: Panggil getUser() dari Supabase SSR.
 - Perbarui Hero Section: Tombol CTA cerdas yang langsung mengarahkan user login ke /dashboard, atau user tamu ke /login. Navbar menampilkan status user (avatar/nama) jika sudah login, atau tombol "Masuk" jika tamu.`,
-            checkpoint: "Buka http://localhost:3000/. Verifikasi bahwa halaman utama mendeteksi status sesi Anda dan menyediakan tombol CTA yang sesuai. Kunjungi http://localhost:3000/login untuk melihat Unified Auth Portal lengkap dengan 3 metode login yang berfungsi harmonis tanpa bug!",
+            checkpoint: "Buka http://localhost:3000/. Verifikasi bahwa halaman utama mendeteksi status sesi Anda dan menyediakan tombol CTA yang sesuai. Kunjungi http://localhost:3000/login untuk melihat Unified Auth Portal lengkap dengan 3 metode login (GitHub, Kredensial Email/NIM, dan Magic Link) yang berfungsi harmonis tanpa bug!",
             tip: "Seluruh tahapan kini tuntas 100%! Proyek Anda memiliki sistem autentikasi kelas industri yang aman, responsif, dan siap untuk deployment Vercel."
           }
         ]
@@ -3378,14 +3459,14 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 5: Implementasi Multi-Provider Authentication & Edge Session Refresher",
-      taskDesc: "Lanjutkan pengerjaan Proyek Akhir resmi Anda dari branch feature/supabase-database-schema. Bangun Unified Auth Portal (GitHub OAuth, Email/Password, dan Magic Link), buat Middleware session refresher, amankan rute dashboard, dan sinkronkan profil pengguna ke public.profiles.",
+      taskTitle: "Misi Minggu 5: Implementasi Multi-Provider Authentication & Proxy Session Refresher",
+      taskDesc: "Lanjutkan pengerjaan Proyek Akhir resmi Anda dari branch feature/supabase-database-schema. Bangun Unified Auth Portal (GitHub OAuth, Dual-Identifier Email/NIM, dan Magic Link), buat Next.js 16 Proxy session refresher (src/proxy.ts), amankan rute dashboard, dan sinkronkan profil pengguna ke public.profiles.",
       definitionOfDone: [
-        "Unified Auth Portal Aktif: Halaman /login menampilkan tombol GitHub OAuth 1-Click, tab Email & Password, dan tab Magic Link passwordless.",
-        "Pendaftaran & Login Email Berfungsi: Pengguna dapat mendaftar dan masuk dengan email/password dan dialihkan ke /dashboard.",
+        "Unified Auth Portal Aktif: Halaman /login menampilkan tombol GitHub OAuth 1-Click, tab Kredensial (Email / NIM), dan tab Magic Link passwordless.",
+        "Pendaftaran & Login Kredensial Berfungsi: Pengguna dapat masuk dengan email maupun NIM institusi (auto-alias) dan dialihkan ke /dashboard.",
         "GitHub OAuth Handshake Sukses: Integrasi GitHub OAuth App berhasil menukar kode otorisasi sementara menjadi sesi kuki resmi di /auth/callback.",
         "Magic Link OTP Terkirim: Pengguna dapat meminta tautan masuk ajaib dan diverifikasi tanpa perlu mengingat kata sandi.",
-        "Edge Middleware Route Guard: Tamu yang belum login otomatis dialihkan (307) saat mengakses /dashboard, dan pengguna login dialihkan dari /login ke /dashboard.",
+        "Next.js 16 Proxy Route Guard (src/proxy.ts): Tamu yang belum login otomatis dialihkan (307) saat mengakses /dashboard, dan pengguna login dialihkan dari /login ke /dashboard tanpa peringatan deprecation.",
         "Otomasi Sinkronisasi Profil: Trigger PostgreSQL on_auth_user_created otomatis menyalin data akun baru ke tabel public.profiles dengan aman."
       ],
       gitBranchTask: "git checkout -b feature/unified-multi-provider-auth"
@@ -3420,7 +3501,7 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
         },
         {
           id: 4,
-          question: "Mengapa dokumentasi resmi Supabase melarang keras penggunaan 'supabase.auth.getSession()' di Next.js Middleware dan mewajibkan 'supabase.auth.getUser()'? Jelaskan celah keamanan apa yang dapat terjadi!",
+          question: "Mengapa dokumentasi resmi Supabase melarang keras penggunaan 'supabase.auth.getSession()' di Next.js 16 Proxy (src/proxy.ts) dan mewajibkan 'supabase.auth.getUser()'? Jelaskan celah keamanan apa yang dapat terjadi!",
           rubric: "Mahasiswa harus menjelaskan getSession() hanya membaca dan mendecode JWT dari cookie lokal tanpa menghubungi auth server Supabase sehingga buta terhadap akun yang diblokir/password yang diubah, sedangkan getUser() memvalidasi integritas sesi langsung ke server Supabase secara real-time.",
           keyConcepts: ["getSession anti-pattern", "getUser server-validated", "session revocation", "akun terblokir", "integritas sesi real-time"],
           weight: 15,
@@ -3428,11 +3509,11 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
         },
         {
           id: 5,
-          question: "Mengapa fungsi pembantu 'updateSession' di Next.js 16 Middleware wajib menuliskan token yang diperbarui ke 'request.cookies' sekaligus 'response.cookies' secara simultan?",
+          question: "Mengapa fungsi pembantu 'updateSession' di Next.js 16 Proxy (src/proxy.ts, konvensi resmi pengganti middleware.ts) wajib menuliskan token yang diperbarui ke 'request.cookies' sekaligus 'response.cookies' secara simultan?",
           rubric: "Mahasiswa harus menjelaskan bahwa request.cookies perlu diperbarui agar Server Component (RSC) yang akan dirender langsung membaca token baru, sedangkan response.cookies perlu diperbarui agar browser pengguna menyimpan header Set-Cookie untuk request selanjutnya.",
-          keyConcepts: ["updateSession", "dual-cookie sync", "request.cookies untuk RSC", "response.cookies untuk browser", "Set-Cookie header"],
+          keyConcepts: ["updateSession", "src/proxy.ts", "Next.js 16 proxy convention", "dual-cookie sync", "request.cookies untuk RSC", "response.cookies untuk browser", "Set-Cookie header"],
           weight: 10,
-          socraticHint: "Jika middleware memperbarui token sesi tetapi hanya menuliskannya ke objek NextResponse, apa yang dibaca oleh Server Component (RSC) yang dieksekusi tepat setelah middleware selesai?"
+          socraticHint: "Jika proxy memperbarui token sesi tetapi hanya menuliskannya ke objek NextResponse, apa yang dibaca oleh Server Component (RSC) yang dieksekusi tepat setelah proxy selesai?"
         },
         {
           id: 6,

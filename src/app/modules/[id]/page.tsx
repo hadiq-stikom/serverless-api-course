@@ -66,6 +66,12 @@ import { AuthActionsFlowAnimator } from "@/components/visualizers/auth-actions-f
 import { AuthCallbackRouteAnimator } from "@/components/visualizers/auth-callback-route-animator";
 import { AuthUsersVsProfilesAnimator } from "@/components/visualizers/auth-users-vs-profiles-animator";
 import { AutoProfileTriggerAnimator } from "@/components/visualizers/auto-profile-trigger-animator";
+import { GithubOauthSetupSimulator } from "@/components/visualizers/github-oauth-setup-simulator";
+import { SupabaseAuthConfigSimulator } from "@/components/visualizers/supabase-auth-config-simulator";
+import { SupabaseSqlEditorSimulator } from "@/components/visualizers/supabase-sql-editor-simulator";
+import { SupabaseApiKeysSimulator } from "@/components/visualizers/supabase-api-keys-simulator";
+import { MagicLinkInboxSimulator } from "@/components/visualizers/magic-link-inbox-simulator";
+import { NimAuthArchitectureSimulator } from "@/components/visualizers/nim-auth-architecture-simulator";
 import { DualArchAnimator } from "@/components/visualizers/dual-arch-animator";
 import { SharedZodSchemaAnimator } from "@/components/visualizers/shared-zod-schema-animator";
 import { RestResponseContractAnimator } from "@/components/visualizers/rest-response-contract-animator";
@@ -86,7 +92,7 @@ import {
   ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
   Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
-  Info, Lightbulb, ShieldAlert, Code, Brain
+  Info, Lightbulb, ShieldAlert, Code, Brain, GraduationCap
 } from "lucide-react";
 
 // Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 14 Subpoin Konsep Pertemuan 2
@@ -437,16 +443,16 @@ const MODULE_5_VISUALIZERS: Record<string, { key: string; title: string; subtitl
     component: <MagicLinkAnimator />,
   },
 
-  // Pilar 2: Proteksi Rute di Next.js 16 (Middleware Session Refresher)
+  // Pilar 2: Proteksi Rute di Next.js 16 (Proxy Session Refresher)
   "1-0": {
     key: "middleware-interception",
-    title: "Simulasi Next.js 16 Middleware: Intersepsi Edge & Matcher Filtering",
+    title: "Simulasi Next.js 16 Proxy: Network Boundary Interception & Matcher Filtering",
     subtitle: "Uji matcher regex untuk rute privat vs bypass aset statis demi performa zero-latency",
     component: <MiddlewareInterceptionAnimator />,
   },
   "1-1": {
     key: "session-refresher",
-    title: "Simulasi Keamanan Sesi di Middleware: Mengapa getSession() Dilarang Keras",
+    title: "Simulasi Keamanan Sesi di Proxy: Mengapa getSession() Dilarang Keras",
     subtitle: "Bandingkan auth.getUser() server-validated vs getSession() client-only yang buta status akun",
     component: <SessionRefresherAnimator />,
   },
@@ -735,7 +741,7 @@ const AI_AGENT_WORKFLOW: Record<
       stepBadge: "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300",
     },
     step1: "Pilih metode eksekusi di bawah (Jalur Bertahap 5 Tahap atau Jalur All-in-One), lalu salin prompt ke panel AI Agent IDE Anda.",
-    step2: "AI Agent otomatis memeriksa dependensi @supabase/ssr & Shadcn, lalu merakit middleware session refresher, route handler callback, dan formulir login.",
+    step2: "AI Agent otomatis memeriksa dependensi @supabase/ssr & Shadcn, lalu merakit proxy session refresher (src/proxy.ts), route handler callback, dan formulir login.",
     step3: "Jalankan DDL trigger di Supabase SQL Editor, tinjau diff berkas di editor, dan verifikasi checkpoint autentikasi langsung di browser.",
   },
   6: {
@@ -1188,8 +1194,8 @@ export default function ModuleDetailPage() {
                       <InteractiveTerm term="oauth">OAuth 2.0 (GitHub)</InteractiveTerm>{" "}
                       dan penerbitan token sesi{" "}
                       <InteractiveTerm term="jwt">Stateless JWT</InteractiveTerm>.{" "}
-                      Proteksi rute ditegakkan di layer Edge melalui{" "}
-                      <InteractiveTerm term="middleware">Next.js 16 Middleware</InteractiveTerm>{" "}
+                      Proteksi rute ditegakkan di Network Boundary melalui{" "}
+                      <InteractiveTerm term="proxy">Next.js 16 Proxy (src/proxy.ts)</InteractiveTerm>{" "}
                       yang me-refresh token secara transparan via updateSession() serta mengisolasi profil pengguna di tabel PostgreSQL dengan trigger otomatis.
                     </div>
                     <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
@@ -1493,7 +1499,7 @@ export default function ModuleDetailPage() {
                       Selesai Mempelajari Teori?
                     </h4>
                     <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                      Uji kode &amp; jalankan eksperimen langsung di tab Lab Praktikum serta Formula Prompt AI.
+                      Uji kode &amp; jalankan eksperimen langsung di tab Lab Praktek serta Formula Prompt AI.
                     </p>
                   </div>
                   <Button
@@ -1509,7 +1515,7 @@ export default function ModuleDetailPage() {
             </motion.div>
           )}
 
-          {/* TAB 2: LAB PRAKTIKUM & PROMPT AI */}
+          {/* TAB 2: LAB PRAKTEK & PROMPT AI */}
           {activeTab === "lab" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -1529,189 +1535,190 @@ export default function ModuleDetailPage() {
                 </div>
               )}
 
-              {/* Lab Steps */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                  <Terminal className="w-5 h-5 text-indigo-500" />
-                  Langkah-Langkah Praktikum
-                </h3>
-
+              {/* Lab Steps standar hanya untuk modul tanpa Stepped Prompts (Modul 1-4) */}
+              {(!currentModule.lab.aiPromptTemplate.steppedPrompts || currentModule.lab.aiPromptTemplate.steppedPrompts.length === 0) && (
                 <div className="space-y-4">
-                  {currentModule.lab.steps.map((step) => (
-                    <div
-                      key={step.stepNumber}
-                      className="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 bg-white dark:bg-zinc-900/90 space-y-3"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold shrink-0">
-                          {step.stepNumber}
-                        </span>
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">
-                          {step.instruction}
-                        </p>
-                      </div>
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <Terminal className="w-5 h-5 text-indigo-500" />
+                    Langkah-Langkah Praktek
+                  </h3>
 
-                      {step.code && (
-                        <div className="pt-1 pb-1 pl-0 sm:pl-9">
-                          <VsCodeSnippet
-                            code={step.code}
-                            language={step.language}
-                          />
-                        </div>
-                      )}
-
-                      {step.explanation && (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 italic pl-9">
-                          💡 Catatan: {step.explanation}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* AI Prompt Formula Box (VS Code Style) */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-indigo-500" />
-                    <h4 className="text-base font-bold text-zinc-900 dark:text-white">
-                      Formula Prompt AI Teruji
-                    </h4>
-                  </div>
-                  <span className="text-xs text-zinc-500 hidden sm:inline">Format Editor Prompt VS Code</span>
-                </div>
-
-                {/* Alur Kerja Eksekusi AI Agent Terintegrasi di IDE (VS Code) */}
-                {(() => {
-                  const wf = AI_AGENT_WORKFLOW[currentModule.id] || DEFAULT_AI_AGENT_WORKFLOW;
-                  return (
-                    <div className={`p-4 rounded-xl border ${wf.theme.border} ${wf.theme.bg} text-xs space-y-3 shadow-2xs`}>
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-base">🤖</span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100">
-                            Alur Kerja Eksekusi AI Agent di IDE (VS Code):
+                  <div className="space-y-4">
+                    {currentModule.lab.steps.map((step) => (
+                      <div
+                        key={step.stepNumber}
+                        className="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 bg-white dark:bg-zinc-900/90 space-y-3"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold shrink-0 mt-0.5">
+                            {step.stepNumber}
                           </span>
-                          <Badge variant="outline" className={`text-[10px] ${wf.theme.badge}`}>
-                            Native AI Agent Workflow
-                          </Badge>
-                        </div>
-                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">
-                          Antigravity • Cursor • Copilot • Roo Code
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-0.5">
-                        {/* Langkah 1 */}
-                        <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
-                          <div className="flex items-center gap-2">
-                            <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
-                              1
-                            </span>
-                            <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                              Kirim ke Agent Panel
-                            </span>
+                          <div>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white">
+                              {step.instruction}
+                            </p>
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                            {wf.step1}
-                          </p>
                         </div>
 
-                        {/* Langkah 2 */}
-                        <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
-                          <div className="flex items-center gap-2">
-                            <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
-                              2
-                            </span>
-                            <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                              Otomasi CLI &amp; Berkas
-                            </span>
+                        {step.code && (
+                          <div className="pt-1 pb-1 pl-0 sm:pl-9">
+                            <VsCodeSnippet
+                              code={step.code}
+                              language={step.language}
+                            />
                           </div>
-                          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                            {wf.step2}
+                        )}
+
+                        {step.explanation && (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 italic pl-9">
+                            💡 Catatan: {step.explanation}
                           </p>
-                        </div>
-
-                        {/* Langkah 3 */}
-                        <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                              3
-                            </span>
-                            <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                              Review Diff &amp; Checkpoint
-                            </span>
-                          </div>
-                          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
-                            {wf.step3}
-                          </p>
-                        </div>
+                        )}
                       </div>
-                    </div>
-                  );
-                })()}
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                {/* Dual-Mode Prompt Switcher jika modul memiliki Stepped Prompts */}
-                {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 && (
-                  <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 dark:from-zinc-900 dark:via-zinc-900 dark:to-indigo-950/40 space-y-3 shadow-xs">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                          <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                            Pilih Metode Eksekusi Prompt AI:
-                          </h4>
-                          <Badge variant="outline" className="text-[10px] bg-indigo-100/60 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800">
-                            Dual-Track Architecture
-                          </Badge>
-                        </div>
-                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                          Gunakan <strong>Jalur Bertahap</strong> untuk pemahaman dan pengujian model per model tanpa kendala, atau <strong>Jalur Cepat (All-in-One)</strong> untuk perakitan instan.
-                        </p>
-                      </div>
-
-                      {/* Pill Switcher */}
-                      <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg self-start sm:self-center shrink-0 border border-zinc-200 dark:border-zinc-700">
-                        <button
-                          type="button"
-                          onClick={() => setPromptViewMode("stepped")}
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
-                            promptViewMode === "stepped"
-                              ? "bg-indigo-600 text-white shadow-xs"
-                              : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
-                          }`}
-                        >
-                          <span>🧩</span>
-                          <span>Jalur Bertahap ({currentModule.lab.aiPromptTemplate.steppedPrompts.length} Tahap)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPromptViewMode("all-in-one")}
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
-                            promptViewMode === "all-in-one"
-                              ? "bg-indigo-600 text-white shadow-xs"
-                              : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
-                          }`}
-                        >
-                          <span>⚡</span>
-                          <span>Jalur All-in-One</span>
-                        </button>
-                      </div>
+              {/* KONTEN UTAMA PRAKTEK: UNIFIED STEPPED FLOW (MODUL 5+) vs STANDARD PROMPT BOX */}
+              {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 ? (
+                /* UNIFIED STEPPED LAB FLOW (MODUL 5+) */
+                <div id="stepped-lab-flow" className="space-y-6 pt-1 scroll-mt-24">
+                  {/* Header Kontrol Praktek & Dual-Track Switcher */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <Terminal className="w-5 h-5 text-indigo-500" />
+                        Alur Praktek &amp; Eksekusi AI Terpadu
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Gunakan <strong>Jalur Bertahap</strong> untuk alur mandiri per model autentikasi, atau <strong>Jalur Cepat</strong> untuk perakitan all-in-one.
+                      </p>
                     </div>
 
-                    {/* Stepped Tabs Bar jika Mode Stepped Aktif */}
-                    {promptViewMode === "stepped" && (
-                      <div className="pt-2 border-t border-indigo-100 dark:border-zinc-800 space-y-3">
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                    {/* Dual-Mode Pill Switcher */}
+                    <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg self-start sm:self-center shrink-0 border border-zinc-200 dark:border-zinc-700">
+                      <button
+                        type="button"
+                        onClick={() => setPromptViewMode("stepped")}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+                          promptViewMode === "stepped"
+                            ? "bg-indigo-600 text-white shadow-xs"
+                            : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+                        }`}
+                      >
+                        <span>🧩</span>
+                        <span>Jalur Bertahap ({currentModule.lab.aiPromptTemplate.steppedPrompts.length} Tahap)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPromptViewMode("all-in-one")}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+                          promptViewMode === "all-in-one"
+                            ? "bg-indigo-600 text-white shadow-xs"
+                            : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+                        }`}
+                      >
+                        <span>⚡</span>
+                        <span>Jalur Cepat (All-in-One)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Alur Kerja Eksekusi AI Agent Terintegrasi di IDE (VS Code) */}
+                  {(() => {
+                    const wf = AI_AGENT_WORKFLOW[currentModule.id] || DEFAULT_AI_AGENT_WORKFLOW;
+                    return (
+                      <div className={`p-4 rounded-xl border ${wf.theme.border} ${wf.theme.bg} text-xs space-y-3 shadow-2xs`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🤖</span>
+                            <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                              Alur Kerja Eksekusi AI Agent di IDE (VS Code):
+                            </span>
+                            <Badge variant="outline" className={`text-[10px] ${wf.theme.badge}`}>
+                              Native AI Agent Workflow
+                            </Badge>
+                          </div>
+                          <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">
+                            Antigravity • Cursor • Copilot • Roo Code
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-0.5">
+                          <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                            <div className="flex items-center gap-2">
+                              <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
+                                1
+                              </span>
+                              <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                Kirim ke Agent Panel
+                              </span>
+                            </div>
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                              {wf.step1}
+                            </p>
+                          </div>
+
+                          <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                            <div className="flex items-center gap-2">
+                              <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
+                                2
+                              </span>
+                              <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                Otomasi CLI &amp; Berkas
+                              </span>
+                            </div>
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                              {wf.step2}
+                            </p>
+                          </div>
+
+                          <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                                3
+                              </span>
+                              <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                Review Diff &amp; Checkpoint
+                              </span>
+                            </div>
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                              {wf.step3}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* KONTEN BERDASARKAN MODE: JALUR BERTAHAP vs ALL-IN-ONE */}
+                  {promptViewMode === "stepped" ? (
+                    <div className="space-y-6 pt-1">
+                      {/* Stepped Navigation Header Bar (5 Tabs) */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="font-semibold flex items-center gap-1.5">
+                            <span>Pilih Tahap Pengerjaan Praktek:</span>
+                          </span>
+                          <span className="font-mono text-[11px]">
+                            Tahap {steppedPromptIndex + 1} dari {currentModule.lab.aiPromptTemplate.steppedPrompts.length}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 text-xs scrollbar-thin">
                           {currentModule.lab.aiPromptTemplate.steppedPrompts.map((st, idx) => (
                             <button
                               key={st.stepNumber}
                               type="button"
-                              onClick={() => setSteppedPromptIndex(idx)}
-                              className={`px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-2 shrink-0 border text-xs ${
+                              onClick={() => {
+                                setSteppedPromptIndex(idx);
+                                const el = document.getElementById("stepped-lab-flow");
+                                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                              }}
+                              className={`px-3.5 py-2.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-2.5 shrink-0 border text-xs cursor-pointer ${
                                 steppedPromptIndex === idx
-                                  ? "bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-600 shadow-xs ring-1 ring-indigo-500/20"
+                                  ? "bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 border-indigo-400 dark:border-indigo-600 shadow-md ring-2 ring-indigo-500/20"
                                   : "bg-zinc-50 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                               }`}
                             >
@@ -1726,136 +1733,727 @@ export default function ModuleDetailPage() {
                             </button>
                           ))}
                         </div>
+                      </div>
 
-                        {/* Current Step Metadata Card */}
-                        {(() => {
-                          const currentStep = currentModule.lab.aiPromptTemplate.steppedPrompts[steppedPromptIndex] || currentModule.lab.aiPromptTemplate.steppedPrompts[0];
-                          return (
-                            <div className="p-3.5 rounded-lg bg-white/90 dark:bg-zinc-900/90 border border-indigo-100 dark:border-zinc-800 space-y-2">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <Badge className="bg-indigo-600 text-white font-mono text-[10px]">
-                                    Tahap {currentStep.stepNumber} dari {currentModule.lab.aiPromptTemplate.steppedPrompts.length}
+                      {/* Detail Tahap Aktif */}
+                      {(() => {
+                        const currentStep = currentModule.lab.aiPromptTemplate.steppedPrompts[steppedPromptIndex] || currentModule.lab.aiPromptTemplate.steppedPrompts[0];
+                        const totalSteps = currentModule.lab.aiPromptTemplate.steppedPrompts.length;
+
+                        return (
+                          <div className="space-y-5">
+                            {/* Header Ringkasan Tahap */}
+                            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-indigo-100 dark:border-zinc-800 space-y-3 shadow-xs">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge className="bg-indigo-600 text-white font-mono text-xs px-2.5 py-0.5">
+                                    Tahap {currentStep.stepNumber} dari {totalSteps}
                                   </Badge>
-                                  <h5 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                                  <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                                     {currentStep.title}
-                                  </h5>
+                                  </h4>
                                 </div>
-                                <span className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                                <Badge variant="outline" className="text-xs font-mono py-1 px-2.5 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 self-start sm:self-auto">
                                   {currentStep.badge}
-                                </span>
+                                </Badge>
                               </div>
-                              <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+
+                              <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
                                 {currentStep.description}
                               </p>
-                              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-                                  <Code className="w-3.5 h-3.5" /> Target Berkas:
+
+                              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                  <Code className="w-3.5 h-3.5 text-indigo-500" /> Target Berkas:
                                 </span>
                                 {currentStep.targetFiles.map((file) => (
                                   <code
                                     key={file}
-                                    className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 border border-zinc-200 dark:border-zinc-700"
+                                    className="px-2 py-0.5 rounded text-[11px] font-mono bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800"
                                   >
                                     {file}
                                   </code>
                                 ))}
                               </div>
                             </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                )}
 
-                {/* Render Prompt Berdasarkan Mode: Stepped vs All-in-One */}
-                {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 && promptViewMode === "stepped" ? (
-                  <div className="space-y-4">
-                    {(() => {
-                      const currentStep = currentModule.lab.aiPromptTemplate.steppedPrompts[steppedPromptIndex] || currentModule.lab.aiPromptTemplate.steppedPrompts[0];
-                      const totalSteps = currentModule.lab.aiPromptTemplate.steppedPrompts.length;
-                      return (
-                        <>
-                          <VsCodePrompt
-                            role={currentModule.lab.aiPromptTemplate.role}
-                            prompt={currentStep.prompt}
-                            tip={currentStep.tip || currentModule.lab.aiPromptTemplate.tip}
-                          />
+                            {/* BLOK 1: TINDAKAN MANUAL MAHASISWA vs OTOMASI AI */}
+                            {currentStep.manualAction?.required ? (
+                              <div className="rounded-2xl border-2 border-amber-300 dark:border-amber-800/80 bg-amber-50/60 dark:bg-amber-950/20 p-4 sm:p-5 space-y-4 shadow-xs">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200 dark:border-amber-900/60 pb-3">
+                                  <div className="flex items-center gap-2.5">
+                                    <span className="px-2.5 py-1 rounded-md bg-amber-500 text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                                      <span>🛠️</span>
+                                      <span>Langkah 1: Aksi Manual Mahasiswa</span>
+                                    </span>
+                                    <span className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+                                      {currentStep.manualAction.title}
+                                    </span>
+                                  </div>
+                                  {currentStep.manualAction.location && (
+                                    <Badge variant="outline" className="text-[11px] font-mono bg-white/80 dark:bg-zinc-900/80 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 self-start sm:self-auto">
+                                      📍 {currentStep.manualAction.location}
+                                    </Badge>
+                                  )}
+                                </div>
 
-                          {/* Checkpoint Pengujian Langsung di Browser */}
-                          <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/30 space-y-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                  <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200">
-                                    🧪 Checkpoint Pengujian Langsung di Browser (Tahap {currentStep.stepNumber})
+                                <p className="text-xs sm:text-sm text-amber-950 dark:text-amber-200/90 leading-relaxed">
+                                  {currentStep.manualAction.description}
+                                </p>
+
+                                {currentStep.manualAction.codeSnippet && (
+                                  <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 font-semibold">
+                                      <span>Skrip yang wajib disalin &amp; dijalankan di {currentStep.manualAction.location}:</span>
+                                    </div>
+                                    <VsCodeSnippet
+                                      code={currentStep.manualAction.codeSnippet.code}
+                                      language={currentStep.manualAction.codeSnippet.language}
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "github-oauth-setup" */}
+                                {currentStep.manualAction.simulatorKey === "github-oauth-setup" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = "github-oauth-setup-guide";
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-500 dark:border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-indigo-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-indigo-600 text-white"
+                                                  : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white"
+                                              }`}>
+                                                <Sparkles className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Konfigurasi Dashboard GitHub &amp; Supabase Studio</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                                    Interactive Lab Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi dashboard"
+                                                    : "Buka panduan visual interaktif pendaftaran OAuth App di GitHub Developer Settings & penyambungan kredensial ke Supabase Studio"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <GithubOauthSetupSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "supabase-auth-config" */}
+                                {currentStep.manualAction.simulatorKey === "supabase-auth-config" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `supabase-auth-config-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-500 dark:border-emerald-500 shadow-md ring-2 ring-emerald-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-emerald-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-emerald-600 text-white"
+                                                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
+                                              }`}>
+                                                <Sparkles className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Konfigurasi Supabase Studio (Auth &amp; URL Redirect)</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                    Interactive Lab Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi dashboard Supabase"
+                                                    : "Buka panduan visual interaktif pengaturan Site URL, Redirect Whitelist, dan toggle Confirm email di Supabase Studio"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <SupabaseAuthConfigSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "supabase-sql-editor" */}
+                                {currentStep.manualAction.simulatorKey === "supabase-sql-editor" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `supabase-sql-editor-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-500 dark:border-emerald-500 shadow-md ring-2 ring-emerald-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-emerald-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-emerald-600 text-white"
+                                                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
+                                              }`}>
+                                                <Sparkles className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Supabase SQL Editor &amp; Database Trigger</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                    Interactive Lab Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi SQL Editor"
+                                                    : "Buka panduan visual interaktif eksekusi DDL, verifikasi tabel public.profiles, dan pengecekan trigger di Supabase"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <SupabaseSqlEditorSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "supabase-api-keys" */}
+                                {currentStep.manualAction.simulatorKey === "supabase-api-keys" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `supabase-api-keys-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-500 dark:border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-indigo-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-indigo-600 text-white"
+                                                  : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white"
+                                              }`}>
+                                                <Sparkles className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Supabase API Keys &amp; Bahaya Kebocoran Kunci Rahasia</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                                    Interactive Lab Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi API Keys"
+                                                    : "Buka panduan visual interaktif perbedaan anon public vs service_role secret dan simulasi eksploitasi RLS"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <SupabaseApiKeysSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "magic-link-inbox" */}
+                                {currentStep.manualAction.simulatorKey === "magic-link-inbox" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `magic-link-inbox-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-500 dark:border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-indigo-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-indigo-600 text-white"
+                                                  : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white"
+                                              }`}>
+                                                <Sparkles className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Magic Link OTP &amp; InBucket Webmail Viewer</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                                    Interactive Lab Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi email"
+                                                    : "Buka panduan visual interaktif simulasi email masuk, uji coba klik Magic Link, dan inspeksi token PKCE"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <MagicLinkInboxSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "nim-auth-architecture" */}
+                                {currentStep.manualAction.simulatorKey === "nim-auth-architecture" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `nim-auth-architecture-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-500 dark:border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-indigo-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-indigo-600 text-white"
+                                                  : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white"
+                                              }`}>
+                                                <GraduationCap className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Arsitektur Login NIM Institusi &amp; Dual-Identifier</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                                    Academic Architecture Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi autentikasi NIM"
+                                                    : "Buka panduan visual interaktif bagaimana platform kampus memetakan NIM ke Supabase Auth secara transparan"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <NimAuthArchitectureSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {currentStep.manualAction.note && (
+                                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+                                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                    <span className="leading-relaxed">{currentStep.manualAction.note}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="rounded-2xl border border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/20 p-4 sm:p-5 flex items-start gap-3.5 shadow-2xs">
+                                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                                  <CheckCircle2 className="w-5 h-5" />
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white">
+                                      ✨ 100% Diotomasi oleh AI Agent
+                                    </span>
+                                    <h5 className="font-bold text-xs sm:text-sm text-emerald-950 dark:text-emerald-200">
+                                      Tidak Ada Langkah Koding Manual
+                                    </h5>
+                                  </div>
+                                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                    {currentStep.manualAction?.description || "Mahasiswa tidak perlu mengetik atau menyalin kode secara manual untuk tahap ini. Cukup salin Formula Prompt AI di bawah ke panel AI Agent (Cursor / Antigravity / Copilot) di IDE Anda, dan AI Agent akan merakit seluruh berkas kode secara mandiri."}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* BLOK 2: EKSEKUSI PROMPT AI AGENT */}
+                            <div className="rounded-2xl border border-indigo-200 dark:border-indigo-800/80 bg-white dark:bg-zinc-900/90 p-4 sm:p-5 space-y-4 shadow-xs">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100 dark:border-zinc-800 pb-3">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="px-2.5 py-1 rounded-md bg-indigo-600 text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                                    <span>🤖</span>
+                                    <span>Langkah {currentStep.manualAction?.required ? 2 : 1}: Eksekusi AI Agent</span>
+                                  </span>
+                                  <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                                    Formula Prompt AI Teruji (Tahap {currentStep.stepNumber})
                                   </span>
                                 </div>
-                                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed pl-6">
+                                <span className="text-xs text-zinc-500 hidden sm:inline">
+                                  Salin ke Antigravity / Cursor / Copilot
+                                </span>
+                              </div>
+
+                              <VsCodePrompt
+                                role={currentModule.lab.aiPromptTemplate.role}
+                                prompt={currentStep.prompt}
+                                tip={currentStep.tip || currentModule.lab.aiPromptTemplate.tip}
+                              />
+                            </div>
+
+                            {/* BLOK 3: CHECKPOINT PENGUJIAN & VERIFIKASI */}
+                            <div className="rounded-2xl border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/30 p-4 sm:p-5 space-y-4 shadow-xs">
+                              <div className="flex items-center gap-2.5 border-b border-emerald-200 dark:border-emerald-900/50 pb-3">
+                                <span className="px-2.5 py-1 rounded-md bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                                  <span>🧪</span>
+                                  <span>Langkah {currentStep.manualAction?.required ? 3 : 2}: Checkpoint &amp; Verifikasi</span>
+                                </span>
+                                <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                                  Pengujian Langsung di Browser &amp; Database
+                                </span>
+                              </div>
+
+                              <div className="space-y-2">
+                                <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                                   {currentStep.checkpoint}
                                 </p>
                               </div>
-                            </div>
 
-                            {/* Stepper Navigation Buttons */}
-                            <div className="flex items-center justify-between pt-2 border-t border-emerald-100 dark:border-emerald-900/50">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={steppedPromptIndex === 0}
-                                onClick={() => setSteppedPromptIndex((prev) => Math.max(0, prev - 1))}
-                                className="text-xs h-8 gap-1.5"
-                              >
-                                <ChevronLeft className="w-3.5 h-3.5" />
-                                <span>Tahap Sebelumnya</span>
-                              </Button>
-
-                              <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                                Tahap {currentStep.stepNumber} / {totalSteps}
-                              </span>
-
-                              {steppedPromptIndex < totalSteps - 1 ? (
+                              {/* Stepper Navigation Footer Buttons */}
+                              <div className="flex items-center justify-between pt-3 border-t border-emerald-200 dark:border-emerald-900/50">
                                 <Button
-                                  variant="default"
+                                  variant="outline"
                                   size="sm"
-                                  onClick={() => setSteppedPromptIndex((prev) => Math.min(totalSteps - 1, prev + 1))}
-                                  className="text-xs h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
+                                  disabled={steppedPromptIndex === 0}
+                                  onClick={() => {
+                                    setSteppedPromptIndex((prev) => Math.max(0, prev - 1));
+                                    const el = document.getElementById("stepped-lab-flow");
+                                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                                  }}
+                                  className="text-xs h-9 gap-1.5 cursor-pointer"
                                 >
-                                  <span>Lanjut ke Tahap {steppedPromptIndex + 2}</span>
-                                  <ChevronRight className="w-3.5 h-3.5" />
+                                  <ChevronLeft className="w-4 h-4" />
+                                  <span>Tahap Sebelumnya</span>
                                 </Button>
-                              ) : (
-                                <Badge className="bg-emerald-600 text-white text-xs px-2.5 py-1 flex items-center gap-1">
-                                  <CheckCircle2 className="w-3 h-3" />
-                                  <span>Seluruh 5 Tahap Selesai!</span>
-                                </Badge>
-                              )}
+
+                                <span className="text-xs font-mono font-bold text-zinc-600 dark:text-zinc-400">
+                                  Tahap {currentStep.stepNumber} / {totalSteps}
+                                </span>
+
+                                {steppedPromptIndex < totalSteps - 1 ? (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSteppedPromptIndex((prev) => Math.min(totalSteps - 1, prev + 1));
+                                      const el = document.getElementById("stepped-lab-flow");
+                                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    }}
+                                    className="text-xs h-9 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer font-bold"
+                                  >
+                                    <span>Lanjut ke Tahap {steppedPromptIndex + 2}</span>
+                                    <ChevronRight className="w-4 h-4" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleTabChange("mission")}
+                                    className="text-xs h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold shadow-sm"
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    <span>Semua 5 Tahap Tuntas! Lanjut ke Misi Proyek</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {currentModule.lab.aiPromptTemplate.steppedPrompts && currentModule.lab.aiPromptTemplate.steppedPrompts.length > 0 && (
-                      <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span>
-                          <strong>Mode All-in-One Aktif:</strong> Prompt di bawah ini menginstruksikan AI untuk merakit seluruh berkas sistem autentikasi sekaligus. Anda dapat beralih ke <strong>Jalur Bertahap</strong> kapan saja jika ingin menguji model per model.
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    /* MODE ALL-IN-ONE */
+                    <div className="space-y-5 pt-1">
+                      <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">
+                          <strong>Mode All-in-One Aktif:</strong> Prompt di bawah ini menginstruksikan AI Agent untuk merakit seluruh berkas sistem autentikasi (7 berkas) sekaligus. Sebelum menjalankan prompt, pastikan langkah manual (DDL trigger &amp; GitHub OAuth App) telah dikonfigurasi. Anda dapat beralih ke <strong>Jalur Bertahap</strong> kapan saja jika ingin menguji model per model.
                         </span>
                       </div>
-                    )}
-                    <VsCodePrompt
-                      role={currentModule.lab.aiPromptTemplate.role}
-                      prompt={currentModule.lab.aiPromptTemplate.prompt}
-                      tip={currentModule.lab.aiPromptTemplate.tip}
-                    />
+
+                      {/* Prasyarat Manual Gabungan untuk Mode All-in-One */}
+                      <div className="rounded-2xl border-2 border-amber-300 dark:border-amber-800/80 bg-amber-50/50 dark:bg-amber-950/20 p-4 sm:p-5 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-white">
+                            🛠️ Prasyarat Manual
+                          </span>
+                          <h5 className="font-bold text-xs sm:text-sm text-amber-950 dark:text-amber-200">
+                            Eksekusi Sebelum Menjalankan Prompt AI
+                          </h5>
+                        </div>
+                        <ul className="text-xs text-amber-900 dark:text-amber-300 space-y-1.5 list-disc pl-5">
+                          <li>
+                            <strong>Supabase SQL Editor:</strong> Eksekusi migrasi DDL profil dan trigger atomik di Supabase Dashboard (buka Jalur Bertahap Tahap 1 untuk menyalin skrip SQL).
+                          </li>
+                          <li>
+                            <strong>GitHub Developer Settings &amp; Supabase Providers:</strong> Buat GitHub OAuth App dan masukkan Client ID/Secret ke Supabase Studio (buka simulator di Jalur Bertahap Tahap 3).
+                          </li>
+                          <li>
+                            <strong>Redirect URLs:</strong> Pastikan <code>http://localhost:3000/auth/callback</code> telah didaftarkan di Supabase Redirect URLs.
+                          </li>
+                        </ul>
+                      </div>
+
+                      <VsCodePrompt
+                        role={currentModule.lab.aiPromptTemplate.role}
+                        prompt={currentModule.lab.aiPromptTemplate.prompt}
+                        tip={currentModule.lab.aiPromptTemplate.tip}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* TAMPILAN STANDAR FORMULA PROMPT UNTUK MODUL TANPA STEPPED PROMPTS (MODUL 1-4) */
+                <div id="ai-prompt-box" className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-indigo-500" />
+                      <h4 className="text-base font-bold text-zinc-900 dark:text-white">
+                        Formula Prompt AI Teruji
+                      </h4>
+                    </div>
+                    <span className="text-xs text-zinc-500 hidden sm:inline">Format Editor Prompt VS Code</span>
                   </div>
-                )}
-              </div>
+
+                  {/* Alur Kerja Eksekusi AI Agent Terintegrasi di IDE (VS Code) */}
+                  {(() => {
+                    const wf = AI_AGENT_WORKFLOW[currentModule.id] || DEFAULT_AI_AGENT_WORKFLOW;
+                    return (
+                      <div className={`p-4 rounded-xl border ${wf.theme.border} ${wf.theme.bg} text-xs space-y-3 shadow-2xs`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🤖</span>
+                            <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                              Alur Kerja Eksekusi AI Agent di IDE (VS Code):
+                            </span>
+                            <Badge variant="outline" className={`text-[10px] ${wf.theme.badge}`}>
+                              Native AI Agent Workflow
+                            </Badge>
+                          </div>
+                          <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">
+                            Antigravity • Cursor • Copilot • Roo Code
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-0.5">
+                          <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                            <div className="flex items-center gap-2">
+                              <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
+                                1
+                              </span>
+                              <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                Kirim ke Agent Panel
+                              </span>
+                            </div>
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                              {wf.step1}
+                            </p>
+                          </div>
+
+                          <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                            <div className="flex items-center gap-2">
+                              <span className={`w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 ${wf.theme.stepBadge}`}>
+                                2
+                              </span>
+                              <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                Otomasi CLI &amp; Berkas
+                              </span>
+                            </div>
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                              {wf.step2}
+                            </p>
+                          </div>
+
+                          <div className={`p-3 rounded-lg bg-white/90 dark:bg-zinc-900/80 border ${wf.theme.stepBorder} space-y-1.5 shadow-2xs`}>
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full font-bold text-[10px] flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                                3
+                              </span>
+                              <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                Review Diff &amp; Checkpoint
+                              </span>
+                            </div>
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                              {wf.step3}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  <VsCodePrompt
+                    role={currentModule.lab.aiPromptTemplate.role}
+                    prompt={currentModule.lab.aiPromptTemplate.prompt}
+                    tip={currentModule.lab.aiPromptTemplate.tip}
+                  />
+                </div>
+              )}
 
               {/* Bottom Flow CTA: Proceed to Mission */}
               <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800">

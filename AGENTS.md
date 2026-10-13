@@ -25,6 +25,11 @@ Dokumen ini berisi aturan baku, konvensi teknis, standar pedagogi AI, dan arsite
 - **Breaking Changes Next.js 16**:
   - **Async Params & SearchParams**: `params` dan `searchParams` adalah `Promise<{ ... }>`. Wajib menggunakan `const { id } = await params;` dan `const searchParams = await searchParams;` sebelum membaca propertinya di Server Components.
   - **Async Cookies**: Pembacaan cookies wajib menggunakan `const cookieStore = await cookies();`.
+  - **Depresiasi `middleware.ts` ➔ Konvensi Resmi `src/proxy.ts`**:
+    - Konvensi berkas `middleware.ts` resmi **didepresiasi** di Next.js 16 (menghasilkan deprecation warning pada terminal).
+    - Berkas network boundary wajib dinamai `src/proxy.ts` dengan ekspor fungsi `export async function proxy(request: NextRequest)`.
+    - Default runtime beralih ke `nodejs` runtime (bukan Edge-only), memungkinkan eksekusi modul Node.js standar.
+    - Helper autentikasi Supabase (`updateSession`) didelegasikan langsung dari dalam `src/proxy.ts`.
 - **Pola Komposisi (Interleaving Pattern)**:
   - Dilarang mengimpor Server Component secara langsung di dalam Client Component.
   - Lewatkan Server Component sebagai prop `children` ke dalam Client Component pembungkus.
@@ -61,8 +66,8 @@ Setiap halaman modul perkuliahan (`/modules/[id]`) menerapkan standar navigasi d
     ```
 - **Sequential Bottom Flow Call-to-Action (CTA)**:
   - Setiap tab materi panjang wajib menyertakan kartu langkah selanjutnya di ujung paling bawah untuk memandu alur belajar mahasiswa secara sekuensial:
-    - Di ujung **Tab 1 (Konsep & Teori)**: Kartu CTA dengan tombol `Lanjut ke Lab & Prompt AI ➔` (Tema Indigo + ikon `Sparkles`).
-    - Di ujung **Tab 2 (Lab Praktikum & AI Prompt)**: Kartu CTA dengan tombol `Lanjut ke Misi Proyek ➔` (Tema Emerald + ikon `Target`).
+    - Di ujung **Tab 1 (Konsep & Teori)**: Kartu CTA dengan tombol `Lanjut ke Lab Praktek & Prompt AI ➔` (Tema Indigo + ikon `Sparkles`).
+    - Di ujung **Tab 2 (Lab Praktek & AI Prompt)**: Kartu CTA dengan tombol `Lanjut ke Misi Proyek ➔` (Tema Emerald + ikon `Target`).
     - Di ujung **Tab 3 (Misi Proyek)**: Checklist *Definition of Done* (DoD) interaktif dan Kartu CTA dengan tombol `Lanjut ke Uji Pemahaman ➔` (Tema Amber + ikon `Sparkles`).
     - Di **Tab 4 (Uji Pemahaman)**: Panel ujian esai interaktif anti-cheat dengan koreksi bertingkat (Groq, Gemini, DeepSeek) dan kartu sertifikasi kelulusan konsep pertemuan.
 
@@ -89,6 +94,18 @@ Setiap banner hero modul perkuliahan (`/modules/[id]`) wajib menyajikan Target C
   - Kontainer luar pembungkus CPMK **DILARANG** menggunakan `overflow-hidden`.
   - Efek pendaran cahaya dekoratif (*ambient gradient blur*) wajib diisolasi di dalam sub-wrapper tersendiri bertipe `absolute inset-0 rounded-2xl overflow-hidden pointer-events-none`. Hal ini menjamin kartu yang membesar 1.2x tidak terpotong tepi kontainer.
   - Dilengkapi badge panduan visual: `🔍 Hover Zoom 1.2x` pada sub-header banner CPMK.
+
+---
+
+## 2.2. Standar Pembeda Terminologi: "Praktek" (Tab Modul) vs "Praktikum" (Studio Praktikum Terpadu)
+
+Untuk menjaga ketegasan leksikal dan mencegah kerancuan mahasiswa antara aktivitas koding mingguan di kelas dengan silabus mata kuliah praktikum resmi semesteran:
+- **"Praktek" (atau "Lab Praktek & Prompt AI")**:
+  - Digunakan khusus untuk seluruh instruksi latihan *hands-on*, eksperimen koding, tahapan bertahap (*Stepped Prompts*), formula prompt AI, dan panduan kode mingguan di dalam 16 modul perkuliahan (`/modules/[id]?tab=lab`).
+  - Dilarang keras menggunakan kata "praktikum" untuk menamai langkah latihan atau tab lab pada halaman modul perkuliahan.
+- **"Praktikum" (atau "Studio Praktikum Terpadu")**:
+  - Dikhususkan HANYA untuk sistem kurikulum laboratorium terpadu 7 Modul Praktikum resmi (`/practicum`), tabel observasi empiris, formulir analisis hasil pengujian ilmiah, esai refleksi, pengesahan tanda tangan digital dosen & mahasiswa, serta penerbitan laporan kelulusan PDF resmi berstempel.
+  - Menjaga marwah akademis dan pemisahan tegas antara tugas laporan praktikum berbobot SKS praktikum dengan materi latihan kuliah reguler.
 
 ---
 
@@ -134,7 +151,7 @@ Setiap contoh kode, struktur berkas, dan formula prompt harus disajikan mengguna
   - Tombol *Copy to Clipboard* di pojok kanan atas.
 - **Aturan Efek Hover Zoom**:
   - **Tab Konsep / Teori Pendalaman**: **WAJIB MENGGUNAKAN ZOOM 1.2x** (`enableZoom={true}`, `hover:scale-[1.2]`, `hover:z-50`, bayangan elevasi tebal) untuk menarik fokus pada cuplikan kode ringkas.
-  - **Tab Lab Praktikum & Prompt AI**: **DILARANG MENGGUNAKAN ZOOM** (`enableZoom={false}`), karena isinya panjang dan lebar; efek zoom akan menyebabkan konten terpotong (*clipped*) di tepi kanan layar.
+  - **Tab Lab Praktek & Prompt AI**: **DILARANG MENGGUNAKAN ZOOM** (`enableZoom={false}`), karena isinya panjang dan lebar; efek zoom akan menyebabkan konten terpotong (*clipped*) di tepi kanan layar.
 - **Format Typography & Penomoran Poin Konsep**:
   - Poin-poin konsep disajikan dalam bentuk penomoran vertikal terstruktur, kontras visual jelas pada kata-kata kunci / kode (inline `<code>` kontras), mudah dipindai secara visual (*scannable*).
 
@@ -254,27 +271,29 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - 11 Simulator Interaktif lengkap: Identitas UUID v4 vs Serial (`UuidVsSerialAnimator`), Relasi 1:N Cascade (`OneToManyRelAnimator`), Relasi M:N Junction (`ManyToManyRelAnimator`), SQL Constraints CHECK (`SqlConstraintsAnimator`), Indeksasi B-Tree O(log N) (`BtreeIndexAnimator`), Otomasi Triggers updated_at (`PostgresTriggersAnimator`), Arsitektur @supabase/ssr (`SupabaseSsrArchAnimator`), Async Cookies Next.js 16 (`AsyncCookiesAnimator`), Client vs Server Instance (`ClientVsServerSupabaseAnimator`), Blueprint 3 Tingkat (`ThreeTierSchemaAnimator`), serta Otomasi Supabase Typegen (`SupabaseTypegenAnimator`).
   - Interactive Terms: Badges interaktif `postgresql`, `baas`, `uuid`, dan `rls` di ringkasan konsep.
   - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
-  - Lab Praktikum: 5 Langkah terpadu dari CLI setup, utilitas server/client Next.js 16, eksekusi DDL 3 tabel, hingga generasi tipe TypeScript.
+  - Lab Praktek: 5 Langkah terpadu dari CLI setup, utilitas server/client Next.js 16, eksekusi DDL 3 tabel, hingga generasi tipe TypeScript.
   - Prompt All-in-One 5 Berkas (`src/utils/supabase/server.ts`, `client.ts`, `supabase/migrations/01_initial_schema.sql`, `src/types/database.types.ts`, `src/app/page.tsx` Root Navigation) + Panduan Dual-Mode & Standar Estetika UI Premium.
   - Misi Snowballing: Branch `feature/supabase-database-schema` dengan 5 kriteria DoD terukur dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur.
-- **Modul 5 (Selesai 100%)**: Autentikasi & Otorisasi Pengguna (Multi-Provider Unified Portal, Edge Middleware Session Protector, dan User Profiles Sync).
-  - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#5 Model Autentikasi`, `#Next.js 16 Edge Middleware`, dll.), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
+- **Modul 5 (Selesai 100%)**: Autentikasi & Otorisasi Pengguna (Multi-Provider Unified Portal, Next.js 16 Proxy Session Protector, dan User Profiles Sync).
+  - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#5 Model Autentikasi`, `#Next.js 16 Proxy`, `#Dual-Cookie Sync`, `#PostgreSQL Triggers`), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
   - Spektrum 5 Model Autentikasi Industri (ID Institusi NIM/NIP, Email/Password, Social OAuth 2.0 GitHub, Passwordless Magic Link, Enterprise SSO) beserta matriks Decision Framework.
-  - 11 Simulator Interaktif lengkap: Stateless JWT & Rotasi Kriptografis (`JwtLifecycleAnimator`), GitHub OAuth 2.0 6 Langkah (`OauthFlowAnimator`), Passwordless Magic Link & OTP (`MagicLinkAnimator`), Intersepsi Edge Middleware & Matcher Regex (`MiddlewareInterceptionAnimator`), Keamanan Sesi getUser() vs getSession() Anti-Pattern (`SessionRefresherAnimator`), Matriks Hak Akses Rute Public/Private/Auth (`RouteProtectionMatrixAnimator`), Pembacaan Sesi RSC Zero Client Bundle (`ServerSessionReaderAnimator`), Mutasi Auth Server Actions Login/Signup/Logout (`AuthActionsFlowAnimator`), Route Handler OAuth Callback `/auth/callback` (`AuthCallbackRouteAnimator`), Pemisahan Skema Database `auth.users` vs `public.profiles` (`AuthUsersVsProfilesAnimator`), serta Otomasi Trigger PostgreSQL `on_auth_user_created` (`AutoProfileTriggerAnimator`).
-  - Interactive Terms: Badges interaktif `supabase-auth`, `oauth`, `jwt`, `middleware`, dan `rls` di ringkasan konsep.
+  - 12 Simulator Interaktif Konsep + 3 Mockup Lab Praktek lengkap:
+    - **12 Simulator Konsep (Tab 1)**: Arsitektur Autentikasi Institusional NIM Mahasiswa & NIDN Dosen vs Supabase Auth (`NimAuthArchitectureSimulator`), Stateless JWT & Rotasi Kriptografis (`JwtLifecycleAnimator`), GitHub OAuth 2.0 6 Langkah (`OauthFlowAnimator`), Passwordless Magic Link & OTP (`MagicLinkAnimator`), Intersepsi Next.js 16 Proxy & Matcher Regex (`MiddlewareInterceptionAnimator`), Keamanan Sesi getUser() vs getSession() Anti-Pattern (`SessionRefresherAnimator`), Matriks Hak Akses Rute Public/Private/Auth (`RouteProtectionMatrixAnimator`), Pembacaan Sesi RSC Zero Client Bundle (`ServerSessionReaderAnimator`), Mutasi Auth Server Actions Login/Signup/Logout (`AuthActionsFlowAnimator`), Route Handler OAuth Callback `/auth/callback` (`AuthCallbackRouteAnimator`), Pemisahan Skema Database `auth.users` vs `public.profiles` (`AuthUsersVsProfilesAnimator`), serta Otomasi Trigger PostgreSQL `on_auth_user_created` (`AutoProfileTriggerAnimator`).
+    - **3 Visualizer & Mockup Lab Praktek (Tab 2)**: Mockup Supabase Studio Auth Settings & Confirm Email Toggle (`SupabaseAuthConfigSimulator`), Mockup Inbucket Mail Inbox & Rate Limits (`MagicLinkInboxSimulator`), serta Mockup Registrasi GitHub OAuth App.
+  - Interactive Terms: Badges interaktif `supabase-auth`, `oauth`, `jwt`, `proxy`, dan `rls` di ringkasan konsep.
   - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
-  - Lab Praktikum: 5 Langkah terpadu dari setup GitHub OAuth App, Helper Middleware `updateSession()`, Callback Route Handler, Auth Server Actions, hingga SQL Trigger `handle_new_user()`.
-  - Prompt All-in-One 6 Berkas (`src/utils/supabase/middleware.ts`, `src/middleware.ts`, `src/app/auth/callback/route.ts`, `src/actions/auth.ts`, `src/app/(auth)/login/page.tsx` + `login-form.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
-  - Misi Snowballing: Branch `feature/auth-and-middleware` dengan 5 kriteria DoD terukur dan progress bar interaktif.
+  - Lab Praktek: 6 Langkah terpadu dari setup GitHub OAuth App, Helper Session `updateSession()`, Konvensi Resmi Next.js 16 `src/proxy.ts`, Callback Route Handler, Auth Server Actions, hingga SQL Trigger `handle_new_user()`.
+  - Dual-Track Prompting AI: Formula Prompt All-in-One 7 Berkas (`src/utils/supabase/middleware.ts`, `src/proxy.ts`, `src/app/auth/callback/route.ts`, `src/actions/auth.ts`, `src/app/(auth)/login/page.tsx` + `unified-auth-card.tsx`, `supabase/migrations/02_auth_profiles_trigger.sql`, `src/app/page.tsx` Root Navigation Hero) didampingi **5 Tahap Stepped Prompts Teruji** (Tahap 1: Fondasi Proxy & DB, Tahap 2: Email & Password, Tahap 3: 1-Click Social OAuth GitHub, Tahap 4: Passwordless Magic Link OTP, Tahap 5: Unified Auth Portal & Root Nav Rule) dengan panduan 3-langkah AI Agent IDE workflow.
+  - Misi Snowballing: Branch `feature/unified-multi-provider-auth` dengan 6 kriteria DoD terukur dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur dengan passing threshold $\ge 80$.
-  - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_05.md` (150 menit timetable, skrip perkuliahan, arsitektur 7 berkas, dan uji bukti eksekusi).
+  - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_05.md` (150 menit timetable, skrip perkuliahan, arsitektur berkas Next.js 16 Proxy, dan uji bukti eksekusi).
 - **Modul 6 (Selesai 100%)**: Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers (Mobile-Ready Backend) & Keamanan API.
   - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#Dual Architecture`, `#Route Handlers`, `#Shared Zod Schemas`, `#Bearer Token JWT`, `#URL as State`), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
   - 10 Simulator Interaktif lengkap: Arsitektur Ganda BFF vs Universal REST (`DualArchAnimator`), Skema Validasi Terbagi Web & API (`SharedZodSchemaAnimator`), Standarisasi Respons RFC 7807 & Status Codes (`RestResponseContractAnimator`), Otentikasi Stateless Bearer Token JWT (`BearerAuthFlowAnimator`), Mekanisme CORS Preflight OPTIONS (`CorsPreflightAnimator`), Evaluasi Keamanan RLS vs Bahaya Service Role Key (`RlsVsServiceRoleAnimator`), Route Handler Koleksi GET & POST (`CollectionRouteAnimator`), Route Handler Item Spesifik Async Params Next.js 16 (`ItemRouteAnimator`), Sinkronisasi URL as State & Debounce (`UrlStateSyncAnimator`), serta Rumus Matematika Supabase Pagination Range Query (`PaginationRangeAnimator`).
   - Interactive Terms: Badges interaktif `route-handler`, `rest-api`, `bearer-token`, `cors`, dan `rls` di ringkasan konsep dengan diagram alur pipeline visual.
   - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
-  - Lab Praktikum: 5 Langkah terpadu dari helper respons standar & CORS, verifikasi Bearer Token JWT, Route Handler koleksi, Route Handler dinamis async params, hingga pengujian endpoint cURL / Thunder Client.
+  - Lab Praktek: 5 Langkah terpadu dari helper respons standar & CORS, verifikasi Bearer Token JWT, Route Handler koleksi, Route Handler dinamis async params, hingga pengujian endpoint cURL / Thunder Client.
   - Prompt All-in-One 6 Berkas (`src/lib/api-response.ts`, `src/lib/api-auth.ts`, `src/app/api/v1/tasks/route.ts`, `src/app/api/v1/tasks/[id]/route.ts`, `src/components/tasks/task-search-input.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
   - Misi Snowballing: Branch `feature/crud-rest-api-security` dengan 5 kriteria DoD terukur dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur & keamanan API dengan passing threshold $\ge 80$.

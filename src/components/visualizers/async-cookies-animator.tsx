@@ -169,7 +169,7 @@ export async function createClient() {
       </div>
 
       <div className="text-[11px] p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 leading-relaxed border border-zinc-200 dark:border-zinc-700">
-        💡 <strong>Mengapa blok try/catch di setAll() wajib?</strong> Server Component di Next.js berjalan streaming dan tidak dapat memodifikasi response header secara langsung. Error penulisan cookie ditangkap secara halus (silent catch) karena pembaruan sesi permanen akan ditangani oleh Middleware.
+        💡 <strong>Mengapa blok try/catch di setAll() wajib?</strong> Server Component di Next.js berjalan streaming dan tidak dapat memodifikasi response header secara langsung. Error penulisan cookie ditangkap secara halus (silent catch) karena pembaruan sesi permanen akan ditangani oleh Next.js 16 Proxy (<code>src/proxy.ts</code>).
       </div>
     </div>
   );

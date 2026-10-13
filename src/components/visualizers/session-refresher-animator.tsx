@@ -36,7 +36,7 @@ export function SessionRefresherAnimator() {
             <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">getUser() vs getSession()</span>
           </div>
           <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-            Simulasi Keamanan Sesi di Middleware: Mengapa getSession() Dilarang Keras
+            Simulasi Keamanan Sesi di Proxy: Mengapa getSession() Dilarang Keras
           </h4>
         </div>
 
@@ -70,7 +70,7 @@ export function SessionRefresherAnimator() {
       </div>
 
       <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-        Banyak tutorial usang menyarankan penggunaan <code className="font-mono text-xs px-1 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-red-500 font-bold">supabase.auth.getSession()</code> di Middleware Next.js. Dokumentasi resmi Supabase secara tegas menyatakan bahwa hal ini adalah <strong>lubang keamanan fatal</strong>!
+        Banyak tutorial usang menyarankan penggunaan <code className="font-mono text-xs px-1 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-red-500 font-bold">supabase.auth.getSession()</code> di Next.js 16 Proxy (`src/proxy.ts`). Dokumentasi resmi Supabase secara tegas menyatakan bahwa hal ini adalah <strong>lubang keamanan fatal</strong>!
       </p>
 
       {/* Database State Toggle */}
@@ -174,7 +174,7 @@ export function SessionRefresherAnimator() {
             <p className="text-[11px]">
               {selectedMethod === "getUser"
                 ? sessionRevokedInDb
-                  ? "Server Supabase menolak token karena sesi telah dibatalkan di database. Middleware otomatis menghapus cookies dan mengarahkan pengguna ke /login."
+                  ? "Server Supabase menolak token karena sesi telah dibatalkan di database. Proxy otomatis menghapus cookies dan mengarahkan pengguna ke /login."
                   : "Status akun valid. Token diperbarui secara otomatis jika masa aktif mendekati habis."
                 : sessionRevokedInDb
                 ? "KARENA getSession() HANYA MEMBACA COOKIE TANPA KONFIRMASI KE DATABASE, pengguna yang sudah di-banned atau kata sandinya diubah tetap bebas mengakses seluruh rute privat hingga token expired! Ini adalah pelanggaran fatal standar keamanan industri."
@@ -188,10 +188,10 @@ export function SessionRefresherAnimator() {
           <div className="space-y-2">
             <div className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
               <Cookie className="w-4 h-4 text-amber-500" />
-              <span>Siklus Pembaharuan Cookie Ganda di Middleware:</span>
+              <span>Siklus Pembaharuan Cookie Ganda di Proxy (src/proxy.ts):</span>
             </div>
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Di Next.js 16, jika Supabase Auth me-refresh token di dalam middleware, token baru harus ditulis ke <strong>DUA TEMPAT SEKALIGUS</strong>:
+              Di Next.js 16, jika Supabase Auth me-refresh token di dalam helper proxy, token baru harus ditulis ke <strong>DUA TEMPAT SEKALIGUS</strong>:
             </p>
 
             <div className="space-y-2 text-xs">

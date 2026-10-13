@@ -31,7 +31,7 @@ import {
   KeyRound
 } from "lucide-react";
 
-export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "jwt" | "supabase-auth" | "route-handler" | "rest-api" | "bearer-token" | "cors";
+export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "proxy" | "jwt" | "supabase-auth" | "route-handler" | "rest-api" | "bearer-token" | "cors";
 
 interface TermData {
   title: string;
@@ -253,20 +253,35 @@ const TERMS_DATA: Record<TermKey, TermData> = {
     ],
     courseRole: "Di kuliah ini: Autentikasi utama Proyek Akhir via Supabase GitHub OAuth Provider."
   },
-  middleware: {
-    title: "Next.js Middleware",
-    fullName: "Next.js 16 Edge Request Interceptor",
+  proxy: {
+    title: "Next.js 16 Proxy",
+    fullName: "Next.js 16 Network Boundary Proxy (src/proxy.ts)",
     badgeColor: "from-indigo-500 to-blue-600",
     icon: Workflow,
     type: "general",
-    summary: "Fungsi intersepsi di layer Edge (Vercel Edge Network) yang berjalan sebelum request mencapai halaman Server Component atau Route Handler. Berfungsi untuk me-refresh token sesi dan memproteksi rute privat dari akses tidak sah.",
-    analogy: "💡 Analogi: Seperti petugas gerbang keamanan bandara (Security Gate). Setiap penumpang diperiksa paspor dan tiketnya sebelum diperbolehkan melangkah ke ruang tunggu penerbangan (Dashboard).",
+    summary: "Konvensi resmi Next.js 16 yang menggantikan middleware.ts. Beroperasi di Network Boundary pada Node.js runtime sebelum request mencapai Server Component atau Route Handler. Berfungsi me-refresh token sesi Supabase dan memproteksi rute privat.",
+    analogy: "💡 Analogi: Seperti pos penjaga gerbang utama bandara (Reverse Proxy). Setiap kendaraan dan penumpang diverifikasi izin masuknya di gerbang depan sebelum diizinkan melaju ke terminal privat (Dashboard).",
     keyPoints: [
-      "⚡ Edge Execution: Berjalan dekat dengan lokasi geografis pengguna dengan latensi ultra-rendah",
-      "🛡️ Route Guard: Menendang pengguna yang belum login (307 Redirect) sebelum halaman privat dirender",
-      "🔄 Dual Cookie Sync: Menuliskan token yang di-refresh ke request.cookies dan response.cookies secara simultan"
+      "🔄 Pengganti middleware.ts: Menegaskan peran sebagai Reverse Proxy / Network Boundary di depan aplikasi",
+      "⚡ Node.js Runtime: Berjalan pada runtime Node.js bawaan tanpa limitasi API Edge runtime",
+      "🛡️ Dual-Cookie Sync: Menuliskan token baru ke request.cookies (untuk RSC) dan response.cookies (untuk browser Set-Cookie)"
     ],
-    courseRole: "Di kuliah ini: src/middleware.ts & updateSession() untuk perlindungan rute privat /dashboard."
+    courseRole: "Di kuliah ini: Berkas src/proxy.ts mendelegasikan updateSession() untuk perlindungan rute privat /dashboard."
+  },
+  middleware: {
+    title: "Next.js 16 Proxy",
+    fullName: "Next.js 16 Network Boundary Proxy (Evolusi middleware.ts)",
+    badgeColor: "from-indigo-500 to-blue-600",
+    icon: Workflow,
+    type: "general",
+    summary: "Konvensi resmi Next.js 16 yang menggantikan middleware.ts. Beroperasi di Network Boundary pada Node.js runtime sebelum request mencapai Server Component atau Route Handler. Berfungsi me-refresh token sesi Supabase dan memproteksi rute privat.",
+    analogy: "💡 Analogi: Seperti pos penjaga gerbang utama bandara (Reverse Proxy). Setiap kendaraan dan penumpang diverifikasi izin masuknya di gerbang depan sebelum diizinkan melaju ke terminal privat (Dashboard).",
+    keyPoints: [
+      "🔄 Pengganti middleware.ts: Menegaskan peran sebagai Reverse Proxy / Network Boundary di depan aplikasi",
+      "⚡ Node.js Runtime: Berjalan pada runtime Node.js bawaan tanpa limitasi API Edge runtime",
+      "🛡️ Dual-Cookie Sync: Menuliskan token baru ke request.cookies (untuk RSC) dan response.cookies (untuk browser Set-Cookie)"
+    ],
+    courseRole: "Di kuliah ini: Berkas src/proxy.ts mendelegasikan updateSession() untuk perlindungan rute privat /dashboard."
   },
   jwt: {
     title: "Stateless JWT",
@@ -682,8 +697,8 @@ export function InteractiveTerm({ term, children, showIcon = true }: Interactive
                 </div>
               )}
 
-              {/* Middleware Pipeline */}
-              {term === "middleware" && (
+              {/* Proxy Pipeline */}
+              {(term === "proxy" || term === "middleware") && (
                 <div className="py-2 space-y-2">
                   <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
                     <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center">
@@ -691,9 +706,9 @@ export function InteractiveTerm({ term, children, showIcon = true }: Interactive
                       <span className="font-semibold text-zinc-300">Request</span>
                       <span className="text-[9px] text-zinc-500">/dashboard</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
-                      <Workflow className="w-4 h-4 text-amber-400 mb-1" />
-                      <span className="font-semibold text-amber-300">Middleware</span>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <Workflow className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">src/proxy.ts</span>
                       <span className="text-[9px] text-zinc-400">getUser()</span>
                     </div>
                     <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
@@ -707,8 +722,8 @@ export function InteractiveTerm({ term, children, showIcon = true }: Interactive
                       <span className="text-[9px] text-zinc-400">→ /login</span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-amber-300/90 text-center font-mono">
-                    Intersepsi di Edge sebelum halaman dirender — proteksi tanpa overhead
+                  <p className="text-[10px] text-indigo-300/90 text-center font-mono">
+                    Intersepsi di Network Boundary sebelum halaman dirender — proteksi tanpa overhead
                   </p>
                 </div>
               )}

@@ -1019,13 +1019,13 @@ CREATE TABLE tasks (
   },
   4: {
     practicumId: 4,
-    title: "Autentikasi Multi-Provider & Proteksi Rute Edge Middleware",
-    subtitle: "Landasan Teori Stateless JWT, GitHub OAuth 2.0, Next.js 16 Edge Middleware, dan HTTP-Only Session Cookies",
+    title: "Autentikasi Multi-Provider & Proteksi Rute Next.js 16 Proxy",
+    subtitle: "Landasan Teori Stateless JWT, GitHub OAuth 2.0, Next.js 16 Network Boundary Proxy, dan HTTP-Only Session Cookies",
     cpmkTarget:
-      "Mahasiswa mampu mengimplementasikan sistem autentikasi lengkap menggunakan Supabase Auth dengan Email/Password dan GitHub OAuth 2.0, mengamankan rute privat menggunakan Next.js 16 Edge Middleware, serta mengelola session pengguna secara aman di Server Components dan otomatisasi profile via database trigger.",
+      "Mahasiswa mampu mengimplementasikan sistem autentikasi lengkap menggunakan Supabase Auth dengan Email/Password dan GitHub OAuth 2.0, mengamankan rute privat menggunakan Next.js 16 Proxy (src/proxy.ts), serta mengelola session pengguna secara aman di Server Components dan otomatisasi profile via database trigger.",
     subCpmk: [
       "Mengonfigurasi Autentikasi Pengguna: Mengaktifkan provider Email/Password dan mengonfigurasi protokol delegasi otorisasi GitHub OAuth 2.0 pada Supabase Auth.",
-      "Mengamankan Rute Privat via Edge Middleware: Membangun logika proteksi sesi pengguna di Next.js 16 Middleware untuk melakukan pengalihan rute (redirect) otomatis sebelum halaman dimuat.",
+      "Mengamankan Rute Privat via Next.js 16 Proxy: Membangun logika proteksi sesi pengguna di Next.js 16 Proxy (src/proxy.ts) untuk melakukan pengalihan rute (redirect) otomatis sebelum halaman dimuat.",
       "Mengelola Siklus Sesi Kriptografis: Membaca dan memvalidasi JSON Web Token (JWT) sesi pengguna aktif di lingkungan Server Components menggunakan utilitas async cookies.",
       "Menangani Pertukaran Kode OAuth Callback: Membangun Route Handler callback untuk menukarkan authorization code menjadi sesi persisten HTTP-Only cookie.",
       "Memvalidasi Sesi Server-Side Terverifikasi: Membedakan metode getUser() terverifikasi kriptografis vs getSession() pada Server Components.",
@@ -1095,48 +1095,25 @@ export function LoginGithubButton() {
       },
       {
         id: 3,
-        title: "Proteksi Rute Lapisan Terluar via Next.js 16 Edge Middleware",
-        badge: "Edge Middleware Guard",
-        keywords: ["middleware.ts", "Edge Runtime", "Zero-Latency Redirect", "Session Inspection", "Matcher Pattern"],
+        title: "Proteksi Rute Lapisan Terluar via Next.js 16 Proxy (src/proxy.ts)",
+        badge: "Network Boundary Proxy Guard",
+        keywords: ["src/proxy.ts", "Node.js Runtime", "Network Boundary", "Zero-Latency Redirect", "Session Inspection", "Matcher Pattern"],
         summary:
-          "Next.js Middleware mencegat request HTTP di Edge Runtime sebelum halaman dimuat, mengalihkan pengguna yang tidak memiliki sesi aktif ke /login.",
+          "Next.js 16 Proxy (src/proxy.ts) mencegat request HTTP di Network Boundary sebelum halaman dimuat, mengalihkan pengguna yang tidak memiliki sesi aktif ke /login.",
         explanation:
-          "1. **Eksekusi di Lapisan Edge Terluar**: Middleware berjalan di server terdekat pengguna sebelum request mencapai React Server Component atau Route Handler.\n\n" +
+          "1. **Eksekusi di Lapisan Network Terluar**: Proxy berjalan di Node.js runtime sebelum request mencapai React Server Component atau Route Handler.\n\n" +
           "2. **Pola Matcher Protektif**: Menentukan jalur yang diproteksi (misal `/dashboard/:path*`, `/tasks/:path*`) agar aset statis dan rute publik tidak terblokir.\n\n" +
-          "3. **Inspeksi Sesi Otentikasi**: Membaca cookie sesi pengguna menggunakan helper `@supabase/ssr` khusus middleware.\n\n" +
+          "3. **Inspeksi Sesi Otentikasi**: Membaca cookie sesi pengguna menggunakan helper `@supabase/ssr` updateSession() di src/utils/supabase/middleware.ts.\n\n" +
           "4. **Redirect Otomatis Bebas Latensi**: Jika session tidak ditemukan, pengguna langsung diarahkan (`NextResponse.redirect('/login')`) tanpa merender halaman internal sama sekali.",
         codeSnippet: {
-          filename: "middleware.ts (Root Project)",
+          filename: "src/proxy.ts (Root Project - Konvensi Resmi Next.js 16)",
           language: "typescript",
-          code: `import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+          code: `import { type NextRequest } from 'next/server';
+import { updateSession } from '@/utils/supabase/middleware';
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Jika belum login dan mengakses rute terproteksi:
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  return response;
+export async function proxy(request: NextRequest) {
+  // Panggil helper session refresher Supabase
+  return await updateSession(request);
 }
 
 export const config = {
@@ -1284,7 +1261,7 @@ export async function NavbarUser() {
         title: "Aturan Penggunaan getUser() di Lingkungan Server (Dilarang getSession())",
         type: "warning",
         explanation:
-          "Di Server Components, Server Actions, dan Middleware, selalu gunakan 'supabase.auth.getUser()' untuk memverifikasi identitas pengguna. Jangan gunakan 'getSession()' untuk keputusan keamanan karena getSession() hanya membaca cookie tanpa memvalidasi keabsahan token ke Supabase Auth server.",
+          "Di Server Components, Server Actions, dan Next.js 16 Proxy (`src/proxy.ts`), selalu gunakan 'supabase.auth.getUser()' untuk memverifikasi identitas pengguna. Jangan gunakan 'getSession()' untuk keputusan keamanan karena getSession() hanya membaca cookie tanpa memvalidasi keabsahan token ke Supabase Auth server.",
         badExample: {
           title: "❌ Anti-Pattern (Mengandalkan getSession() di Server):",
           code: `// ❌ SALAH: getSession() tidak memvalidasi ulang token ke server!

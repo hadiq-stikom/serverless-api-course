@@ -51,18 +51,18 @@ export function MiddlewareInterceptionAnimator() {
         <div>
           <div className="flex items-center gap-2">
             <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 text-xs font-semibold">
-              Pilar 2.1: Edge Interception
+              Pilar 3: Network Boundary
             </Badge>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">src/middleware.ts</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">src/proxy.ts (Next.js 16)</span>
           </div>
           <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-            Simulasi Next.js 16 Middleware: Intersepsi Edge &amp; Matcher Filtering
+            Simulasi Next.js 16 Proxy: Network Boundary Interception &amp; Matcher Filtering
           </h4>
         </div>
       </div>
 
       <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-        Next.js Middleware dieksekusi di <strong>Vercel Edge Network</strong> tepat sebelum request mencapai Server Component atau Route Handler. Konfigurasi <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">matcher</code> mutlak diperlukan agar aset statis (gambar, JS bundle, font) tidak memicu eksekusi kode middleware yang membuang kuota komputasi.
+        Next.js 16 Proxy (pengganti resmi <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">middleware.ts</code>) dieksekusi di <strong>Network Boundary</strong> pada Node.js runtime tepat sebelum request mencapai Server Component atau Route Handler. Konfigurasi <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">matcher</code> mutlak diperlukan agar aset statis (gambar, JS bundle, font) tidak memicu eksekusi kode proxy yang membuang kuota komputasi.
       </p>
 
       {/* Preset Route Selectors */}
@@ -100,7 +100,7 @@ export function MiddlewareInterceptionAnimator() {
       {/* Pipeline Visual Simulation */}
       <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-          <span>Alur Pipeline Intersepsi Edge:</span>
+          <span>Alur Pipeline Intersepsi Proxy:</span>
           <span className="font-mono text-xs text-indigo-500">{activePath}</span>
         </div>
 
@@ -119,7 +119,7 @@ export function MiddlewareInterceptionAnimator() {
             </p>
           </div>
 
-          {/* Box 2: Middleware Matcher */}
+          {/* Box 2: Proxy Matcher */}
           <div className={`p-3.5 rounded-xl border transition-all space-y-1.5 ${
             willIntercept
               ? "border-indigo-500/50 bg-indigo-500/10 ring-2 ring-indigo-500/20"
@@ -140,8 +140,8 @@ export function MiddlewareInterceptionAnimator() {
             </div>
             <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-normal">
               {willIntercept
-                ? "URL lolos filter regex matcher! Middleware Next.js dijalankan di Vercel Edge untuk refresh sesi."
-                : "Aset statis terdeteksi oleh regex negative lookahead. Middleware di-bypass demi zero latency."}
+                ? "URL lolos filter regex matcher! Proxy Next.js 16 (src/proxy.ts) dijalankan untuk me-refresh sesi."
+                : "Aset statis terdeteksi oleh regex negative lookahead. Proxy di-bypass demi zero latency."}
             </p>
           </div>
 

@@ -260,7 +260,7 @@ export function JwtLifecycleAnimator() {
           {/* Stepper Timeline */}
           <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 space-y-4">
             <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span>Siklus Rotasi Token di Next.js 16 Middleware:</span>
+              <span>Siklus Rotasi Token di Next.js 16 Proxy (src/proxy.ts):</span>
               <span className="font-mono text-indigo-500">Langkah {rotationStep} dari 3</span>
             </div>
 
@@ -279,7 +279,7 @@ export function JwtLifecycleAnimator() {
                   <span>1. Token Aktif (0 - 59 mnt)</span>
                 </div>
                 <p className="text-[11px] text-zinc-500 mt-1">
-                  Access Token sah. Middleware mengizinkan akses halaman privat langsung.
+                  Access Token sah. Proxy mengizinkan akses halaman privat langsung.
                 </p>
               </button>
 
@@ -297,7 +297,7 @@ export function JwtLifecycleAnimator() {
                   <span>2. Kedaluwarsa (Menit 60+)</span>
                 </div>
                 <p className="text-[11px] text-zinc-500 mt-1">
-                  Access token ditolak. Middleware membaca Refresh Token di cookie HTTP-Only.
+                  Access token ditolak. Proxy membaca Refresh Token di cookie HTTP-Only.
                 </p>
               </button>
 
@@ -332,8 +332,8 @@ export function JwtLifecycleAnimator() {
               </div>
               <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
                 {rotationStep === 1 && "Serverless function memverifikasi exp claim: now() < exp. Operasi berlangsung dalam ~1ms tanpa request HTTP tambahan."}
-                {rotationStep === 2 && "supabase.auth.getUser() di Next.js Middleware mendeteksi masa berlaku habis, lalu mengirim Refresh Token terenkripsi ke Auth Gateway Supabase."}
-                {rotationStep === 3 && "Middleware menuliskan cookies baru ke objek request dan response via setAll(). Pengguna tetap berada di halaman tanpa pernah merasakan reload atau logout paksa."}
+                {rotationStep === 2 && "supabase.auth.getUser() di Next.js 16 Proxy mendeteksi masa berlaku habis, lalu mengirim Refresh Token terenkripsi ke Auth Gateway Supabase."}
+                {rotationStep === 3 && "Proxy menuliskan cookies baru ke objek request dan response via setAll(). Pengguna tetap berada di halaman tanpa pernah merasakan reload atau logout paksa."}
               </p>
             </div>
           </div>

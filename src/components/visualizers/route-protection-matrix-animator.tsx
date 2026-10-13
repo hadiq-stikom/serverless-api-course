@@ -60,7 +60,7 @@ export function RouteProtectionMatrixAnimator() {
           status: 307,
           action: "REDIRECT OTOMATIS (307 TEMPORARY REDIRECT)",
           redirectTarget: "/dashboard",
-          desc: "Pengguna yang sudah login dilarang melihat halaman login lagi. Middleware otomatis mengarahkan ke dashboard aplikasi.",
+          desc: "Pengguna yang sudah login dilarang melihat halaman login lagi. Proxy Next.js 16 otomatis mengarahkan ke dashboard aplikasi.",
           isRedirect: true,
           color: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30"
         };
@@ -73,7 +73,7 @@ export function RouteProtectionMatrixAnimator() {
         status: 307,
         action: "TENDANG KE LOGIN (307 REDIRECT)",
         redirectTarget: `/login?next=${encodeURIComponent(path)}`,
-        desc: "Middleware mendeteksi user belum memiliki sesi valid. Akses rute privat diblokir dan dialihkan ke login beserta query parameter 'next' untuk redirect kembali setelah sukses login.",
+        desc: "Proxy Next.js 16 mendeteksi user belum memiliki sesi valid. Akses rute privat diblokir dan dialihkan ke login beserta query parameter 'next' untuk redirect kembali setelah sukses login.",
         isRedirect: true,
         color: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30"
       };
@@ -137,7 +137,7 @@ export function RouteProtectionMatrixAnimator() {
       </div>
 
       <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-        Pilih rute tujuan di bawah untuk melihat bagaimana Middleware Next.js secara cerdas menentukan apakah permintaan harus diteruskan (200 OK) atau ditendang (*redirect* 307) sesuai status login aktif pengguna.
+        Pilih rute tujuan di bawah untuk melihat bagaimana Next.js 16 Proxy (`src/proxy.ts`) secara cerdas menentukan apakah permintaan harus diteruskan (200 OK) atau ditendang (*redirect* 307) sesuai status login aktif pengguna.
       </p>
 
       {/* Target Route Buttons */}
