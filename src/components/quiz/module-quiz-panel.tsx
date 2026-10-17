@@ -29,6 +29,9 @@ import {
   Layout,
   ArrowRight,
   Play,
+  Coffee,
+  MessageSquareHeart,
+  Pause,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,9 +49,11 @@ import {
   getQuizProgressAction,
   markQuizCompletedAction,
   restartQuizForImprovementAction,
+  getStudentWarmupChatAction,
   EvaluationResult,
   QuizProgress,
 } from "@/actions/quiz-evaluator";
+import { WarmupChatModal } from "./warmup-chat-modal";
 
 interface QuizQuestion {
   id: number;
@@ -67,13 +72,13 @@ interface ModuleQuizPanelProps {
   onTimeUpdate?: (secondsLeft: number, isRunning: boolean) => void;
 }
 
-// Helper: Menghitung Alokasi Waktu Dasar per Bobot Soal
+// Helper: Menghitung Alokasi Waktu Dasar per Bobot Soal (Standar Rasional Adaptif)
 function getBaseTimeForQuestion(q?: QuizQuestion): number {
-  if (!q) return 240;
+  if (!q) return 360;
   const w = q.weight || 15;
-  if (w <= 15) return 240; // 4 Menit (240 detik)
-  if (w <= 20) return 300; // 5 Menit (300 detik)
-  return 420; // 7 Menit (420 detik)
+  if (w <= 15) return 360; // 6 Menit (360 detik)
+  if (w <= 20) return 420; // 7 Menit (420 detik)
+  return 540; // 9 Menit (540 detik)
 }
 
 // Helper: Format Detik ke MM:SS
@@ -117,6 +122,19 @@ export function ModuleQuizPanel({
   // Status apakah ujian sudah dimulai secara eksplisit oleh mahasiswa (Mencegah timer jalan sebelum mahasiswa siap)
   const [isQuizStarted, setIsQuizStarted] = useState<boolean>(false);
 
+  // Mekanisme Waktu Adaptif & Relaksasi:
+  // 1. isTypingStarted: Timer HANYA berjalan setelah mahasiswa mengetikkan karakter pertama
+  // 2. isReadingFeedback: Timer DIBEKUKAN selama mahasiswa membaca evaluasi/umpan balik Socratic
+  // 3. bonusTimeGranted: Bonus waktu +90 detik khusus bagi nilai 60–79 untuk perbaikan
+  const [isTypingStarted, setIsTypingStarted] = useState<boolean>(false);
+  const [isReadingFeedback, setIsReadingFeedback] = useState<boolean>(false);
+  const [bonusTimeGranted, setBonusTimeGranted] = useState<boolean>(false);
+  const [showBonusToast, setShowBonusToast] = useState<boolean>(false);
+
+  // State Pemanasan Santai (Warm-up Check-in) & Baseline Orisinalitas
+  const [showWarmupModal, setShowWarmupModal] = useState<boolean>(false);
+  const [hasCompletedWarmup, setHasCompletedWarmup] = useState<boolean>(false);
+
   // State Timer & Bank Waktu Akumulatif (Fischer Clock + AI Latency Freeze)
   const [timeLeft, setTimeLeft] = useState<number>(() =>
     getBaseTimeForQuestion(questions[0])
@@ -157,6 +175,12 @@ export function ModuleQuizPanel({
       if (res.isAuthenticated && res.student) {
         setSession(res.student);
         await loadProgress(res.student.nim);
+
+        // Periksa apakah mahasiswa telah menyelesaikan sesi pemanasan untuk modul ini
+        const warmupSession = await getStudentWarmupChatAction(res.student.nim, moduleId);
+        if (warmupSession && warmupSession.messages && warmupSession.messages.length >= 4) {
+          setHasCompletedWarmup(true);
+        }
       }
       setAuthLoading(false);
     }
@@ -180,16 +204,22 @@ export function ModuleQuizPanel({
       setTimeLeft(getBaseTimeForQuestion(questions[qIdx]));
       setAccumulatedBank(0);
       setLastRollover(0);
+      setIsTypingStarted(false);
+      setIsReadingFeedback(false);
+      setBonusTimeGranted(false);
     }
   };
 
-  // Anti-Cheat: Handler pelanggaran fokus layar (window.blur atau tab switch)
+  // Anti-Cheat: Handler pelanggaran fokus layar (window.blur atau tab switch) -> HARD RESET
   const handleViolation = useCallback(async () => {
     // Abaikan jika kuis belum dimulai, kuis telah selesai, belum login, atau saat AI sedang proses evaluasi
     if (!session || !isQuizStarted || quizProgress?.isCompleted || isEvaluating) return;
 
-    // Reset instan kuis
+    // HARD RESET: Reset instan kuis ke Soal 1 demi integritas akademik
     setIsQuizStarted(false);
+    setIsTypingStarted(false);
+    setIsReadingFeedback(false);
+    setBonusTimeGranted(false);
     setCurrentIndex(0);
     setStudentAnswer("");
     setEvaluation(null);
@@ -213,19 +243,19 @@ export function ModuleQuizPanel({
     );
   }, [session, isQuizStarted, moduleId, quizProgress?.isCompleted, isEvaluating, questions]);
 
-  // Handler Waktu Habis (Hard Reset ke Soal 1 sesuai standar Mastery Learning)
+  // Handler Waktu Habis: SOFT RESET (Hanya nomor soal aktif yang di-reset untuk kesempatan mencoba kembali)
   const handleTimeout = useCallback(async () => {
     if (!session || !isQuizStarted || quizProgress?.isCompleted) return;
 
-    setIsQuizStarted(false);
-    setCurrentIndex(0);
+    // SOFT RESET: Pertahankan soal-soal sebelumnya yang telah lulus!
     setStudentAnswer("");
     setEvaluation(null);
-    setAccumulatedBank(0);
-    setLastRollover(0);
-    setTimeLeft(getBaseTimeForQuestion(questions[0]));
+    setIsTypingStarted(false); // Timer dijeda sampai mahasiswa mulai mengetik ulang
+    setIsReadingFeedback(false);
+    setBonusTimeGranted(false);
+    setTimeLeft(getBaseTimeForQuestion(questions[currentIndex]));
     setResetAlert(
-      "⏱️ WAKTU PENGERJAAN HABIS! Anda belum menyelesaikan pertanyaan sebelum batas waktu berakhir. Sesuai standar Mastery Learning, sesi kuis di-reset kembali ke Soal 1. Manfaatkan kesempatan berikutnya untuk menjawab lebih tangkas dan tepat!"
+      `⏱️ WAKTU PENGERJAAN SOAL ${currentIndex + 1} HABIS! Sesuai mekanisme kelonggaran adaptif, draf jawaban soal ini di-reset untuk Anda coba kembali. Nilai dari soal-soal sebelumnya yang telah lulus tetap tersimpan aman. Manfaatkan kesempatan ini untuk memformulasikan jawaban yang lebih matang!`
     );
 
     const res = await recordTabViolationAction(session.nim, moduleId, "timeout");
@@ -234,22 +264,23 @@ export function ModuleQuizPanel({
         ? {
             ...prev,
             resetCount: res.newResetCount,
-            currentQuestionIndex: 0,
-            answers: {},
           }
         : null
     );
-  }, [session, isQuizStarted, moduleId, quizProgress?.isCompleted, questions]);
+  }, [session, isQuizStarted, moduleId, quizProgress?.isCompleted, currentIndex, questions]);
 
-  // Timer Effect: Countdown 1 detik per interval dengan kompensasi AI Latency Freeze
+  // Timer Effect: Countdown 1 detik per interval dengan Keystroke-Driven & Reading Freeze
   useEffect(() => {
-    if (
-      !session ||
-      !isQuizStarted ||
-      quizProgress?.isCompleted ||
-      isEvaluating ||
-      evaluation?.isPassed
-    ) {
+    const isTimerActive =
+      !!session &&
+      isQuizStarted &&
+      isTypingStarted && // 👈 Timer baru berjalan saat ketikan pertama dimulai
+      !isReadingFeedback && // 👈 Timer dibekukan saat membaca umpan balik
+      !quizProgress?.isCompleted &&
+      !isEvaluating &&
+      !evaluation?.isPassed;
+
+    if (!isTimerActive) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -268,21 +299,42 @@ export function ModuleQuizPanel({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [session, isQuizStarted, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, handleTimeout]);
+  }, [
+    session,
+    isQuizStarted,
+    isTypingStarted,
+    isReadingFeedback,
+    quizProgress?.isCompleted,
+    isEvaluating,
+    evaluation?.isPassed,
+    handleTimeout,
+  ]);
 
-  // Sinkronisasi status timer kuis ke komponen induk (agar floating timer di Tab Teori/Lab aktif HANYA saat ujian sudah dimulai)
+  // Sinkronisasi status timer kuis ke komponen induk (agar floating timer di Tab Teori/Lab aktif HANYA saat ujian sudah berjalan)
   useEffect(() => {
     if (onTimeUpdate) {
       const isRunning =
         !!session &&
         isQuizStarted &&
+        isTypingStarted &&
+        !isReadingFeedback &&
         !quizProgress?.isCompleted &&
         !isEvaluating &&
         !evaluation?.isPassed &&
         timeLeft > 0;
       onTimeUpdate(timeLeft, isRunning);
     }
-  }, [timeLeft, isQuizStarted, session, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed, onTimeUpdate]);
+  }, [
+    timeLeft,
+    isQuizStarted,
+    isTypingStarted,
+    isReadingFeedback,
+    session,
+    quizProgress?.isCompleted,
+    isEvaluating,
+    evaluation?.isPassed,
+    onTimeUpdate,
+  ]);
 
   // Pasang listener Anti-Cheat di browser (Hanya aktif saat ujian sedang berjalan)
   useEffect(() => {
@@ -386,6 +438,7 @@ export function ModuleQuizPanel({
       setEvaluation(result);
 
       if (result.isPassed) {
+        setIsReadingFeedback(false);
         // Update state lokal
         const nextIdx = currentIndex + 1;
         setQuizProgress((prev) => {
@@ -397,6 +450,8 @@ export function ModuleQuizPanel({
               isPassed: true,
               studentAnswer,
               feedback: result.feedback,
+              authenticityScore: result.authenticityScore,
+              authenticityNotes: result.authenticityNotes,
             },
           };
           return {
@@ -410,6 +465,17 @@ export function ModuleQuizPanel({
         if (currentIndex === questions.length - 1) {
           await markQuizCompletedAction(session.nim, moduleId);
           setQuizProgress((prev) => (prev ? { ...prev, isCompleted: true } : null));
+        }
+      } else {
+        // Belum lulus (< 80): Bekukan timer (Reading Freeze) selama membaca arahan Socratic
+        setIsReadingFeedback(true);
+
+        // Jika skor antara 60 dan 79, berikan bonus waktu relaksasi revisi +90 detik
+        if (result.score >= 60 && result.score < 80 && !bonusTimeGranted) {
+          setTimeLeft((prev) => prev + 90);
+          setBonusTimeGranted(true);
+          setShowBonusToast(true);
+          setTimeout(() => setShowBonusToast(false), 5500);
         }
       }
     } catch (err) {
@@ -436,6 +502,9 @@ export function ModuleQuizPanel({
       setTimeLeft(newTotal);
       setAccumulatedBank((prev) => prev + rollover);
       setLastRollover(rollover);
+      setIsTypingStarted(false); // Menunggu ketikan pertama di soal berikutnya
+      setIsReadingFeedback(false);
+      setBonusTimeGranted(false);
       if (rollover > 0) {
         setShowRolloverToast(true);
         setTimeout(() => setShowRolloverToast(false), 4500);
@@ -446,6 +515,8 @@ export function ModuleQuizPanel({
   // Coba ulang / revisi jawaban
   const handleRevise = () => {
     setEvaluation(null);
+    setIsReadingFeedback(false);
+    setIsTypingStarted(true); // Lanjutkan timer saat mulai merevisi
   };
 
   // Modal Ganti Password Mandiri Mahasiswa
@@ -799,10 +870,10 @@ export function ModuleQuizPanel({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-bold text-xs text-foreground">
-                    Timer Berkeadilan (Fischer Time Bank)
+                    Timer Adaptif (Keystroke &amp; Reading Freeze)
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Sisa waktu soal yang lulus otomatis ditabung ke soal berikutnya. Waktu dibekukan saat AI melakukan evaluasi (*AI Latency Freeze*).
+                    Timer baru berdetik saat Anda mengetik huruf pertama. Waktu dibekukan saat membaca arahan Socratic AI. Bonus <strong>+90 detik</strong> jika skor 60–79.
                   </p>
                 </div>
               </div>
@@ -813,10 +884,10 @@ export function ModuleQuizPanel({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-bold text-xs text-foreground">
-                    Proteksi Integritas & Anti-Cheat
+                    Soft Reset Waktu vs Proteksi Integritas
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Fitur salin-tempel dinonaktifkan. Kehilangan fokus layar (pindah tab browser/aplikasi luar) saat ujian aktif akan mereset sesi kuis ke Soal 1.
+                    Waktu habis = <strong>Soft Reset</strong> (hanya draf soal ini diulang, soal lulus sebelumnya tetap aman). Pindah tab/jendela = <strong>Hard Reset</strong> ke Soal 1.
                   </p>
                 </div>
               </div>
@@ -836,6 +907,64 @@ export function ModuleQuizPanel({
               </div>
             </div>
 
+            {/* Kartu Sesi Pemanasan Santai (Warm-up Check-in) */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              hasCompletedWarmup 
+                ? "bg-emerald-500/10 border-emerald-500/25" 
+                : "bg-indigo-500/10 border-indigo-500/25"
+            }`}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    hasCompletedWarmup 
+                      ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" 
+                      : "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400"
+                  }`}>
+                    {hasCompletedWarmup ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <Coffee className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-xs text-foreground">
+                        {hasCompletedWarmup
+                          ? "Baseline Gaya Bahasa Otentik Aktif"
+                          : "Tahap 1: Obrolan Reflektif Santai"}
+                      </h4>
+                      {hasCompletedWarmup ? (
+                        <Badge className="text-[10px] font-mono px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+                          Tuntas ✓
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] font-mono px-2 py-0.5 border-indigo-500/30 text-indigo-700 dark:text-indigo-300">
+                          Otomatis di Awal
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      {hasCompletedWarmup
+                        ? "Percakapan reflektif Anda telah direkam sebagai baseline stilistika otentisitas untuk evaluasi kuis dan analisis praktikum."
+                        : "Sesi kuis ini diawali dengan obrolan santai 1–2 menit bersama AI Companion (otomatis aktif begitu Anda menekan tombol Mulai Uji Pemahaman di bawah) untuk mencairkan suasana dan merekam ritme bernalar alami Anda."}
+                    </p>
+                  </div>
+                </div>
+
+                {hasCompletedWarmup && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowWarmupModal(true)}
+                    className="shrink-0 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/15"
+                  >
+                    <MessageSquareHeart className="w-3.5 h-3.5" />
+                    <span>Buka Riwayat Obrolan</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+
             {/* Riwayat / Status Sebelum Mulai */}
             {hasPreviousProgress && (
               <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3">
@@ -851,29 +980,90 @@ export function ModuleQuizPanel({
               </div>
             )}
 
-            {/* Tombol CTA Mulai / Lanjutkan Ujian */}
-            <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-              <Button
-                type="button"
-                onClick={() => {
-                  setIsQuizStarted(true);
-                  setResetAlert(null);
-                }}
-                className="w-full sm:flex-1 h-12 text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/25 rounded-2xl gap-2 transition-all hover:scale-[1.01]"
-              >
-                <Play className="w-4 h-4 fill-white" />
-                <span>
-                  {hasPreviousProgress
-                    ? `Lanjutkan Ujian Sekarang (Soal ${currentIndex + 1}) ➔`
-                    : "Mulai Uji Pemahaman Sekarang ➔"}
-                </span>
-              </Button>
+            {/* Tombol Hero CTA Mulai / Lanjutkan Ujian (Tebal, Taktil, Proporsional & Sangat Nyaman Diklik) */}
+            <div className="pt-3 flex flex-col items-center">
+              <div className="relative w-full group">
+                {/* Pendaran Cahaya Ambient Glowing Dinamis */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl blur-lg opacity-40 group-hover:opacity-85 transition-all duration-300 pointer-events-none" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!hasCompletedWarmup) {
+                      setShowWarmupModal(true);
+                    } else {
+                      setIsQuizStarted(true);
+                      setResetAlert(null);
+                    }
+                  }}
+                  className="relative w-full min-h-[72px] sm:min-h-[78px] px-5 sm:px-7 py-4 bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-600 hover:via-orange-600 hover:to-orange-700 text-white rounded-2xl border-2 border-amber-300/40 shadow-xl shadow-amber-600/35 flex items-center justify-between gap-4 transition-all duration-200 hover:scale-[1.015] active:scale-[0.99] cursor-pointer text-left overflow-hidden group select-none"
+                >
+                  {/* Efek Garis Mengkilap Reflektif */}
+                  <div className="absolute top-0 right-0 -mt-6 -mr-6 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
+
+                  <div className="flex items-center gap-3.5 sm:gap-4.5">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/35 text-white flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 group-hover:bg-white/30 transition-all duration-200">
+                      <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-white text-white translate-x-0.5" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base sm:text-lg font-black tracking-wide text-white drop-shadow-sm">
+                          {hasPreviousProgress
+                            ? `Lanjutkan Ujian Sekarang (Soal ${currentIndex + 1})`
+                            : "Mulai Uji Pemahaman Sekarang"}
+                        </span>
+                        <Badge className="hidden sm:inline-flex bg-white/20 hover:bg-white/30 text-white border-white/30 text-[10px] font-extrabold px-2 py-0.5 uppercase tracking-wider backdrop-blur-xs">
+                          {hasPreviousProgress ? "Lanjutkan" : "Mulai"}
+                        </Badge>
+                      </div>
+                      <p className="text-xs sm:text-[13px] text-amber-100/90 font-medium leading-tight">
+                        {hasPreviousProgress
+                          ? `Tersisa ${questions.length - currentIndex} soal lagi untuk mencapai target kelulusan modul.`
+                          : hasCompletedWarmup
+                          ? "Langsung masuk ke lembar soal • Ambang kelulusan Mastery ≥ 80 per soal."
+                          : "Otomatis diawali obrolan santai pemanasan 1–2 menit bersama AI Companion."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center text-white group-hover:translate-x-1.5 group-hover:bg-white/25 transition-all shadow-sm">
+                      <ArrowRight className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {!hasCompletedWarmup && (
+                <p className="mt-3 text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1.5 font-medium">
+                  <Coffee className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span>
+                    Tenang &amp; rileks, pemanasan santai tidak dinilai dan bertujuan mencairkan suasana belajar Anda.
+                  </span>
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Modal Ubah Password */}
         {showPasswordModal && renderPasswordModal()}
+
+        {/* Modal Pemanasan Santai (Warm-up Check-in) */}
+        {session && (
+          <WarmupChatModal
+            isOpen={showWarmupModal}
+            onClose={() => setShowWarmupModal(false)}
+            moduleId={moduleId}
+            studentNim={session.nim}
+            studentName={session.fullName}
+            onWarmupFinished={() => {
+              setHasCompletedWarmup(true);
+              setIsQuizStarted(true);
+              setResetAlert(null);
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -1054,6 +1244,34 @@ export function ModuleQuizPanel({
         )}
       </AnimatePresence>
 
+      {/* Toast Notifikasi Bonus Waktu Revisi (+90 Detik untuk Nilai 60-79) */}
+      <AnimatePresence>
+        {showBonusToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center justify-between shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>
+                <strong>Bonus Waktu Revisi Diberikan!</strong> Nilai Anda berada di rentang 60–79. Waktu pengerjaan telah ditambah{" "}
+                <span className="font-mono underline font-bold">+01:30</span> untuk menyempurnakan jawaban!
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowBonusToast(false)}
+              className="h-5 px-1.5 text-[10px] text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+            >
+              Tutup
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Kartu Soal & Textarea Jawaban */}
       <Card className="border border-border/80 shadow-md bg-card overflow-hidden">
         {/* Progress Bar Indikator & Kontrol Timer Ringkas (1 Baris Ramping) */}
@@ -1070,7 +1288,7 @@ export function ModuleQuizPanel({
               </Badge>
             </div>
 
-            {/* Tengah: Timer Badge yang Jelas */}
+            {/* Tengah: Timer Badge Adaptif */}
             <div className="flex items-center gap-1.5">
               <div
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-mono font-bold transition-all shadow-sm ${
@@ -1078,6 +1296,10 @@ export function ModuleQuizPanel({
                     ? "bg-indigo-500/15 border-indigo-500/30 text-indigo-700 dark:text-indigo-300 animate-pulse"
                     : evaluation?.isPassed
                     ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                    : isReadingFeedback
+                    ? "bg-sky-500/15 border-sky-500/30 text-sky-700 dark:text-sky-300"
+                    : !isTypingStarted
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300"
                     : timeLeft <= 60
                     ? "bg-rose-500/20 border-rose-500/40 text-rose-600 dark:text-rose-400 animate-pulse"
                     : "bg-background border-border text-foreground"
@@ -1087,6 +1309,10 @@ export function ModuleQuizPanel({
                   className={`w-3.5 h-3.5 ${
                     isEvaluating
                       ? "text-indigo-500 animate-spin"
+                      : isReadingFeedback
+                      ? "text-sky-500"
+                      : !isTypingStarted
+                      ? "text-amber-500"
                       : timeLeft <= 60
                       ? "text-rose-500"
                       : "text-amber-500"
@@ -1105,7 +1331,17 @@ export function ModuleQuizPanel({
                     ⏸️ Lulus
                   </span>
                 )}
-                {!isEvaluating && !evaluation?.isPassed && timeLeft <= 60 && (
+                {isReadingFeedback && !isEvaluating && !evaluation?.isPassed && (
+                  <span className="text-[10px] font-sans font-medium text-sky-600 dark:text-sky-400 hidden sm:inline">
+                    ⏸️ Beku (Membaca)
+                  </span>
+                )}
+                {!isTypingStarted && !isReadingFeedback && !isEvaluating && !evaluation?.isPassed && (
+                  <span className="text-[10px] font-sans font-medium text-amber-600 dark:text-amber-400 hidden sm:inline">
+                    ⏸️ Menunggu Ketikan
+                  </span>
+                )}
+                {isTypingStarted && !isReadingFeedback && !isEvaluating && !evaluation?.isPassed && timeLeft <= 60 && (
                   <span className="text-[10px] font-sans font-bold text-rose-600 dark:text-rose-400 hidden sm:inline">
                     ⚠️ Kritis
                   </span>
@@ -1179,6 +1415,8 @@ export function ModuleQuizPanel({
               value={studentAnswer}
               onChange={(e) => {
                 setStudentAnswer(e.target.value);
+                if (!isTypingStarted) setIsTypingStarted(true);
+                if (isReadingFeedback) setIsReadingFeedback(false);
                 if (networkError) setNetworkError(null);
               }}
               onPaste={handlePastePrevent}
@@ -1187,6 +1425,8 @@ export function ModuleQuizPanel({
               onDrop={handlePastePrevent}
               onContextMenu={(e) => e.preventDefault()}
               onKeyDown={(e) => {
+                if (!isTypingStarted) setIsTypingStarted(true);
+                if (isReadingFeedback) setIsReadingFeedback(false);
                 if (
                   (e.ctrlKey || e.metaKey) &&
                   (e.key === "v" || e.key === "V" || e.key === "c" || e.key === "C" || e.key === "x" || e.key === "X")
@@ -1196,7 +1436,7 @@ export function ModuleQuizPanel({
                   setTimeout(() => setPasteWarning(false), 4000);
                 }
               }}
-              placeholder="Ketikkan uraian pemikiran arsitektur Anda di sini... Jelaskan mekanisme, implikasi teknis, dan alasan arsitekturnya. (Fitur blok dan salin-tempel dinonaktifkan demi integritas ujian)"
+              placeholder="Ketikkan uraian pemikiran arsitektur Anda di sini... Timer baru berdetik saat Anda mengetik huruf pertama. Jelaskan mekanisme, implikasi teknis, dan alasan arsitekturnya."
               className="w-full p-3 rounded-xl border border-input bg-background text-xs md:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all resize-y font-sans disabled:opacity-75 disabled:bg-muted/40 min-h-[95px] max-h-[160px]"
             />
           </div>
@@ -1238,31 +1478,31 @@ export function ModuleQuizPanel({
                 <Button
                   onClick={handleSubmitAnswer}
                   disabled={isEvaluating || studentAnswer.trim().length < 10}
-                  className="h-8 md:h-9 px-4 font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-md shadow-amber-600/20 gap-1.5 text-xs"
+                  className="h-10 md:h-11 px-5 font-extrabold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-md shadow-amber-600/25 gap-2 text-xs md:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {isEvaluating ? (
                     <>
-                      <Cpu className="w-3.5 h-3.5 animate-spin" />
-                      <span>Sedang Mengevaluasi...</span>
+                      <Cpu className="w-4 h-4 animate-spin" />
+                      <span>Sedang Mengevaluasi Jawaban...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="w-3 h-3" />
-                      <span>Kirim Jawaban Evaluasi</span>
+                      <Send className="w-4 h-4" />
+                      <span>Kirim Jawaban untuk Evaluasi AI</span>
                     </>
                   )}
                 </Button>
               ) : (
                 <Button
                   onClick={handleNextQuestion}
-                  className="h-8 md:h-9 px-4 font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md shadow-emerald-600/20 gap-1.5 text-xs"
+                  className="h-10 md:h-11 px-5 font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md shadow-emerald-600/25 gap-2 text-xs md:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>
                     {currentIndex === questions.length - 1
-                      ? "Selesaikan Kuis & Buka Sertifikat"
-                      : "Lanjut ke Soal Berikutnya"}
+                      ? "Selesaikan Kuis & Buka Sertifikat ➔"
+                      : "Lanjut ke Soal Berikutnya ➔"}
                   </span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-4 h-4" />
                 </Button>
               )}
             </div>
@@ -1305,6 +1545,20 @@ export function ModuleQuizPanel({
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    {evaluation.authenticityScore !== undefined && (
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] md:text-[11px] font-mono font-bold px-2 py-0.5 border ${
+                          evaluation.authenticityScore >= 85
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                            : evaluation.authenticityScore >= 70
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
+                            : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
+                        }`}
+                      >
+                        🛡️ Otentisitas: {evaluation.authenticityScore}%
+                      </Badge>
+                    )}
                     <Badge
                       className={`text-xs font-bold font-mono px-2.5 py-0.5 ${
                         evaluation.isPassed
@@ -1322,6 +1576,16 @@ export function ModuleQuizPanel({
                   <p className="text-xs leading-relaxed font-medium">
                     {evaluation.feedback}
                   </p>
+
+                  {/* Catatan Orisinalitas Gaya Bahasa */}
+                  {evaluation.authenticityNotes && (
+                    <div className="p-2 rounded-lg bg-background/60 border border-border/60 text-[11px] text-muted-foreground flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>
+                        <strong className="text-foreground">Analisis Gaya &amp; Orisinalitas:</strong> {evaluation.authenticityNotes}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Poin Kekuatan */}
                   {evaluation.strengths.length > 0 && (
@@ -1354,14 +1618,24 @@ export function ModuleQuizPanel({
 
                 {/* Tombol Aksi Revisi */}
                 {!evaluation.isPassed && (
-                  <div className="pt-1 text-right">
+                  <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
+                    {evaluation.score >= 60 ? (
+                      <span className="text-[11px] text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        Bonus waktu +01:30 telah ditambahkan ke sisa timer Anda!
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">
+                        Timer dibekukan saat Anda membaca ulasan ini.
+                      </span>
+                    )}
                     <Button
                       onClick={handleRevise}
                       size="sm"
-                      className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5 rounded-xl h-8 px-3"
+                      className="ml-auto bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5 rounded-xl h-8 px-3"
                     >
                       <RotateCcw className="w-3 h-3" />
-                      <span>Revisi & Perbaiki Jawaban Ini</span>
+                      <span>Revisi &amp; Perbaiki Jawaban Ini</span>
                     </Button>
                   </div>
                 )}

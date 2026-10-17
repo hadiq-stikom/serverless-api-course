@@ -205,7 +205,7 @@ Setiap materi modul perkuliahan wajib menyertakan media visual interaktif dan an
 
 ---
 
-## 7. Aturan Tab 4: Uji Pemahaman (Mastery Learning, Anti-Cheat & Multi-Provider AI)
+## 7. Aturan Tab 4: Uji Pemahaman (Mastery Learning, Anti-Cheat, Adaptive Timer & Otentisitas AI)
 
 Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kognitif interaktif yang menjamin mahasiswa benar-benar memahami arsitektur dan konsep materi sebelum melangkah lebih jauh:
 
@@ -213,16 +213,40 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - Setiap pertemuan menyajikan **5 hingga 7 soal esai mendalam** (disesuaikan dengan bobot materi perkuliahan).
   - Soal dikerjakan secara sekuensial (satu per satu); mahasiswa **HANYA BISA** melangkah ke soal berikutnya jika soal saat ini memperoleh **nilai minimal 80**.
   - **Socratic AI Guidance**: Jika nilai $< 80$, AI penilai dilarang membocorkan kunci jawaban secara eksplisit. AI wajib memberikan arahan pemikiran (*Socratic hints*), analogi, atau menunjuk kembali bagian konsep yang belum lengkap agar mahasiswa merevisi jawabannya.
-- **Sistem Timer Berkeadilan & Bank Waktu Akumulatif (*Fischer Accumulative Time Bank*)**:
-  - **Alokasi Waktu Dasar (*Base Time*)**: Bobot $\le 15$ (4 menit), Bobot $16-20$ (5 menit), Bobot $\ge 21$ (7 menit).
+- **Sistem Timer Rasional & Relaksasi Adaptif (*Keystroke-Driven & Reading Freeze*)**:
+  - **Alokasi Waktu Dasar Rasional (*Base Time Matrix*)**:
+    - Bobot $\le 15$: **6 Menit (360 detik)**.
+    - Bobot $16-20$: **7 Menit (420 detik)**.
+    - Bobot $\ge 21$: **9 Menit (540 detik)**.
+  - **Aktivasi Berbasis Ketukan Pertama (*First-Keystroke Activation*)**: Timer **HANYA** mulai berdetik mundur setelah mahasiswa mengetikkan karakter pertama di kolom jawaban. Mahasiswa memiliki ruang untuk membaca dan mencerna soal secara tenang tanpa diburu waktu.
+  - **Pembekuan Waktu Saat Membaca Evaluasi (*Reading Freeze*)**: Saat hasil evaluasi AI keluar dan skor $< 80$, timer **otomatis dibekukan seketika**. Detik waktu mahasiswa tidak terpotong selama mereka mempelajari arahan pemikiran Socratic dari AI. Timer baru kembali berdetik saat mahasiswa menekan tombol *Revisi* atau mulai mengedit jawaban.
+  - **Bonus Waktu Perbaikan Skor 60–79 (+90 Detik)**: Mahasiswa yang memperoleh skor 60 s.d. 79 (kategori hampir lulus) secara otomatis memperoleh tambahan bonus waktu **+01:30 (90 detik)** untuk menyempurnakan jawaban.
   - **Kompensasi Latensi AI (*AI Latency Freeze*)**: Timer otomatis dijeda/dibekukan seketika saat tombol kirim ditekan (`isEvaluating = true`) sehingga detik waktu mahasiswa tidak terpotong oleh proses inferensi AI atau kepadatan jaringan.
-  - **Akumulasi Waktu (*Time Rollover*)**: Sisa detik pada soal yang berhasil lulus ($\ge 80$) otomatis ditabung dan ditambahkan ke alokasi waktu dasar soal berikutnya, memberi insentif positif bagi mahasiswa yang cepat dan tangkas.
-  - **Hard Reset saat Waktu Habis (*Timeout Hard Reset*)**: Jika hitung mundur menyentuh `00:00` sebelum seluruh pertanyaan tuntas, sesi kuis otomatis di-reset instan kembali ke Soal 1, tabungan waktu di-nolkan, dan insiden tercatat ke database dosen (`reset_count`). Mahasiswa dituntut mencapai kelancaran kognitif (*cognitive fluency*) yang tuntas.
+  - **Akumulasi Waktu (*Time Rollover*)**: Sisa detik pada soal yang berhasil lulus ($\ge 80$) otomatis ditabung dan ditambahkan ke alokasi waktu dasar soal berikutnya, memberi insentif positif bagi mahasiswa yang tangkas.
+  - **Pembedaan Tegas: Soft Reset (Timeout) vs Hard Reset (Pelanggaran Integritas)**:
+    - **Soft Reset saat Waktu Habis (*Timeout Soft Reset*)**: Jika waktu pengerjaan soal habis (`00:00`), sistem **TIDAK** melempar mahasiswa kembali ke Soal 1. Hanya draf soal aktif saat ini yang dikosongkan dan waktu di-reset ke waktu basis soal tersebut. Seluruh soal sebelumnya yang telah lulus ($\ge 80$) **TETAP TERSIMPAN AMAN**.
+    - **Hard Reset saat Pelanggaran Fokus Layar (*Integrity Violation Hard Reset*)**: Jika peramban kehilangan fokus, berpindah tab, meminimalkan jendela, atau membuka aplikasi lain (`window.onblur`, `document.visibilitychange`), **sesi kuis langsung di-reset secara instan kembali ke Soal 1** dan dicatat ke database dosen (`reset_count`) demi menjaga integritas akademik.
+- **Sistem Pemanasan Santai (Warm-up Check-in) & Baseline Orisinalitas Dinamis**:
+  - **Prasyarat Wajib Kuis (*Mandatory Warm-up Prerequisite*)**: Sesi dialog santai 1–2 menit (*Warm-up Check-in*) bersama AI Companion bersifat **WAJIB dikerjakan terlebih dahulu** sebelum lembar kuis esai terbuka. Lembar soal kuis esai terkunci (*locked*) hingga sesi pemanasan selesai, menjamin seluruh mahasiswa memiliki rekaman baseline stilistika sebelum menjawab kuis maupun menulis laporan praktikum.
+  - **Rotasi 5 Format Obrolan Tematik (*Rotating Conversational Archetypes*)**: Alih-alih pola pertanyaan statis yang membosankan, obrolan berotasi setiap modul dengan 5 format segar:
+    1. *Debat Santai di Kafe (Hot Take)*: Menguji posisi dan argumen kontroversi teknis.
+    2. *Detektif Bug (The Mystery Case)*: Memecahkan misteri anomali komputasi di dunia nyata.
+    3. *Curhat & Titik Balik (Aha! Moment)*: Menggali kebingungan awal dan momen pencerahan konsep.
+    4. *Skenario Klien / Rekan Kerja (Workplace Roleplay)*: Menjelaskan arsitektur teknis dengan bahasa komunikatif.
+    5. *Pilihan Berani (This or That)*: Memilih trade-off arsitektur dan mempertahankan alasannya.
+  - **Alur Multi-Turn Adaptif & Deteksi Sentimen (2 s.d. 4 Putaran)**:
+    - AI Companion secara cerdas mengevaluasi respon mahasiswa via Groq LLM (~0.8s) atau heuristic fallback.
+    - Jika mahasiswa antusias dan kata melimpah ($\ge 40$ kata), AI mengapresiasi dan sesi dapat tuntas dalam 2 putaran.
+    - Jika mahasiswa terkesan cemas, bingung, atau menjawab sangat singkat, AI secara empatik memberikan motivasi hangat (*"Santai aja, konsep ini wajar rumit di awal, kuis ini open-book..."*) dan mengajukan pancingan yang lebih membumi (Turn 3–4) demi kecukupan baseline.
+    - Batas waktu aman: Mahasiswa dapat menyelesaikan manual setelah Turn 2 jika total kata $\ge 25$ kata (*Time Guardrail*).
+  - **Profil Stilistika Gaya Bahasa (*Writing Stylometrics*)**: Dari dialog santai ini, sistem mengekstrak metrik baseline: panjang rata-rata kalimat, variasi kata sambung/ekspresi ("karena", "sehingga", "jadi", "ibaratnya"), serta ritme bernalar alami mahasiswa.
+  - **Verifikasi Orisinalitas Terintegrasi (*Authenticity Scoring*)**: Baseline ini diumpankan ke AI evaluator (Groq, OpenRouter, Gemini, DeepSeek) untuk menghitung skor otentisitas ($0-100\%$) dan catatan orisinalitas gaya bahasa pada jawaban kuis serta analisis dan kesimpulan praktikum.
+  - **Baseline Berkembang Dinamis (*Evolving Baseline*)**: Profil diperbarui seiring penambahan data chat dan jawaban lulus mahasiswa di modul-modul berikutnya.
+  - **Standar UI/UX Percakapan Warm-up & Tombol Aksi**:
+    - *Multiline Expandable Textarea*: Kolom input chat wajib menggunakan area teks multi-baris responsif (`<textarea>`) dengan overflow vertikal rapi, mencegah rasa sesak mahasiswa saat mengetikkan jawaban panjang atau analogi naratif.
+    - *Tombol Picu Utama Kokoh & Elegan*: Tombol awal di tab kuis dinamai **"Mulai Uji Pemahaman ➔"** dengan proporsi tebal, tinggi `h-11` atau `h-12`, padding lega, aksen warna semantik (Indigo/Amber), dan efek elevasi hover lembut (`hover:shadow-md`, `hover:-translate-y-0.5`). Tombol ini langsung meluncurkan modal Warm-up santai sebelum lembar kuis terbuka.
 - **Protokol Integritas & Keamanan Ujian (Anti-Cheat Engine)**:
   - **Anti-Paste & Anti-Copy**: Fitur salin-tempel (`onPaste`, `onCopy`, `onDrop`) dinonaktifkan pada kotak esai; mahasiswa wajib mengetikkan pemikirannya secara mandiri.
-  - **Reset Instan Sekali Pelanggaran**:
-    - Jika peramban kehilangan fokus, berpindah tab, meminimalkan jendela, atau membuka aplikasi lain (`window.onblur`, `document.visibilitychange`), **sesi kuis langsung di-reset secara instan kembali ke Soal 1**.
-    - Setiap kejadian pelanggaran dicatat ke dalam database (`reset_count`) sebagai rekaman integritas akademik mahasiswa yang dapat dipantau oleh dosen.
 - **Arsitektur Multi-Provider AI Fallback Engine (Triad AI Korektor + OpenRouter)**:
   - Untuk mencegah kegagalan *rate-limit* (`429 Too Many Requests`) saat 30–50 mahasiswa mengerjakan ujian serentak di kelas:
     1. **Groq (Qwen 3.8 27B / GPT-OSS 120B)**: Korektor utama (*Primary Evaluator*) dengan latensi inferensi ultra-cepat (~1.5s).
@@ -245,8 +269,9 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - Terhubung langsung ke database PostgreSQL Supabase Cloud aktif (`supabase/setup_supabase.sql`):
     - Tabel `lecturers`: Data dosen pengampu (NIDN, Nama, Email, Password Hash, Role).
     - Tabel `students`: Roster mahasiswa aktif (NIM, Nama, Kelas, Password Hash).
+    - Tabel `student_warmup_chats`: Rekaman percakapan pemanasan santai dan metrik profil stilistika.
     - Tabel `quiz_submissions`: Progres kuis per modul (status `in_progress`/`completed`, `current_question_index`, `reset_count`, skor total, waktu mulai & selesai).
-    - Tabel `quiz_answers`: Rekaman detail esai per soal (teks jawaban, skor AI, feedback Socratic, provider AI yang menilai, jumlah revisi `attempt_count`, dan status `is_passed`).
+    - Tabel `quiz_answers`: Rekaman detail esai per soal (teks jawaban, skor AI, feedback Socratic, skor otentisitas `authenticity_score`, catatan gaya `authenticity_notes`, provider AI, `attempt_count`, dan `is_passed`).
   - Halaman Monitoring Dosen (`/monitoring`): Menampilkan 4 kartu statistik ringkasan, filter kelas dan modul, pencarian instan nama/NIM, inspeksi teks jawaban esai mahasiswa, dan modal import mahasiswa baru.
 
 ---
@@ -391,6 +416,26 @@ Studio Praktikum merupakan laboratorium komputasi serverless interaktif terpadu 
 5. **Praktikum 5** (Ref: Kuliah M6): Integrasi CRUD & Universal REST API Route Handlers (Tema: Amber).
 6. **Praktikum 6** (Ref: Kuliah M11): Supabase Real-time: Kolaborasi WebSocket & Presence (Tema: Teal).
 7. **Praktikum 7** (Ref: Kuliah M12): Keamanan Database: Row Level Security (RLS) PostgreSQL (Tema: Rose).
+
+### 9.5. Integrasi Otentisitas AI Berbasis Baseline Stilistika & Audit Esai Praktikum (Cross-Pillar Authenticity & Essay Audit)
+- **Konektivitas Lintas Pilar (Kuis Mingguan ➔ Analisis & Kesimpulan Praktikum)**:
+  - Profil stilistika gaya bahasa mahasiswa yang diekstrak dari sesi santai **Warm-up Check-in** kuis mingguan (`student_warmup_chats`) digunakan sebagai acuan komparasi aktif (*ground truth baseline*) saat mengevaluasi esai praktikum mahasiswa di `practicum_essays`.
+  - Fungsi Server Action `evaluatePracticumEssayAction` secara otomatis memanggil `getStudentWritingBaselineAction(session.nim)` sebelum mengirimkan prompt ke model AI (Groq LLaMA 3.3 70B, Google Gemini 2.5 Flash, DeepSeek V3).
+  - AI mengevaluasi:
+    1. **Skor Substansi & Penguasaan Konsep** (`0–100`): Pemenuhan kriteria teknis ilmiah praktikum.
+    2. **Feedback Pedagogis**: Arahan penguatan konsep dan koreksi komputasi.
+    3. **Skor Otentisitas Baseline** (`authenticity_score` 0–100%): Tingkat keselarasan teks dengan gaya bernalar alami mahasiswa.
+    4. **Catatan Forensik Gaya Bahasa** (`authenticity_notes`): Analisis kualitatif AI terhadap keaslian gaya penulisan vs pola kaku teks generatif AI eksternal.
+- **Standar Tampilan Mahasiswa (`EssaySection`)**:
+  - Di bawah kartu nilai kelulusan, disajikan **Panel Otentisitas AI & Keselarasan Baseline Gaya Bahasa**.
+  - Dilengkapi badge semantik: **Sangat Otentik / Selaras** (Hijau $\ge 80\%$), **Cukup Selaras** (Kuning $60-79\%$), atau **Indikasi AI Generatif Kaku** (Merah $< 60\%$).
+  - Menampilkan kutipan catatan forensik AI secara transparan untuk mengapresiasi pemikiran orisinal mahasiswa.
+- **Standar Monitoring & Audit Dosen (`LecturerPracticumTab`)**:
+  - **Tabel Rekap Terpadu**: Kolom *Analisis* dan *Kesimpulan* menampilkan skor nilai substantif sekaligus persentase otentisitas baseline gaya bahasa berikon `Fingerprint`.
+  - **Modal Interaktif "Audit Esai & Otentisitas"**:
+    - Dosen dapat mengklik tombol **`Audit Esai`** untuk membuka panel inspeksi modal instan tanpa perlu mengunduh dokumen PDF berukuran besar.
+    - Modal menyajikan perbandingan teks mahasiswa, umpan balik AI, dan catatan otentisitas untuk kedua bagian esai (*Analisis Hasil Pengujian* dan *Kesimpulan Praktikum*).
+    - Dilengkapi kontrol 1-klik untuk menyetujui laporan (*Approve* dengan bubuhan stempel sah dan tanda tangan digital dosen) atau mengembalikan untuk perbaikan (*Request Revision*).
 
 ---
 

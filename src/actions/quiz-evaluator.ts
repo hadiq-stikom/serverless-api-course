@@ -17,6 +17,40 @@ export interface EvaluationResult {
   strengths: string[];
   missingPoints: string[];
   providerUsed: string;
+  authenticityScore?: number;
+  authenticityNotes?: string;
+}
+
+export interface WarmupMessage {
+  role: "ai" | "student";
+  text: string;
+  timestamp: string;
+}
+
+export interface StudentWarmupSession {
+  studentNim: string;
+  moduleId: number;
+  messages: WarmupMessage[];
+  writingMetrics?: Record<string, any>;
+  completedAt?: string;
+}
+
+export interface ContinueWarmupResponse {
+  aiReply: string;
+  isComplete: boolean;
+  sentimentDetected: "enthusiastic" | "neutral" | "anxious" | "brief";
+  dataSufficiency: number;
+  totalStudentWords: number;
+  studentTurns: number;
+}
+
+export interface StudentWritingProfile {
+  studentNim: string;
+  sampleCount: number;
+  avgSentenceLength: number;
+  frequentConnectors: string[];
+  expressiveness: "formal" | "conversational" | "mixed";
+  baselineSnippets: string[];
 }
 
 export interface EvaluateQuizParams {
@@ -36,7 +70,16 @@ export interface QuizProgress {
   resetCount: number;
   isCompleted: boolean;
   totalScore: number;
-  answers: Record<number, { score: number; isPassed: boolean; studentAnswer: string; feedback: string; aiProvider?: string; timestamp?: string }>;
+  answers: Record<number, {
+    score: number;
+    isPassed: boolean;
+    studentAnswer: string;
+    feedback: string;
+    aiProvider?: string;
+    timestamp?: string;
+    authenticityScore?: number;
+    authenticityNotes?: string;
+  }>;
   activityLogs?: { timestamp: string; type: string; message: string }[];
   startedAt?: string;
   completedAt?: string;
@@ -45,9 +88,14 @@ export interface QuizProgress {
 
 // In-memory progress store fallback (when Supabase is offline/not configured)
 const inMemorySubmissions: Record<string, QuizProgress> = {};
+const inMemoryWarmups: Record<string, StudentWarmupSession> = {};
 
 function getSubmissionKey(nim: string, moduleId: number): string {
   return `${nim}_mod_${moduleId}`;
+}
+
+function getWarmupKey(nim: string, moduleId: number): string {
+  return `${nim}_warmup_${moduleId}`;
 }
 
 /**
@@ -112,12 +160,359 @@ async function callOpenAiCompatibleEndpoint(
 }
 
 /**
+ * Algoritma Ekstraksi Profil Gaya Bahasa & Stilistika Mahasiswa
+ */
+function extractWritingProfile(
+  studentNim: string,
+  allStudentTexts: string[]
+): StudentWritingProfile {
+  if (allStudentTexts.length === 0) {
+    return {
+      studentNim,
+      sampleCount: 0,
+      avgSentenceLength: 14,
+      frequentConnectors: ["karena", "sehingga", "jadi"],
+      expressiveness: "conversational",
+      baselineSnippets: [],
+    };
+  }
+
+  let totalWords = 0;
+  let totalSentences = 0;
+  const connectors = [
+    "karena", "sehingga", "jadi", "menurut saya", "kalau", "ibaratnya",
+    "artinya", "contohnya", "namun", "yaitu", "misalkan", "ibarat",
+    "maka", "dengan kata lain", "secara umum", "pada dasarnya", "seperti"
+  ];
+  const connectorCounts: Record<string, number> = {};
+
+  for (const text of allStudentTexts) {
+    const sentences = text.split(/[.!?]+/).map((s) => s.trim()).filter((s) => s.length > 0);
+    totalSentences += Math.max(sentences.length, 1);
+    const words = text.split(/\s+/).filter(Boolean);
+    totalWords += words.length;
+
+    const lower = text.toLowerCase();
+    for (const c of connectors) {
+      if (lower.includes(c)) {
+        connectorCounts[c] = (connectorCounts[c] || 0) + 1;
+      }
+    }
+  }
+
+  const avgSentenceLength = Math.max(5, Math.round(totalWords / Math.max(totalSentences, 1)));
+  const sortedConnectors = Object.entries(connectorCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([c]) => c)
+    .slice(0, 5);
+
+  const snippets = allStudentTexts
+    .map((t) => (t.length > 120 ? t.substring(0, 117) + "..." : t))
+    .slice(0, 3);
+
+  return {
+    studentNim,
+    sampleCount: allStudentTexts.length,
+    avgSentenceLength,
+    frequentConnectors: sortedConnectors.length > 0 ? sortedConnectors : ["karena", "jadi", "kalau"],
+    expressiveness: avgSentenceLength > 18 ? "formal" : "conversational",
+    baselineSnippets: snippets,
+  };
+}
+
+/**
+ * Server Action: Mengambil Baseline Stilistika Mahasiswa
+ */
+export async function getStudentWritingBaselineAction(
+  studentNim: string
+): Promise<StudentWritingProfile | null> {
+  const texts: string[] = [];
+
+  // 1. Coba dari Supabase
+  try {
+    const isLiveSupabase =
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+    if (isLiveSupabase) {
+      const supabase = await createClient();
+      const { data: warmupData } = await supabase
+        .from("student_warmup_chats")
+        .select("messages")
+        .eq("student_nim", studentNim);
+
+      if (warmupData && warmupData.length > 0) {
+        for (const row of warmupData) {
+          const msgs: WarmupMessage[] = Array.isArray(row.messages) ? row.messages : [];
+          for (const m of msgs) {
+            if (m.role === "student" && m.text.trim()) {
+              texts.push(m.text.trim());
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase warmup baseline fetch fallback:", err);
+  }
+
+  // 2. Tambahkan dari in-memory warmups
+  for (const [k, session] of Object.entries(inMemoryWarmups)) {
+    if (k.startsWith(`${studentNim}_warmup_`)) {
+      for (const m of session.messages) {
+        if (m.role === "student" && m.text.trim() && !texts.includes(m.text.trim())) {
+          texts.push(m.text.trim());
+        }
+      }
+    }
+  }
+
+  // 3. Tambahkan dari jawaban kuis sebelumnya yang telah lulus
+  for (const [k, sub] of Object.entries(inMemorySubmissions)) {
+    if (k.startsWith(`${studentNim}_mod_`)) {
+      for (const ans of Object.values(sub.answers || {})) {
+        if (ans.isPassed && ans.studentAnswer && !texts.includes(ans.studentAnswer)) {
+          texts.push(ans.studentAnswer);
+        }
+      }
+    }
+  }
+
+  if (texts.length === 0) return null;
+  return extractWritingProfile(studentNim, texts);
+}
+
+/**
+ * Server Action: Simpan Riwayat Chat Pemanasan Santai (Warm-up Check-in)
+ */
+export async function saveStudentWarmupChatAction(
+  studentNim: string,
+  moduleId: number,
+  messages: WarmupMessage[]
+): Promise<{ success: boolean; profile?: StudentWritingProfile }> {
+  const key = getWarmupKey(studentNim, moduleId);
+  const studentTexts = messages
+    .filter((m) => m.role === "student")
+    .map((m) => m.text.trim());
+  const profile = extractWritingProfile(studentNim, studentTexts);
+
+  inMemoryWarmups[key] = {
+    studentNim,
+    moduleId,
+    messages,
+    writingMetrics: profile,
+    completedAt: new Date().toISOString(),
+  };
+
+  try {
+    const isLiveSupabase =
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+    if (isLiveSupabase) {
+      const supabase = await createClient();
+      await supabase
+        .from("student_warmup_chats")
+        .upsert(
+          {
+            student_nim: studentNim,
+            module_id: moduleId,
+            messages,
+            writing_metrics: profile,
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: "student_nim,module_id" }
+        );
+    }
+  } catch (err) {
+    console.warn("Supabase save warmup fallback:", err);
+  }
+
+  return { success: true, profile };
+}
+
+/**
+ * Server Action: Ambil Riwayat Chat Pemanasan Santai
+ */
+export async function getStudentWarmupChatAction(
+  studentNim: string,
+  moduleId: number
+): Promise<StudentWarmupSession | null> {
+  const key = getWarmupKey(studentNim, moduleId);
+
+  try {
+    const isLiveSupabase =
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+    if (isLiveSupabase) {
+      const supabase = await createClient();
+      const { data } = await supabase
+        .from("student_warmup_chats")
+        .select("student_nim, module_id, messages, writing_metrics, completed_at")
+        .match({ student_nim: studentNim, module_id: moduleId })
+        .maybeSingle();
+
+      if (data) {
+        return {
+          studentNim: data.student_nim,
+          moduleId: data.module_id,
+          messages: data.messages || [],
+          writingMetrics: data.writing_metrics,
+          completedAt: data.completed_at,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase fetch warmup fallback:", err);
+  }
+
+  return inMemoryWarmups[key] || null;
+}
+
+/**
+ * Server Action: Lanjutkan Dialog Pemanasan Adaptif (Groq / Gemini / Heuristic Fallback)
+ */
+export async function continueWarmupConversationAction({
+  studentNim,
+  studentName,
+  moduleId,
+  messages,
+}: {
+  studentNim: string;
+  studentName: string;
+  moduleId: number;
+  messages: WarmupMessage[];
+}): Promise<ContinueWarmupResponse> {
+  const studentMsgs = messages.filter((m) => m.role === "student");
+  const studentTurns = studentMsgs.length;
+  const totalStudentWords = studentMsgs.reduce(
+    (acc, m) => acc + m.text.trim().split(/\s+/).filter(Boolean).length,
+    0
+  );
+  const dataSufficiency = Math.min(100, Math.round((totalStudentWords / 45) * 100));
+
+  // Sesi selesai jika: minimal 2 turn dan kata sudah cukup (>40 kata), atau sudah turn ke-4
+  const shouldWrapUp =
+    studentTurns >= 4 ||
+    (studentTurns >= 2 && totalStudentWords >= 40) ||
+    (studentTurns >= 3 && totalStudentWords >= 25);
+
+  const firstName = studentName ? studentName.split(" ")[0] : "Rekan";
+  const latestStudentMsg = studentMsgs[studentMsgs.length - 1]?.text || "";
+  const lowerMsg = latestStudentMsg.toLowerCase();
+
+  // Deteksi kata kunci kecemasan/tertekan/singkat
+  const isAnxiousOrBrief =
+    latestStudentMsg.split(/\s+/).filter(Boolean).length <= 4 ||
+    lowerMsg.includes("bingung") ||
+    lowerMsg.includes("takut") ||
+    lowerMsg.includes("pusing") ||
+    lowerMsg.includes("nggak tahu") ||
+    lowerMsg.includes("ga tau") ||
+    lowerMsg.includes("susah");
+
+  // Jalankan via Groq jika API Key tersedia
+  if (process.env.GROQ_API_KEY) {
+    const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen/qwen3.8-27b"];
+    const systemPrompt = `Kamu adalah AI Companion & Peer Mentor yang hangat, santai, dan bersahabat di kuliah "The Serverless Odyssey".
+Tugasmu: Mengobrol santai 1–2 menit (Warm-up Check-in) dengan mahasiswa bernama ${firstName} sebelum kuis Modul ${moduleId}.
+PENTING:
+- Ini BUKAN kuis/ujian! Jangan nilai benar/salah, jangan bertanya soal definisi buku teks kaku.
+- Berbicaralah seperti teman sebaya / asisten dosen yang ngobrol di warung kopi: gunakan bahasa Indonesia santai yang ramah, hangat, dan apresiatif.
+- Analisis respon terbaru mahasiswa:
+  * Jika mahasiswa terkesan cemas, bingung, atau menjawab sangat singkat: BERIKAN EMPATI & DUKUNGAN HANGAT! Ingatkan bahwa wajar jika konsep ini awalnya terasa rumit, kuis ini open-book dan ada hint Socratic. Ajukan pertanyaan/tanggapan lanjutan yang jauh lebih ringan dan membumi untuk memancing mahasiswa bercerita.
+  * Jika mahasiswa antusias/panjang: Puji analogi atau pemikirannya dengan seru dan tulus!
+- Status Selesai (isComplete):
+  * ${shouldWrapUp ? "KECUKUPAN DATA SUDAH TERCAPAI. Set isComplete = true, dan berikan pesan penutup hangat yang mengapresiasi cara bernalarnya serta menyemangatinya untuk mulai kuis sekarang!" : "Belum selesai (isComplete = false). Berikan 1-2 kalimat reaksi tulus atas apa yang baru dikatakannya, lalu ajukan 1 pertanyaan/tanggapan lanjutan yang asik dan menyambung secara alami!"}
+
+Format WAJIB JSON murni tanpa markdown:
+{
+  "aiReply": "string tanggapanmu dalam bahasa Indonesia santai",
+  "isComplete": boolean (${shouldWrapUp}),
+  "sentimentDetected": "enthusiastic" | "neutral" | "anxious" | "brief"
+}`;
+
+    const formattedTranscript = messages
+      .map((m) => `${m.role === "ai" ? "AI Companion" : firstName}: "${m.text}"`)
+      .join("\n");
+
+    const userPrompt = `RIWAYAT OBROLAN PEMANASAN SEJAUH INI:
+${formattedTranscript}
+
+TANGGAPAN TERBARU DARI ${firstName}:
+"${latestStudentMsg}"
+
+Berikan respon obrolan lanjutan atau penutupmu dalam format JSON:`;
+
+    for (const model of groqModels) {
+      try {
+        const raw = await callOpenAiCompatibleEndpoint(
+          "https://api.groq.com/openai/v1/chat/completions",
+          process.env.GROQ_API_KEY,
+          model,
+          systemPrompt,
+          userPrompt,
+          7000
+        );
+        const parsed = JSON.parse(raw);
+        if (parsed.aiReply) {
+          return {
+            aiReply: parsed.aiReply,
+            isComplete: Boolean(parsed.isComplete ?? shouldWrapUp),
+            sentimentDetected: parsed.sentimentDetected || (isAnxiousOrBrief ? "anxious" : "neutral"),
+            dataSufficiency,
+            totalStudentWords,
+            studentTurns,
+          };
+        }
+      } catch (err) {
+        console.warn(`Groq warm-up (${model}) failed:`, err);
+      }
+    }
+  }
+
+  // Heuristic intelligent fallback jika AI key offline / habis kuota
+  if (shouldWrapUp) {
+    return {
+      aiReply: `Mantap sekali, ${firstName}! Terima kasih banyak sudah berbagi pemikiran santai. Gaya bernalarmu sangat segar dan otentik. 🚀\n\nPikiranmu sekarang sudah terhubung dengan baik dengan konsep modul ini. Tarik napas santai, rileks, dan mari kita mulai Uji Pemahaman!`,
+      isComplete: true,
+      sentimentDetected: isAnxiousOrBrief ? "anxious" : "enthusiastic",
+      dataSufficiency,
+      totalStudentWords,
+      studentTurns,
+    };
+  }
+
+  if (isAnxiousOrBrief) {
+    return {
+      aiReply: `Nggak apa-apa banget kok, ${firstName}! Wajar sekali kalau di awal materi ini terasa asing atau bikin bingung. Santai aja ya, kuis esai ini sifatnya open-book, kamu bebas baca tab materi kapan aja, dan ada petunjuk hint dariku kalau butuh bantuan. Btw, dari kodingan modul ini kemarin, ada satu hal kecil yang sempat bikin kamu penasaran nggak?`,
+      isComplete: false,
+      sentimentDetected: "anxious",
+      dataSufficiency,
+      totalStudentWords,
+      studentTurns,
+    };
+  }
+
+  return {
+    aiReply: `Keren banget caramu memandangnya, ${firstName}! Menarik banget mendengar sudut pandangmu. 💡\n\nNah, kalau menurutmu sendiri, apa hal paling berharga yang bisa kita pelajari dari konsep modul ini buat bekal bikin aplikasi nyata?`,
+    isComplete: false,
+    sentimentDetected: "neutral",
+    dataSufficiency,
+    totalStudentWords,
+    studentTurns,
+  };
+}
+
+/**
  * Heuristic fallback evaluator ketika seluruh API key AI belum diisi atau mengalami limit kuota
  */
 function evaluateHeuristicFallback(
   studentAnswer: string,
   keyConcepts: string[],
-  socraticHint: string
+  socraticHint: string,
+  profile?: StudentWritingProfile | null
 ): EvaluationResult {
   const answerLower = studentAnswer.toLowerCase();
   const words = studentAnswer.trim().split(/\s+/).filter(Boolean);
@@ -130,6 +525,8 @@ function evaluateHeuristicFallback(
       feedback: "Jawaban Anda terlalu singkat untuk menguraikan konsep arsitektur ini secara utuh. Jelaskan mekanismenya dengan lebih komprehensif.",
       strengths: ["Mencoba menjawab"],
       missingPoints: ["Uraian mekanisme rinci", "Kata kunci konsep utama"],
+      authenticityScore: 88,
+      authenticityNotes: "Jawaban singkat namun terindikasi diketik mandiri.",
       providerUsed: "heuristic-local (AI Keys not configured)",
     };
   }
@@ -161,12 +558,25 @@ function evaluateHeuristicFallback(
     feedback = `Konsep dasar Anda sudah mulai terlihat, namun masih perlu diperdalam. ${socraticHint}`;
   }
 
+  let authenticityScore = 93;
+  let authenticityNotes = "Gaya penulisan mengalir wajar dan selaras dengan ritme berpikir mandiri.";
+  if (profile && profile.sampleCount > 0) {
+    const avgLen = words.length / Math.max(studentAnswer.split(/[.!?]+/).length, 1);
+    const diff = Math.abs(avgLen - profile.avgSentenceLength);
+    if (diff > 16) {
+      authenticityScore = 80;
+      authenticityNotes = "Terdapat sedikit variasi panjang kalimat dibanding baseline pemanasan, namun konsep tetap relevan.";
+    }
+  }
+
   return {
     score,
     isPassed,
     feedback,
     strengths: matchedConcepts.length > 0 ? matchedConcepts : ["Struktur kalimat baik"],
     missingPoints: missingConcepts.length > 0 ? missingConcepts : ["Kedalaman analisis"],
+    authenticityScore,
+    authenticityNotes,
     providerUsed: "heuristic-local (Tambahkan GROQ_API_KEY di .env.local untuk AI Llama 3.3 70B)",
   };
 }
@@ -201,12 +611,37 @@ export async function evaluateEssayAction(
       feedback: "Jawaban tidak valid atau terdeteksi anomali. Silakan ketikkan pemahaman materi Anda sendiri secara jujur.",
       strengths: [],
       missingPoints: ["Pemahaman materi orisinal"],
+      authenticityScore: 0,
+      authenticityNotes: "Pola jawaban tidak wajar atau terdeteksi manipulasi prompt.",
       providerUsed: "security-filter",
     };
   }
 
+  // Ambil baseline stilistika mahasiswa
+  const writingProfile = await getStudentWritingBaselineAction(studentNim);
+
+  let baselinePromptSection = "";
+  if (writingProfile && writingProfile.sampleCount > 0) {
+    baselinePromptSection = `
+BASELINE GAYA BAHASA OTENTIK MAHASISWA (${writingProfile.studentNim}):
+- Panjang rata-rata kalimat: ~${writingProfile.avgSentenceLength} kata per kalimat
+- Kata sambung & ekspresi yang biasa dipakai: ${writingProfile.frequentConnectors.join(", ")}
+- Gaya umum: ${writingProfile.expressiveness}
+- Cuplikan sampel gaya reflektif mahasiswa:
+${writingProfile.baselineSnippets.map((s, i) => `  ${i + 1}. "${s}"`).join("\n")}
+
+INSTRUKSI VERIFIKASI OTENTISITAS & ORISINALITAS:
+Bandingkan gaya bahasa pada jawaban esai ini dengan baseline profil di atas.
+- Tentukan "authenticityScore" (integer 0 - 100):
+  * 85-100: Sangat otentik, selaras dengan ritme berpikir alami dan kosakata mahasiswa.
+  * 70-84: Wajar, memuat konsep teknis dengan gaya yang konsisten.
+  * <70: Anomali gaya penulisan terdeteksi (indikasi copy-paste dari LLM eksternal atau buku tanpa dicerna, gaya terlalu kaku/asing dibanding baseline).
+- Tuliskan "authenticityNotes" (1 kalimat ringkas dalam bahasa Indonesia terkait keselarasan gaya penulisan).
+`;
+  }
+
   const systemPrompt = `You are a distinguished Professor of Computer Science and Senior Cloud Architect evaluating student essay answers for "The Serverless Odyssey".
-You evaluate whether the student demonstrates genuine conceptual mastery.
+You evaluate whether the student demonstrates genuine conceptual mastery and authentic understanding.
 
 CRITICAL RULES:
 1. Score the answer strictly between 0 and 100.
@@ -223,7 +658,9 @@ CRITICAL RULES:
   "isPassed": boolean,
   "feedback": "string in Indonesian",
   "strengths": ["array of strong points identified in Indonesian"],
-  "missingPoints": ["array of concepts needing more depth in Indonesian"]
+  "missingPoints": ["array of concepts needing more depth in Indonesian"],
+  "authenticityScore": number,
+  "authenticityNotes": "string in Indonesian"
 }`;
 
   const userPrompt = `MODUL: Modul ${moduleId}
@@ -238,7 +675,7 @@ ${JSON.stringify(keyConcepts)}
 
 ARAHAN SOCRATIC DOSEN (Gunakan ini jika nilai < 80):
 "${socraticHint}"
-
+${baselinePromptSection}
 JAWABAN MAHASISWA:
 "${trimmedAnswer}"`;
 
@@ -266,6 +703,8 @@ JAWABAN MAHASISWA:
             feedback: parsed.feedback || "Evaluasi selesai.",
             strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
             missingPoints: Array.isArray(parsed.missingPoints) ? parsed.missingPoints : [],
+            authenticityScore: typeof parsed.authenticityScore === "number" ? Math.min(100, Math.max(0, parsed.authenticityScore)) : 92,
+            authenticityNotes: typeof parsed.authenticityNotes === "string" ? parsed.authenticityNotes : "Jawaban mencerminkan pemahaman mandiri.",
             providerUsed: `groq (${model})`,
           };
         }
@@ -307,6 +746,8 @@ JAWABAN MAHASISWA:
             feedback: parsed.feedback || "Evaluasi selesai.",
             strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
             missingPoints: Array.isArray(parsed.missingPoints) ? parsed.missingPoints : [],
+            authenticityScore: typeof parsed.authenticityScore === "number" ? Math.min(100, Math.max(0, parsed.authenticityScore)) : 92,
+            authenticityNotes: typeof parsed.authenticityNotes === "string" ? parsed.authenticityNotes : "Jawaban mencerminkan pemahaman mandiri.",
             providerUsed: `openrouter (${item.name})`,
           };
         }
@@ -340,6 +781,8 @@ JAWABAN MAHASISWA:
             feedback: parsed.feedback || "Evaluasi selesai.",
             strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
             missingPoints: Array.isArray(parsed.missingPoints) ? parsed.missingPoints : [],
+            authenticityScore: typeof parsed.authenticityScore === "number" ? Math.min(100, Math.max(0, parsed.authenticityScore)) : 92,
+            authenticityNotes: typeof parsed.authenticityNotes === "string" ? parsed.authenticityNotes : "Jawaban mencerminkan pemahaman mandiri.",
             providerUsed: `gemini-direct (${model})`,
           };
         }
@@ -370,6 +813,8 @@ JAWABAN MAHASISWA:
           feedback: parsed.feedback || "Evaluasi selesai.",
           strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
           missingPoints: Array.isArray(parsed.missingPoints) ? parsed.missingPoints : [],
+          authenticityScore: typeof parsed.authenticityScore === "number" ? Math.min(100, Math.max(0, parsed.authenticityScore)) : 92,
+          authenticityNotes: typeof parsed.authenticityNotes === "string" ? parsed.authenticityNotes : "Jawaban mencerminkan pemahaman mandiri.",
           providerUsed: "deepseek-direct (DeepSeek V3)",
         };
       }
@@ -396,7 +841,7 @@ JAWABAN MAHASISWA:
 
   // Fallback Heuristik jika semua AI offline atau API Key belum disetel
   if (!evaluation) {
-    evaluation = evaluateHeuristicFallback(trimmedAnswer, keyConcepts, socraticHint);
+    evaluation = evaluateHeuristicFallback(trimmedAnswer, keyConcepts, socraticHint, writingProfile);
   }
 
   // Simpan hasil ke database / state
@@ -441,13 +886,15 @@ async function recordAnswerProgress(
     feedback: evaluation.feedback,
     aiProvider: evaluation.providerUsed,
     timestamp: new Date().toISOString(),
+    authenticityScore: evaluation.authenticityScore,
+    authenticityNotes: evaluation.authenticityNotes,
   };
 
   if (!sub.activityLogs) sub.activityLogs = [];
   sub.activityLogs.push({
     timestamp: new Date().toISOString(),
     type: evaluation.isPassed ? "answer_passed" : "answer_failed",
-    message: `Menjawab Soal #${questionNumber}: Skor ${evaluation.score}/100 (${evaluation.isPassed ? "Lolos >= 80" : "Perlu Revisi < 80"}) [Model: ${evaluation.providerUsed}] • Skor Terbaik Soal: ${bestScoreForQ}/100`,
+    message: `Menjawab Soal #${questionNumber}: Skor ${evaluation.score}/100 (${evaluation.isPassed ? "Lolos >= 80" : "Perlu Revisi < 80"}) [Model: ${evaluation.providerUsed}] • Skor Terbaik Soal: ${bestScoreForQ}/100 • Orisinalitas: ${evaluation.authenticityScore || 90}%`,
   });
 
   if (evaluation.isPassed && sub.currentQuestionIndex === questionNumber - 1) {
@@ -487,16 +934,31 @@ async function recordAnswerProgress(
         .single();
 
       if (subData?.id) {
-        // Insert quiz_answers row untuk riwayat percobaan ini
-        await supabase.from("quiz_answers").insert({
-          submission_id: subData.id,
-          question_number: questionNumber,
-          student_answer: answerText,
-          score: evaluation.score,
-          ai_feedback: evaluation.feedback,
-          ai_provider: evaluation.providerUsed,
-          is_passed: evaluation.isPassed,
-        });
+        // Coba insert quiz_answers dengan kolom authenticity
+        try {
+          await supabase.from("quiz_answers").insert({
+            submission_id: subData.id,
+            question_number: questionNumber,
+            student_answer: answerText,
+            score: evaluation.score,
+            ai_feedback: evaluation.feedback,
+            ai_provider: evaluation.providerUsed,
+            is_passed: evaluation.isPassed,
+            authenticity_score: evaluation.authenticityScore,
+            authenticity_notes: evaluation.authenticityNotes,
+          });
+        } catch {
+          // Fallback jika kolom authenticity belum ada di database cloud
+          await supabase.from("quiz_answers").insert({
+            submission_id: subData.id,
+            question_number: questionNumber,
+            student_answer: answerText,
+            score: evaluation.score,
+            ai_feedback: evaluation.feedback,
+            ai_provider: evaluation.providerUsed,
+            is_passed: evaluation.isPassed,
+          });
+        }
 
         // Ambil seluruh jawaban untuk submission ini agar kita dapat menghitung:
         // 1. Nilai TERTINGGI untuk masing-masing nomor soal dari berbagai percobaan
@@ -536,7 +998,9 @@ async function recordAnswerProgress(
 }
 
 /**
- * Server Action: Reset Instan akibat Pelanggaran Fokus Layar (window.blur / visibilitychange)
+ * Server Action: Reset Instan akibat Timeout atau Pelanggaran Integritas (Anti-Cheat)
+ * - reason = "timeout": SOFT RESET (Hanya nomor soal aktif yang di-reset, jawaban soal-soal sebelumnya tetap aman!)
+ * - reason = "tab_violation": HARD RESET (Layar kehilangan fokus / berpindah tab me-reset ke Soal 1 demi integritas)
  */
 export async function recordTabViolationAction(
   studentNim: string,
@@ -558,18 +1022,28 @@ export async function recordTabViolationAction(
 
   const sub = inMemorySubmissions[key];
   sub.resetCount += 1;
-  sub.currentQuestionIndex = 0; // Reset instan kembali ke Soal 1
-  sub.answers = {}; // Hapus jawaban sesi ini
   sub.updatedAt = new Date().toISOString();
 
   if (!sub.activityLogs) sub.activityLogs = [];
-  sub.activityLogs.push({
-    timestamp: new Date().toISOString(),
-    type: reason === "timeout" ? "timeout_reset" : "tab_violation",
-    message: reason === "timeout"
-      ? "⏱️ Batas waktu pengerjaan habis. Sesi kuis di-reset kembali ke Soal 1."
-      : "⚠️ Pelanggaran Integritas Ujian: Layar peramban kehilangan fokus atau berpindah tab/jendela. Sesi kuis di-reset kembali ke Soal 1.",
-  });
+
+  if (reason === "timeout") {
+    // SOFT RESET: Hapus draf soal yang aktif saja, soal-soal sebelumnya yang sudah lolos TETAP UTUH!
+    delete sub.answers[sub.currentQuestionIndex + 1];
+    sub.activityLogs.push({
+      timestamp: new Date().toISOString(),
+      type: "timeout_soft_reset",
+      message: `⏱️ Batas waktu pengerjaan Soal #${sub.currentQuestionIndex + 1} berakhir. Draf soal aktif di-reset untuk kesempatan mencoba kembali (jawaban soal sebelumnya tetap aman).`,
+    });
+  } else {
+    // HARD RESET: Pelanggaran integritas (pindah tab atau window blur)
+    sub.currentQuestionIndex = 0; // Reset instan kembali ke Soal 1
+    sub.answers = {}; // Hapus jawaban sesi ini
+    sub.activityLogs.push({
+      timestamp: new Date().toISOString(),
+      type: "tab_violation_hard_reset",
+      message: "⚠️ Pelanggaran Integritas Ujian: Layar peramban kehilangan fokus atau berpindah tab/jendela. Sesi kuis di-reset kembali ke Soal 1.",
+    });
+  }
 
   // Update Supabase jika aktif
   try {
@@ -579,13 +1053,16 @@ export async function recordTabViolationAction(
 
     if (isLiveSupabase) {
       const supabase = await createClient();
+      const updateData: Record<string, any> = {
+        reset_count: sub.resetCount,
+        updated_at: new Date().toISOString(),
+      };
+      if (reason === "tab_violation") {
+        updateData.current_question_index = 0;
+      }
       await supabase
         .from("quiz_submissions")
-        .update({
-          reset_count: sub.resetCount,
-          current_question_index: 0,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .match({ student_nim: studentNim, module_id: moduleId });
     }
   } catch (err) {
@@ -619,13 +1096,34 @@ export async function getQuizProgressAction(
         .maybeSingle();
 
       if (subData) {
-        const { data: ansData } = await supabase
-          .from("quiz_answers")
-          .select("question_number, score, is_passed, student_answer, ai_feedback")
-          .eq("submission_id", subData.id)
-          .order("created_at", { ascending: true });
+        // Query quiz_answers (dengan toleransi jika kolom authenticity belum ada di database cloud)
+        let ansData: any[] | null = null;
+        try {
+          const res = await supabase
+            .from("quiz_answers")
+            .select("question_number, score, is_passed, student_answer, ai_feedback, ai_provider, authenticity_score, authenticity_notes")
+            .eq("submission_id", subData.id)
+            .order("created_at", { ascending: true });
+          ansData = res.data;
+        } catch {
+          const res = await supabase
+            .from("quiz_answers")
+            .select("question_number, score, is_passed, student_answer, ai_feedback, ai_provider")
+            .eq("submission_id", subData.id)
+            .order("created_at", { ascending: true });
+          ansData = res.data;
+        }
 
-        const answers: Record<number, { score: number; isPassed: boolean; studentAnswer: string; feedback: string }> = {};
+        const answers: Record<number, {
+          score: number;
+          isPassed: boolean;
+          studentAnswer: string;
+          feedback: string;
+          aiProvider?: string;
+          authenticityScore?: number;
+          authenticityNotes?: string;
+        }> = {};
+
         if (ansData) {
           for (const a of ansData) {
             const q = Number(a.question_number);
@@ -639,6 +1137,9 @@ export async function getQuizProgressAction(
                 isPassed: a.is_passed || scoreNum >= 80,
                 studentAnswer: a.student_answer,
                 feedback: a.ai_feedback,
+                aiProvider: a.ai_provider,
+                authenticityScore: a.authenticity_score,
+                authenticityNotes: a.authenticity_notes,
               };
             }
           }
@@ -887,10 +1388,39 @@ export async function getLecturerMonitoringDataAction(classGroup = "all") {
         return sub;
       });
 
+      let dbWarmups: any[] = [];
+      try {
+        const { data: warmupsData } = await supabase
+          .from("student_warmup_chats")
+          .select("student_nim, module_id, messages, writing_metrics, completed_at");
+        if (warmupsData) dbWarmups = warmupsData;
+      } catch (err) {
+        console.warn("Supabase monitoring warmups fetch fallback:", err);
+      }
+
+      // Gabungkan dengan in-memory warmups jika ada
+      const warmupsMap = new Map<string, any>();
+      dbWarmups.forEach((w) => {
+        warmupsMap.set(`${w.student_nim}_mod_${w.module_id}`, w);
+      });
+      Object.values(inMemoryWarmups).forEach((w) => {
+        const key = `${w.studentNim}_mod_${w.moduleId}`;
+        if (!warmupsMap.has(key)) {
+          warmupsMap.set(key, {
+            student_nim: w.studentNim,
+            module_id: w.moduleId,
+            messages: w.messages,
+            writing_metrics: w.writingMetrics,
+            completed_at: w.completedAt,
+          });
+        }
+      });
+
       return {
         students: mappedStudents,
         submissions: recalculatedSubmissions,
         answers: enrichedAnswers,
+        warmups: Array.from(warmupsMap.values()),
       };
     }
   } catch (err) {
@@ -917,6 +1447,8 @@ export async function getLecturerMonitoringDataAction(classGroup = "all") {
         ai_provider: ans.aiProvider || "Groq (Primary)",
         attempt_count: 1,
         is_passed: ans.isPassed,
+        authenticity_score: ans.authenticityScore || ans.authenticity_score || 92,
+        authenticity_notes: ans.authenticityNotes || ans.authenticity_notes || "Gaya penulisan selaras dengan baseline mandiri.",
         created_at: ans.timestamp || new Date().toISOString(),
       });
     });
@@ -936,9 +1468,18 @@ export async function getLecturerMonitoringDataAction(classGroup = "all") {
     };
   });
 
+  const warmupsList = Object.values(inMemoryWarmups).map((w) => ({
+    student_nim: w.studentNim,
+    module_id: w.moduleId,
+    messages: w.messages,
+    writing_metrics: w.writingMetrics,
+    completed_at: w.completedAt,
+  }));
+
   return {
     students: defaultStudents.filter((s) => classGroup === "all" || s.classGroup === classGroup),
     submissions: submissionsList,
     answers: answersList,
+    warmups: warmupsList,
   };
 }

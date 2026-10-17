@@ -21,6 +21,7 @@ import {
   X,
   FileText,
   Sparkles,
+  Fingerprint,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,9 @@ export function LecturerPracticumTab({ selectedClass }: LecturerPracticumTabProp
   // Modal Preview PDF
   const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
   const [previewTitle, setPreviewTitle] = useState("");
+
+  // Modal Review Esai & Otentisitas Mahasiswa
+  const [reviewReport, setReviewReport] = useState<LecturerPracticumRow | null>(null);
 
   // Modal Tanda Tangan Dosen
   const [showSignModal, setShowSignModal] = useState(false);
@@ -380,8 +384,8 @@ export function LecturerPracticumTab({ selectedClass }: LecturerPracticumTabProp
               <tr>
                 <th className="py-3 px-4">Mahasiswa</th>
                 <th className="py-3 px-4">Modul Praktikum</th>
-                <th className="py-3 px-4 text-center">Skor Analisis</th>
-                <th className="py-3 px-4 text-center">Skor Kesimpulan</th>
+                <th className="py-3 px-4 text-center">Analisis & Otentisitas</th>
+                <th className="py-3 px-4 text-center">Kesimpulan & Otentisitas</th>
                 <th className="py-3 px-4 text-center">Status</th>
                 <th className="py-3 px-4">Tanggal Submit</th>
                 <th className="py-3 px-4 text-right">Aksi & Persetujuan</th>
@@ -428,35 +432,73 @@ export function LecturerPracticumTab({ selectedClass }: LecturerPracticumTabProp
                         </div>
                       </td>
 
-                      {/* Skor Analisis */}
+                      {/* Skor Analisis & Otentisitas */}
                       <td className="py-3 px-4 text-center">
                         {row.analysis_score !== null ? (
-                          <span
-                            className={`font-mono font-bold ${
-                              row.analysis_score >= 70
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-rose-600"
-                            }`}
-                          >
-                            {row.analysis_score}/100
-                          </span>
+                          <div className="flex flex-col items-center justify-center">
+                            <span
+                              className={`font-mono font-bold ${
+                                row.analysis_score >= 70
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-rose-600"
+                              }`}
+                            >
+                              {row.analysis_score}/100
+                            </span>
+                            {typeof row.analysis_authenticity === "number" ? (
+                              <span
+                                className={`text-[10px] flex items-center gap-0.5 mt-0.5 px-1.5 py-0.2 rounded font-mono ${
+                                  row.analysis_authenticity >= 80
+                                    ? "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10"
+                                    : row.analysis_authenticity >= 60
+                                    ? "text-amber-700 dark:text-amber-300 bg-amber-500/10"
+                                    : "text-rose-700 dark:text-rose-300 bg-rose-500/10"
+                                }`}
+                                title={row.analysis_authenticity_notes || "Otentisitas Gaya Bahasa Mahasiswa"}
+                              >
+                                <Fingerprint className="w-2.5 h-2.5" />
+                                <span>{row.analysis_authenticity}%</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-zinc-400 mt-0.5">-</span>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-zinc-400">-</span>
                         )}
                       </td>
 
-                      {/* Skor Kesimpulan */}
+                      {/* Skor Kesimpulan & Otentisitas */}
                       <td className="py-3 px-4 text-center">
                         {row.conclusion_score !== null ? (
-                          <span
-                            className={`font-mono font-bold ${
-                              row.conclusion_score >= 70
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-rose-600"
-                            }`}
-                          >
-                            {row.conclusion_score}/100
-                          </span>
+                          <div className="flex flex-col items-center justify-center">
+                            <span
+                              className={`font-mono font-bold ${
+                                row.conclusion_score >= 70
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-rose-600"
+                              }`}
+                            >
+                              {row.conclusion_score}/100
+                            </span>
+                            {typeof row.conclusion_authenticity === "number" ? (
+                              <span
+                                className={`text-[10px] flex items-center gap-0.5 mt-0.5 px-1.5 py-0.2 rounded font-mono ${
+                                  row.conclusion_authenticity >= 80
+                                    ? "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10"
+                                    : row.conclusion_authenticity >= 60
+                                    ? "text-amber-700 dark:text-amber-300 bg-amber-500/10"
+                                    : "text-rose-700 dark:text-rose-300 bg-rose-500/10"
+                                }`}
+                                title={row.conclusion_authenticity_notes || "Otentisitas Gaya Bahasa Mahasiswa"}
+                              >
+                                <Fingerprint className="w-2.5 h-2.5" />
+                                <span>{row.conclusion_authenticity}%</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-zinc-400 mt-0.5">-</span>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-zinc-400">-</span>
                         )}
@@ -497,6 +539,18 @@ export function LecturerPracticumTab({ selectedClass }: LecturerPracticumTabProp
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Review Esai & Otentisitas */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setReviewReport(row)}
+                            className="h-7 px-2 text-[11px] text-indigo-600 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 gap-1"
+                            title="Audit Teks Analisis, Kesimpulan & Orisinalitas AI"
+                          >
+                            <Fingerprint className="w-3 h-3 text-indigo-500" />
+                            <span>Audit Esai</span>
+                          </Button>
+
                           {/* Preview PDF */}
                           {row.pdf_path && (
                             <Button
@@ -725,6 +779,200 @@ export function LecturerPracticumTab({ selectedClass }: LecturerPracticumTabProp
                 )}
                 <span>Simpan Tanda Tangan Dosen</span>
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL AUDIT ESAI & OTENTISITAS */}
+      {reviewReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-3xl bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-600">
+                  <Fingerprint className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <span>Audit Esai & Otentisitas Praktikum P-0{reviewReport.practicum_id}</span>
+                    <Badge variant="outline" className="text-[10px] font-mono">
+                      {reviewReport.student_name} ({reviewReport.student_nim})
+                    </Badge>
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Inspeksi tulisan analisis dan kesimpulan mahasiswa terhadap profil baseline gaya bahasa Warm-up
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setReviewReport(null)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
+              {/* Bagian 1: Analisis Hasil Praktikum */}
+              <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
+                      1. Analisis Hasil Praktikum
+                    </span>
+                    <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 font-mono text-[10px]">
+                      Skor AI: {reviewReport.analysis_score ?? 0}/100
+                    </Badge>
+                  </div>
+                  {typeof reviewReport.analysis_authenticity === "number" && (
+                    <Badge
+                      className={`font-mono text-[10px] gap-1 ${
+                        reviewReport.analysis_authenticity >= 80
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                          : reviewReport.analysis_authenticity >= 60
+                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                          : "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30"
+                      }`}
+                    >
+                      <Fingerprint className="w-3 h-3" />
+                      <span>Otentisitas Baseline: {reviewReport.analysis_authenticity}%</span>
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[11px] font-semibold text-zinc-500">Teks Analisis Mahasiswa:</div>
+                  <div className="p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                    {reviewReport.analysis_text || "(Mahasiswa belum mengisi analisis praktikum)"}
+                  </div>
+                </div>
+
+                {reviewReport.analysis_feedback && (
+                  <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-indigo-900 dark:text-indigo-200">
+                    <span className="font-semibold block mb-1">Feedback AI Evaluator:</span>
+                    <p className="leading-relaxed">{reviewReport.analysis_feedback}</p>
+                  </div>
+                )}
+
+                {reviewReport.analysis_authenticity_notes && (
+                  <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+                    <span className="font-semibold flex items-center gap-1.5 mb-1 text-amber-800 dark:text-amber-300">
+                      <Fingerprint className="w-3 h-3" />
+                      Catatan Forensik Gaya Bahasa (Baseline Warm-up):
+                    </span>
+                    <p className="leading-relaxed">{reviewReport.analysis_authenticity_notes}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Bagian 2: Kesimpulan Praktikum */}
+              <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
+                      2. Kesimpulan Praktikum
+                    </span>
+                    <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 font-mono text-[10px]">
+                      Skor AI: {reviewReport.conclusion_score ?? 0}/100
+                    </Badge>
+                  </div>
+                  {typeof reviewReport.conclusion_authenticity === "number" && (
+                    <Badge
+                      className={`font-mono text-[10px] gap-1 ${
+                        reviewReport.conclusion_authenticity >= 80
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                          : reviewReport.conclusion_authenticity >= 60
+                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                          : "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30"
+                      }`}
+                    >
+                      <Fingerprint className="w-3 h-3" />
+                      <span>Otentisitas Baseline: {reviewReport.conclusion_authenticity}%</span>
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[11px] font-semibold text-zinc-500">Teks Kesimpulan Mahasiswa:</div>
+                  <div className="p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                    {reviewReport.conclusion_text || "(Mahasiswa belum mengisi kesimpulan praktikum)"}
+                  </div>
+                </div>
+
+                {reviewReport.conclusion_feedback && (
+                  <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-indigo-900 dark:text-indigo-200">
+                    <span className="font-semibold block mb-1">Feedback AI Evaluator:</span>
+                    <p className="leading-relaxed">{reviewReport.conclusion_feedback}</p>
+                  </div>
+                )}
+
+                {reviewReport.conclusion_authenticity_notes && (
+                  <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+                    <span className="font-semibold flex items-center gap-1.5 mb-1 text-amber-800 dark:text-amber-300">
+                      <Fingerprint className="w-3 h-3" />
+                      Catatan Forensik Gaya Bahasa (Baseline Warm-up):
+                    </span>
+                    <p className="leading-relaxed">{reviewReport.conclusion_authenticity_notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReviewReport(null)}
+                className="text-xs"
+              >
+                Tutup Review
+              </Button>
+
+              <div className="flex items-center gap-2">
+                {reviewReport.pdf_path && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePreviewPdf(reviewReport)}
+                    className="h-8 text-xs gap-1"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>Lihat Dokumen PDF</span>
+                  </Button>
+                )}
+
+                {reviewReport.status === "submitted" && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        handleRequestRevision(reviewReport);
+                        setReviewReport(null);
+                      }}
+                      className="h-8 text-xs text-rose-600 border-rose-500/30 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Minta Revisi</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        handleApprove(reviewReport);
+                        setReviewReport(null);
+                      }}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1 font-semibold"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Setujui Laporan</span>
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

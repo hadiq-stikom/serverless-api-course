@@ -28,7 +28,10 @@ import {
   FlaskConical,
   Activity,
   AlertTriangle,
-  User
+  User,
+  MessageSquare,
+  Bot,
+  Fingerprint
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -65,6 +68,22 @@ interface SubmissionRow {
   completed_at?: string;
   updated_at?: string;
   activity_logs?: { timestamp: string; type: string; message: string }[];
+}
+
+interface WarmupRow {
+  student_nim?: string;
+  studentNim?: string;
+  module_id?: number;
+  moduleId?: number;
+  messages: { role: string; text: string; timestamp?: string }[];
+  writing_metrics?: {
+    avgSentenceLength?: number;
+    conjunctionVariety?: number;
+    reflectiveTone?: number;
+    totalSampleWords?: number;
+  };
+  completed_at?: string;
+  completedAt?: string;
 }
 
 const getInitials = (name: string) => {
@@ -109,12 +128,13 @@ export default function DosenPortalPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
+  const [warmups, setWarmups] = useState<WarmupRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedClass, setSelectedClass] = useState("all");
   const [selectedModule, setSelectedModule] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [detailModalStudent, setDetailModalStudent] = useState<StudentRow | null>(null);
-  const [detailModalTab, setDetailModalTab] = useState<"answers" | "logs">("answers");
+  const [detailModalTab, setDetailModalTab] = useState<"answers" | "warmup" | "logs">("answers");
   const [expandedRubrics, setExpandedRubrics] = useState<Record<number, boolean>>({});
   const [expandedAttempts, setExpandedAttempts] = useState<Record<number, boolean>>({});
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -154,6 +174,7 @@ export default function DosenPortalPage() {
     setStudents(data.students);
     setSubmissions(data.submissions);
     setAnswers(data.answers);
+    setWarmups((data as any).warmups || []);
     setLoading(false);
   };
 
@@ -578,6 +599,7 @@ export default function DosenPortalPage() {
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Mahasiswa</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Kelas</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Status Modul {selectedModule}</th>
+                  <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]" title="Sesi obrolan santai pemanasan & rata-rata skor otentisitas gaya bahasa">Pemanasan &amp; Orisinalitas</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider text-[11px]">Kemajuan Soal</th>
                   <th className="py-3.5 px-4 text-center uppercase tracking-wider text-[11px]" title="Rata-rata dari nilai tertinggi semua soal pertemuan ini">Nilai Modul (Rata-rata)</th>
                   <th className="py-3.5 px-4 text-center uppercase tracking-wider text-[11px]">Integritas / Reset</th>
@@ -587,7 +609,7 @@ export default function DosenPortalPage() {
               <tbody className="divide-y divide-border/60">
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                    <td colSpan={9} className="py-12 text-center text-muted-foreground">
                       <div className="max-w-sm mx-auto space-y-2">
                         <Users className="w-8 h-8 text-muted-foreground/40 mx-auto" />
                         <p className="font-semibold text-foreground text-sm">Tidak ada mahasiswa yang cocok</p>
@@ -606,6 +628,28 @@ export default function DosenPortalPage() {
                     const currentQ = sub?.current_question_index || 0;
                     const score = Number(sub?.total_score) || 0;
                     const resets = sub?.reset_count || 0;
+
+                    const studentWarmup = warmups.find(
+                      (w) =>
+                        (w.student_nim === s.nim || w.studentNim === s.nim) &&
+                        Number(w.module_id || w.moduleId) === Number(selectedModule)
+                    );
+                    const hasWarmup = Boolean(studentWarmup && studentWarmup.messages && studentWarmup.messages.length > 0);
+
+                    const studentAnsList = answers.filter(
+                      (a) =>
+                        a.student_nim === s.nim &&
+                        Number(a.module_id) === Number(selectedModule) &&
+                        a.authenticity_score !== undefined &&
+                        a.authenticity_score !== null
+                    );
+                    const avgAuthenticity =
+                      studentAnsList.length > 0
+                        ? Math.round(
+                            studentAnsList.reduce((acc, a) => acc + Number(a.authenticity_score || 0), 0) /
+                              studentAnsList.length
+                          )
+                        : null;
 
                     return (
                       <tr
@@ -659,6 +703,37 @@ export default function DosenPortalPage() {
                               <span>Belum Memulai</span>
                             </span>
                           )}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-1">
+                            {hasWarmup ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/25">
+                                <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                                <span>Pemanasan Selesai</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-muted/60 text-muted-foreground border border-border/60">
+                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                                <span>Belum Pemanasan</span>
+                              </span>
+                            )}
+                            {avgAuthenticity !== null && (
+                              <div className="text-[10px] font-mono flex items-center gap-1">
+                                <span className="text-muted-foreground">Otentisitas:</span>
+                                <span
+                                  className={`font-bold ${
+                                    avgAuthenticity >= 85
+                                      ? "text-emerald-600 dark:text-emerald-400"
+                                      : avgAuthenticity >= 70
+                                      ? "text-amber-600 dark:text-amber-400"
+                                      : "text-rose-600 dark:text-rose-400"
+                                  }`}
+                                >
+                                  {avgAuthenticity}%
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="space-y-1.5 max-w-[140px]">
@@ -843,6 +918,26 @@ export default function DosenPortalPage() {
           return a.student_nim === detailModalStudent.nim && Number(a.module_id) === Number(selectedModule);
         });
 
+        // Cari sesi obrolan pemanasan santai mahasiswa untuk modul ini
+        const currentWarmup = warmups.find(
+          (w) =>
+            (w.student_nim === detailModalStudent.nim || w.studentNim === detailModalStudent.nim) &&
+            Number(w.module_id || w.moduleId) === Number(selectedModule)
+        );
+        const hasWarmup = Boolean(currentWarmup && currentWarmup.messages && currentWarmup.messages.length > 0);
+
+        // Hitung rata-rata otentisitas jika ada penilaian otentisitas
+        const studentAnsWithAuth = studentAnswers.filter(
+          (a) => a.authenticity_score !== undefined && a.authenticity_score !== null
+        );
+        const avgAuthenticity =
+          studentAnsWithAuth.length > 0
+            ? Math.round(
+                studentAnsWithAuth.reduce((acc, a) => acc + Number(a.authenticity_score || 0), 0) /
+                  studentAnsWithAuth.length
+              )
+            : null;
+
         // Kelompokkan jawaban berdasarkan nomor soal (1-based index)
         const answersByQuestion = new Map<number, any[]>();
         studentAnswers.forEach((a) => {
@@ -894,6 +989,19 @@ export default function DosenPortalPage() {
           });
         }
 
+        // 1.1 Sesi Pemanasan Santai Selesai
+        if (currentWarmup?.completed_at) {
+          timelineEvents.push({
+            id: "event-warmup",
+            timestamp: currentWarmup.completed_at,
+            type: "start",
+            title: "Sesi Pemanasan Santai (Warm-up Check-in) Selesai",
+            description: `Mahasiswa menyelesaikan dialog santai ${currentWarmup.messages.length} pesan dengan AI Companion dan membentuk baseline profil gaya bahasa.`,
+            badgeText: "Pemanasan Tuntas",
+            badgeColor: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30",
+          });
+        }
+
         // 2. Event Jawaban yang Dikirim Mahasiswa
         studentAnswers.forEach((ans, aIdx) => {
           const isPassed = ans.is_passed || Number(ans.score) >= 80;
@@ -902,7 +1010,7 @@ export default function DosenPortalPage() {
             timestamp: ans.created_at || currentSub?.updated_at || new Date().toISOString(),
             type: isPassed ? "answer_passed" : "answer_failed",
             title: `Mengirim Jawaban Soal #${ans.question_number}`,
-            description: `Skor Evaluasi: ${ans.score}/100 • Evaluator: ${ans.ai_provider || "Groq (Primary)"} • Status: ${isPassed ? "Tuntas (Lolos >= 80)" : "Belum Lolos (< 80, Perlu Revisi)"}`,
+            description: `Skor Evaluasi: ${ans.score}/100 • Evaluator: ${ans.ai_provider || "Groq (Primary)"} • Status: ${isPassed ? "Tuntas (Lolos >= 80)" : "Belum Lolos (< 80, Perlu Revisi)"}${ans.authenticity_score ? ` • Otentisitas: ${ans.authenticity_score}%` : ""}`,
             badgeText: `${ans.score} Poin`,
             badgeColor: isPassed
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
@@ -976,12 +1084,12 @@ export default function DosenPortalPage() {
 
               {/* Modal Body Container */}
               <div className="p-4 md:p-6 overflow-y-auto space-y-5 text-xs flex-1">
-                {/* 4 Overview Metric Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* 5 Overview Metric Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
                   {/* Metric 1: Status Sesi */}
-                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                  <div className="p-3 rounded-xl border border-border bg-card space-y-1">
                     <div className="flex items-center justify-between text-muted-foreground text-[11px]">
-                      <span>Status Pengerjaan</span>
+                      <span>Status Kuis</span>
                       <Clock className="w-3.5 h-3.5 text-blue-500" />
                     </div>
                     <div>
@@ -1001,15 +1109,15 @@ export default function DosenPortalPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground truncate">
                       {isCompleted ? "Seluruh soal tuntas" : `${totalQuestions - answeredQuestionsCount} soal tersisa`}
                     </p>
                   </div>
 
                   {/* Metric 2: Skor Rata-rata Modul */}
-                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                  <div className="p-3 rounded-xl border border-border bg-card space-y-1">
                     <div className="flex items-center justify-between text-muted-foreground text-[11px]">
-                      <span>Nilai Modul (Rata-rata)</span>
+                      <span>Nilai Modul</span>
                       <Award className="w-3.5 h-3.5 text-amber-500" />
                     </div>
                     <div className="flex items-baseline gap-1">
@@ -1020,13 +1128,13 @@ export default function DosenPortalPage() {
                       </span>
                       <span className="text-[10px] text-muted-foreground font-mono">/ 100</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground truncate">
                       {totalScore >= 80 ? "Rata-rata Lulus (>= 80)" : totalScore > 0 ? "Rata-rata < 80" : "Belum Ada Nilai"}
                     </p>
                   </div>
 
                   {/* Metric 3: Audit Integritas Anti-Cheat */}
-                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                  <div className="p-3 rounded-xl border border-border bg-card space-y-1">
                     <div className="flex items-center justify-between text-muted-foreground text-[11px]">
                       <span>Integritas Layar</span>
                       {resetCount > 0 ? (
@@ -1046,28 +1154,67 @@ export default function DosenPortalPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      {resetCount > 0 ? "Pelanggaran fokus/waktu habis" : "Sesi pengerjaan disiplin"}
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {resetCount > 0 ? "Pelanggaran fokus layar" : "Sesi pengerjaan disiplin"}
                     </p>
                   </div>
 
-                  {/* Metric 4: Aktivitas Terakhir */}
-                  <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                  {/* Metric 4: Pemanasan Santai (Warm-up) */}
+                  <div className="p-3 rounded-xl border border-border bg-card space-y-1">
                     <div className="flex items-center justify-between text-muted-foreground text-[11px]">
-                      <span>Aktivitas Terakhir</span>
-                      <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>Pemanasan Santai</span>
+                      <Sparkles className="w-3.5 h-3.5 text-teal-500" />
                     </div>
-                    <div className="font-semibold text-foreground text-xs truncate">
-                      {currentSub?.updated_at ? new Date(currentSub.updated_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB" : "-"}
+                    <div>
+                      {currentWarmup && hasWarmup ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-teal-600 dark:text-teal-400 text-xs">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Tuntas ({currentWarmup.messages?.length || 0} Pesan)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 font-semibold text-muted-foreground text-xs">
+                          Belum Pemanasan
+                        </span>
+                      )}
                     </div>
                     <p className="text-[10px] text-muted-foreground truncate">
-                      {currentSub?.updated_at ? new Date(currentSub.updated_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "Belum ada riwayat"}
+                      {hasWarmup ? "Baseline gaya bahasa siap" : "Prasyarat kuis belum selesai"}
+                    </p>
+                  </div>
+
+                  {/* Metric 5: Rata-rata Otentisitas AI */}
+                  <div className="p-3 rounded-xl border border-border bg-card space-y-1">
+                    <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                      <span>Rata-rata Otentisitas</span>
+                      <Fingerprint className="w-3.5 h-3.5 text-indigo-500" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      {avgAuthenticity !== null ? (
+                        <span className={`text-base font-black ${
+                          avgAuthenticity >= 85
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : avgAuthenticity >= 70
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-rose-600 dark:text-rose-400"
+                        }`}>
+                          {avgAuthenticity}%
+                        </span>
+                      ) : (
+                        <span className="text-base font-bold text-muted-foreground">-</span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {avgAuthenticity !== null
+                        ? avgAuthenticity >= 85
+                          ? "Gaya bahasa selaras"
+                          : "Variasi gaya wajar"
+                        : "Belum ada evaluasi"}
                     </p>
                   </div>
                 </div>
 
                 {/* Sub-Header Tabs */}
-                <div className="flex items-center gap-2 border-b border-border pb-2 pt-1">
+                <div className="flex items-center gap-2 border-b border-border pb-2 pt-1 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setDetailModalTab("answers")}
@@ -1084,6 +1231,28 @@ export default function DosenPortalPage() {
                     }`}>
                       {answeredQuestionsCount} / {totalQuestions}
                     </Badge>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDetailModalTab("warmup")}
+                    className={`px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                      detailModalTab === "warmup"
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Pemanasan Santai &amp; Baseline Gaya Bahasa</span>
+                    {hasWarmup ? (
+                      <Badge className="ml-1 text-[10px] py-0 px-1.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30">
+                        ✓ Tuntas
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="ml-1 text-[10px] py-0 px-1 font-mono text-muted-foreground">
+                        Belum
+                      </Badge>
+                    )}
                   </button>
 
                   <button
@@ -1250,6 +1419,38 @@ export default function DosenPortalPage() {
                                 {latestAns.ai_feedback}
                               </p>
 
+                              {/* Indikator Otentisitas AI */}
+                              {(latestAns.authenticity_score !== undefined && latestAns.authenticity_score !== null) && (
+                                <div className="mt-2.5 p-3 rounded-xl bg-teal-500/10 border border-teal-500/25 space-y-1.5">
+                                  <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <Fingerprint className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                                      <span className="font-bold text-xs text-teal-950 dark:text-teal-200">
+                                        Skor Otentisitas: {latestAns.authenticity_score}%
+                                      </span>
+                                      <Badge className={`text-[10px] font-semibold ${
+                                        latestAns.authenticity_score >= 85
+                                          ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                                          : latestAns.authenticity_score >= 70
+                                          ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                          : "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                                      }`}>
+                                        {latestAns.authenticity_score >= 85
+                                          ? "Gaya Bahasa Selaras dengan Baseline"
+                                          : latestAns.authenticity_score >= 70
+                                          ? "Variasi Wajar"
+                                          : "Indikasi Anomali / Kemungkinan AI"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  {latestAns.authenticity_notes && (
+                                    <p className="text-[11px] text-teal-900/90 dark:text-teal-200/90 leading-relaxed font-sans italic">
+                                      Catatan Otentisitas: &ldquo;{latestAns.authenticity_notes}&rdquo;
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
                               {/* Riwayat Percobaan Sebelumnya */}
                               {isExpandedAttempts && qAttempts.length > 1 && (
                                 <div className="mt-3 pt-3 border-t border-indigo-200/60 dark:border-indigo-800/40 space-y-2">
@@ -1288,7 +1489,142 @@ export default function DosenPortalPage() {
                   </div>
                 )}
 
-                {/* TAB 2: LOG AKTIVITAS & AUDIT INTEGRITAS */}
+                {/* TAB 2: PEMANASAN SANTAI & BASELINE GAYA BAHASA */}
+                {detailModalTab === "warmup" && (
+                  <div className="space-y-4">
+                    {!currentWarmup || !hasWarmup ? (
+                      <div className="p-8 rounded-2xl border border-dashed border-border text-center space-y-3 bg-muted/10">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-500">
+                          <Sparkles className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <h5 className="font-bold text-foreground text-sm">Belum Ada Sesi Pemanasan</h5>
+                          <p className="text-muted-foreground text-xs max-w-md mx-auto">
+                            Mahasiswa ini belum menyelesaikan sesi obrolan santai bersama AI Companion untuk Modul {selectedModule}.
+                            Sesi pemanasan bersifat wajib sebagai prasyarat pengerjaan kuis dan dasar baseline gaya bahasa mahasiswa.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (() => {
+                      const warmup = currentWarmup!;
+                      return (
+                        <div className="space-y-4">
+                          {/* Header Info Pemanasan & Profil Stilistika */}
+                          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-teal-500/5 to-transparent border border-border space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/60">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                  <Sparkles className="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-xs md:text-sm text-foreground">
+                                    Profil Gaya Bahasa &amp; Baseline Pemanasan
+                                  </h4>
+                                  <p className="text-[11px] text-muted-foreground">
+                                    Direkam otomatis saat obrolan santai 1–2 menit sebelum kuis dibuka.
+                                  </p>
+                                </div>
+                              </div>
+                              {warmup.completed_at && (
+                                <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground self-start sm:self-auto">
+                                  Selesai: {new Date(warmup.completed_at).toLocaleString("id-ID")}
+                                </Badge>
+                              )}
+                            </div>
+
+                            {/* Stylometric Metrics Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                              <div className="p-2.5 rounded-xl bg-background/80 border border-border space-y-1">
+                                <span className="text-[10px] text-muted-foreground block">Panjang Rata-rata Kalimat</span>
+                                <span className="font-mono font-bold text-xs text-foreground">
+                                  {warmup.writing_metrics?.avgSentenceLength
+                                    ? `${warmup.writing_metrics.avgSentenceLength} kata/kalimat`
+                                    : "-"}
+                                </span>
+                              </div>
+                              <div className="p-2.5 rounded-xl bg-background/80 border border-border space-y-1">
+                                <span className="text-[10px] text-muted-foreground block">Keragaman Kata Sambung</span>
+                                <span className="font-mono font-bold text-xs text-foreground">
+                                  {warmup.writing_metrics?.conjunctionVariety
+                                    ? `${warmup.writing_metrics.conjunctionVariety} jenis`
+                                    : "-"}
+                                </span>
+                              </div>
+                              <div className="p-2.5 rounded-xl bg-background/80 border border-border space-y-1">
+                                <span className="text-[10px] text-muted-foreground block">Indeks Nada Reflektif</span>
+                                <span className="font-mono font-bold text-xs text-foreground">
+                                  {warmup.writing_metrics?.reflectiveTone
+                                    ? `${warmup.writing_metrics.reflectiveTone}/100`
+                                    : "-"}
+                                </span>
+                              </div>
+                              <div className="p-2.5 rounded-xl bg-background/80 border border-border space-y-1">
+                                <span className="text-[10px] text-muted-foreground block">Sampel Kata Baseline</span>
+                                <span className="font-mono font-bold text-xs text-foreground">
+                                  {warmup.writing_metrics?.totalSampleWords
+                                    ? `${warmup.writing_metrics.totalSampleWords} kata`
+                                    : `${(warmup.messages || []).filter((m: any) => m.role === "student").reduce((sum: number, m: any) => sum + (m.text?.split(/\s+/).filter(Boolean).length || 0), 0)} kata`}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Transkrip Obrolan Hangat */}
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                                <MessageSquare className="w-3.5 h-3.5 text-indigo-500" />
+                                Transkrip Obrolan Mahasiswa dengan AI Companion ({warmup.messages?.length || 0} Pesan)
+                              </span>
+                              <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                                Open-Book &amp; Relaxed Check-in
+                              </Badge>
+                            </div>
+
+                            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                              {(warmup.messages || []).map((msg: any, mIdx: number) => {
+                                const isStudent = msg.role === "student";
+                                return (
+                                  <div
+                                    key={mIdx}
+                                    className={`flex flex-col ${isStudent ? "items-end" : "items-start"}`}
+                                  >
+                                    <div className="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-muted-foreground">
+                                      {isStudent ? (
+                                        <>
+                                          <span className="font-semibold text-foreground">{detailModalStudent.fullName}</span>
+                                          <span>(Mahasiswa)</span>
+                                          <User className="w-3 h-3 text-indigo-500" />
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Bot className="w-3 h-3 text-teal-500" />
+                                          <span className="font-semibold text-foreground">AI Companion</span>
+                                          <span>(Pendamping Santai)</span>
+                                        </>
+                                      )}
+                                    </div>
+                                    <div
+                                      className={`max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl text-xs leading-relaxed select-text shadow-2xs ${
+                                        isStudent
+                                          ? "bg-indigo-600 text-white rounded-tr-xs"
+                                          : "bg-muted/70 text-foreground border border-border/80 rounded-tl-xs"
+                                      }`}
+                                    >
+                                      <p className="whitespace-pre-wrap font-sans">{msg.text}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* TAB 3: LOG AKTIVITAS & AUDIT INTEGRITAS */}
                 {detailModalTab === "logs" && (
                   <div className="space-y-4">
                     {timelineEvents.length === 0 ? (
