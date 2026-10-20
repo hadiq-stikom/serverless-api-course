@@ -2,7 +2,7 @@
 
 import { loginLecturerAction } from "./lecturer-auth";
 import { loginStudentAction } from "./student-auth";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export interface UnifiedLoginResult {
   success: boolean;
@@ -43,7 +43,7 @@ export async function unifiedLoginAction(
 
   if (isLiveSupabase) {
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       const { data } = await supabase
         .from("lecturers")
         .select("nidn")

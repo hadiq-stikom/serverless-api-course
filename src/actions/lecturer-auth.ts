@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export interface LecturerSession {
   nidn: string;
@@ -20,8 +21,8 @@ export interface StudentImportItem {
 const customLecturerPasswords: Record<string, string> = {};
 const DEFAULT_LECTURER = {
   nidn: "0012345678",
-  fullName: "Dosen Pengampu",
-  email: "dosen@universitas.ac.id",
+  fullName: "Hadiq, ST, M.Kom",
+  email: "hadiq@stikombanyuwangi.ac.id",
   role: "lecturer",
 };
 
@@ -76,10 +77,10 @@ export async function loginLecturerAction(
 
     if (isLiveSupabase) {
       try {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         const { data, error } = await supabase
           .from("lecturers")
-          .select("nidn, full_name, email, role")
+          .select("nidn, full_name, email, role, password_hash")
           .eq("nidn", username)
           .maybeSingle();
 
@@ -90,6 +91,10 @@ export async function loginLecturerAction(
             email: data.email || undefined,
             role: data.role || "lecturer",
           };
+          if (data.password_hash) {
+            expectedPassword = data.password_hash;
+            customLecturerPasswords[username] = data.password_hash;
+          }
         }
       } catch (err) {
         console.warn("Supabase lecturer query fallback:", err);
@@ -131,7 +136,7 @@ export async function loginLecturerAction(
     // Simpan data dosen ke Supabase jika aktif dan belum tercatat
     if (isLiveSupabase && lecturerData) {
       try {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         await supabase.from("lecturers").upsert(
           {
             nidn: lecturerData.nidn,
@@ -183,7 +188,28 @@ export async function changeLecturerPasswordAction(
   }
 
   const nidn = session.lecturer.nidn;
-  const currentPassword = customLecturerPasswords[nidn] || nidn;
+  let currentPassword = customLecturerPasswords[nidn] || nidn;
+
+  const isLiveSupabase =
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+  if (isLiveSupabase) {
+    try {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from("lecturers")
+        .select("password_hash")
+        .eq("nidn", nidn)
+        .maybeSingle();
+
+      if (data?.password_hash) {
+        currentPassword = data.password_hash;
+      }
+    } catch (err) {
+      console.warn("Supabase fetch current lecturer password fallback:", err);
+    }
+  }
 
   if (oldPassword !== currentPassword) {
     return { success: false, message: "Kata sandi lama tidak sesuai." };
@@ -193,11 +219,35 @@ export async function changeLecturerPasswordAction(
     return { success: false, message: "Kata sandi baru minimal 5 karakter." };
   }
 
+  // Update memory cache
   customLecturerPasswords[nidn] = newPassword;
+
+  // Persist ke Supabase database
+  if (isLiveSupabase) {
+    try {
+      const supabase = createAdminClient();
+      const { error: upsertErr } = await supabase.from("lecturers").upsert(
+        {
+          nidn: nidn,
+          full_name: session.lecturer.fullName,
+          role: session.lecturer.role || "lecturer",
+          password_hash: newPassword,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "nidn" }
+      );
+
+      if (upsertErr) {
+        console.error("Gagal menyimpan password dosen ke Supabase:", upsertErr);
+      }
+    } catch (err) {
+      console.warn("Supabase persist lecturer password fallback:", err);
+    }
+  }
 
   return {
     success: true,
-    message: "Kata sandi Dosen berhasil diperbarui.",
+    message: "Kata sandi Dosen berhasil diperbarui secara permanen.",
   };
 }
 

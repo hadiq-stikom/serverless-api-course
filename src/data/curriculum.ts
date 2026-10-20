@@ -1,3 +1,14 @@
+export const COURSE_METADATA = {
+  courseName: "Pengembangan Aplikasi Serverless API",
+  courseCode: "KK112112",
+  practicumName: "Praktikum Pengembangan Aplikasi Serverless API",
+  practicumCode: "KK112113",
+  lecturerName: "Hadiq, ST, M.Kom",
+  institution: "STIKOM PGRI Banyuwangi",
+  programStudy: "Teknik Informatika",
+  semester: "Genap 2024/2025",
+} as const;
+
 export interface CpmkPoint {
   code: string;
   badge?: string;
@@ -3588,78 +3599,177 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
       diagramNote: "Mobile Client (Bearer JWT) ➔ OPTIONS Preflight (CORS) ➔ Route Handler (Zod safeParse) ➔ Supabase Auth (getUser) ➔ PostgreSQL RLS (auth.uid) ➔ JSON RFC 7807 Response",
       deepDiveSections: [
         {
-          title: "1. Arsitektur Komputasi Ganda: Server Actions (Web BFF) vs REST API Route Handlers (Mobile Backend)",
+          title: "1. Arsitektur Komputasi Ganda: Paradigma Monolith Modern Next.js vs Decoupled REST API",
           badge: "Pilar 1: Fondasi Komputasi Ganda",
-          content: "Di ekosistem Next.js modern, kita tidak lagi dipaksa memilih antara monolithic web atau decoupled API. Kita dapat menerapkan keduanya secara harmonis: Server Actions bertindak sebagai Backend-for-Frontend (BFF) untuk web peramban internal, sedangkan Route Handlers (src/app/api/.../route.ts) bertindak sebagai Universal REST API Gateway yang siap melayani aplikasi Mobile (Flutter, Kotlin, Swift) maupun integrasi pihak ketiga.",
+          content: "Next.js 16 mengusung paradigma **'Unified Full-Stack Monolith'**: satu arsitektur aplikasi tunggal terpadu yang menyatukan rendering antarmuka di sisi server (`React Server Components`), eksekusi mutasi data aman (`Server Actions`), akses database langsung via `@supabase/ssr`, dan manajemen status URL (`URL as State`). Pendekatan ini meniadakan latensi bolak-balik jaringan (*round-trip latency*) dan menghasilkan `0 kB JavaScript bundle` untuk logika pemuatan data di peramban.\n\n" +
+                   "Namun, saat sistem dituntut melayani klien native multi-platform (`Flutter`, `React Native`, `iOS/Android`, maupun automasi `cURL`/webhook eksternal), arsitektur monolith web murni menghadapi **keterbatasan protokol komputasi**: klien non-web tidak memiliki *reconciler* Virtual DOM React untuk mencerna stream instruksi `Flight RPC` dan tidak berbagi sesi kuki peramban (*browser cookie jar*).\n\n" +
+                   "Oleh karena itu, kita merancang **Arsitektur Ganda (Hybrid Dual-Architecture)**: memadukan efisiensi **Full-Stack Monolith Web** untuk pengguna internal peramban dengan **Universal REST API Route Handlers** (`/api/v1/*`) terstandarisasi untuk ekosistem mobile dan integrasi pihak ketiga.",
           subpoints: [
             {
-              label: "BFF Server Actions vs Decoupled Universal REST API",
-              text: "1. Keterbatasan Server Actions untuk Mobile: Server Actions menggunakan format serialisasi internal Next.js (Flight RPC) yang terikat erat dengan sesi kuki peramban (browser-based cookies) dan siklus render React 19. Format ini tidak dirancang untuk dikonsumsi langsung oleh HTTP client standar seperti aplikasi mobile Flutter, cURL, atau Postman.\n\n" +
-                    "2. Next.js 16 Route Handlers sebagai API Gateway: Dengan meletakkan berkas route.ts di dalam direktori src/app/api/, Next.js membangkitkan endpoint RESTful serverless murni. Route Handlers menerima dan merespons payload baku application/json dengan HTTP Status Code semantik (200, 201, 400, 401, 404, 422, 500).\n\n" +
-                    "3. Skalabilitas Serverless Edge: Setiap pemanggilan method GET, POST, PUT, atau DELETE pada Route Handler dieksekusi secara instan on-demand di Edge Network dengan scale-to-zero, tanpa membebani server fisik yang menyala 24 jam.",
-              code: `// src/app/api/v1/tasks/route.ts
-import { NextResponse } from 'next/server';
+              label: "Paradigma Full-Stack Monolith Modern: Anatomi, Keunggulan & Protokol Flight RPC",
+              text: "1. Definisi Unified Monolith di Next.js 16:\n" +
+                    "Monolith modern **BUKAN** arsitektur usang (*legacy*) era MVC klasik yang serba lambat. Di Next.js App Router, seluruh siklus komputasi web—mulai dari kueri database `PostgreSQL`, autentikasi kuki server, rendering HTML komponen, hingga mutasi data—terkolokasi dalam satu proyek terpadu tanpa lapisan *glue code* atau DTO manual yang membingungkan.\n\n" +
+                    "2. 4 Keunggulan Utama Monolith Modern:\n" +
+                    "- **Zero-Bundle Data Fetching**: `React Server Components (RSC)` mengeksekusi kueri Supabase langsung di server, menghasilkan `0 kB JavaScript bundle` ke peramban untuk pemuatan data.\n" +
+                    "- **End-to-End Type Safety**: Perubahan tipe data pada skema database langsung terdeteksi oleh TypeScript hingga ke formulir UI tanpa generator OpenAPI.\n" +
+                    "- **Colocation & Zero API Waterfall**: Mutasi form dan pemuatan data berada berdampingan di server, meniadakan latensi bolak-balik jaringan yang berulang.\n" +
+                    "- **Sesi Kuki Otomatis (HttpOnly)**: Autentikasi sesi dikelola otomatis oleh *browser cookie jar*, kebal dari pencurian token via skrip XSS peramban.\n\n" +
+                    "3. Mekanisme Komunikasi Internal (React Flight RPC):\n" +
+                    "Saat form web memicu Server Action (`'use server'`), browser mengirimkan request HTTP POST dengan header `Next-Action: <hash>`. Server mengeksekusi mutasi, memanggil `revalidatePath('/tasks')`, dan merespons dengan stream protokol **React Flight** (instruksi diff Virtual DOM) yang langsung memperbarui tampilan tanpa *full page reload*.\n\n" +
+                    "4. Blueprint Teknis: 5 Komponen & Berkas Pembangun CRUD Monolith Web:\n" +
+                    "- **Prasyarat Proyek**: Pemasangan pustaka `use-debounce` (`npm install use-debounce`) dan komponen atomik Shadcn UI (`npx shadcn@latest add button card input label badge table`).\n" +
+                    "- **Berkas 1 (Kontrak Validasi)**: `src/lib/schemas.ts` — Skema Zod terpusat (`taskSchema`) sebagai *Single Source of Truth* validasi input di server, mendukung field opsional `project_id`.\n" +
+                    "- **Berkas 2 (Server Actions Mutasi)**: `src/actions/tasks.ts` — Mutasi data sisi server (`'use server'`) membaca kuki sesi (`@supabase/ssr`), menyelaraskan `project_id` via helper auto-provisioning `resolveTargetProjectId`, mengeksekusi kueri PostgreSQL, dan memicu `revalidatePath('/tasks')`.\n" +
+                    "- **Berkas 3 (Form Feedback Interaktif)**: `src/components/tasks/task-form.tsx` — Client Component (`'use client'`) memanfaatkan hook React 19 `useActionState` dan `useFormStatus` untuk indikator pending tanpa *full page reload*.\n" +
+                    "- **Berkas 4 (Sinkronisasi Filter URL)**: `src/components/tasks/task-search-input.tsx` — Client Component yang menyinkronkan ketikan ke URL Search Params (`?search=...`) dengan jeda *debounce* `300ms`.\n" +
+                    "- **Berkas 5 (Halaman Dashboard RSC)**: `src/app/(dashboard)/tasks/page.tsx` — Server Component membaca props asinkron `const { search, page } = await searchParams;`, kueri Supabase `.range(from, to)`, serta kontrol pagination.\n" +
+                    "- **Konsistensi Relasi 3-Tier (Modul 4)**: Karena skema DDL menetapkan `tasks.project_id NOT NULL REFERENCES projects(id)`, Server Action dan REST API menyertakan helper cerdas `resolveTargetProjectId` untuk mengaitkan tugas ke proyek aktif user atau membuatkan proyek default (`Proyek Utama (General)`) secara otomatis jika `project_id` belum ditentukan klien.",
+              code: `// src/actions/tasks.ts ('use server' - Mutasi Monolith Web)
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/utils/supabase/server';
+import { taskSchema } from '@/lib/schemas';
 
-// 1. HTTP GET - Membaca data tugas untuk aplikasi mobile
-export async function GET(request: Request) {
-  return NextResponse.json({
-    status: 'success',
-    data: [{ id: '1', title: 'Belajar REST API' }]
-  });
+// Helper Resolusi Relasi 3-Tier: Menjamin tasks.project_id selalu terisi UUID sah (Modul 4)
+async function resolveTargetProjectId(supabase: any, userId: string, customProjectId?: string): Promise<string> {
+  if (customProjectId) return customProjectId;
+  const { data: existingProject } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingProject?.id) return existingProject.id;
+
+  // Auto-provisioning proyek default jika user baru pertama kali menambahkan tugas
+  const { data: newProject, error } = await supabase
+    .from('projects')
+    .insert({
+      user_id: userId,
+      title: 'Proyek Utama (General)',
+      description: 'Proyek inisialisasi otomatis untuk tugas baru'
+    })
+    .select('id')
+    .single();
+
+  if (error || !newProject) throw new Error('Gagal menginisialisasi proyek induk');
+  return newProject.id;
 }
 
-// 2. HTTP POST - Membuat data tugas baru dari mobile
-export async function POST(request: Request) {
-  const body = await request.json();
-  return NextResponse.json({ status: 'success', data: body }, { status: 201 });
+export async function createTaskAction(prevState: unknown, formData: FormData) {
+  // 1. Baca sesi login langsung dari HTTP-only cookies di server
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Sesi login telah habis' };
+
+  // 2. Validasi data form di sisi server
+  const parsed = taskSchema.safeParse({
+    title: formData.get('title'),
+    priority: formData.get('priority') || 'medium',
+    project_id: formData.get('project_id') || undefined,
+  });
+  if (!parsed.success) {
+    return { success: false, errors: parsed.error.flatten().fieldErrors };
+  }
+
+  // 3. Resolusi project_id induk agar mematuhi konstrain NOT NULL relasi 3-tier
+  const resolvedProjectId = await resolveTargetProjectId(supabase, user.id, parsed.data.project_id);
+
+  // 4. Mutasi langsung ke PostgreSQL Supabase
+  await supabase.from('tasks').insert({
+    ...parsed.data,
+    project_id: resolvedProjectId,
+    user_id: user.id
+  });
+
+  // 5. Invalidation Cache: Kirim React Flight RPC diff ke peramban
+  revalidatePath('/tasks');
+  return { success: true, message: 'Tugas berhasil ditambahkan!' };
 }`,
               language: "typescript",
-              caption: "Anatomi Dasar Route Handler RESTful di Next.js 16 App Router"
+              caption: "Anatomi Mutasi Monolith Web Menggunakan Server Actions dan Flight RPC"
             },
             {
-              label: "Pola Reusable Business Logic & Shared Zod Schema Validation",
-              text: "1. Prinsip DRY (Don't Repeat Yourself): Kesalahan arsitektur paling umum adalah membuat dua aturan validasi terpisah untuk web dan mobile. Jika syarat panjang judul tugas berubah menjadi minimal 5 karakter, developer rawan lupa memperbarui salah satu sisi.\n\n" +
-                    "2. Skema Zod Terpusat (src/lib/schemas.ts): Kita mendeklarasikan kontrak data satu kali saja. Skema ini kemudian diimpor oleh Server Action (createTaskAction) untuk form web DAN diimpor oleh Route Handler (POST /api/v1/tasks) untuk payload JSON mobile.\n\n" +
-                    "3. safeParse vs parse: Selalu gunakan safeParse() pada Route Handler agar kegagalan validasi tidak melempar uncaught exception (500 crash), melainkan menghasilkan objek kesalahan terstruktur yang dapat dikembalikan sebagai respons HTTP 422 Unprocessable Content.",
-              code: `// src/lib/schemas.ts (Shared Contract)
+              label: "Keterbatasan Monolith pada Mobile & Blueprint Teknis Decoupled Universal REST API",
+              text: "1. Titik Batas Monolith: Mengapa Klien Mobile Tidak Bisa Memakai Server Actions?:\n" +
+                    "- **Ketiadaan React Reconciler**: Aplikasi mobile native (`Flutter`, `Kotlin Android`, `Swift iOS`) tidak memiliki engine Virtual DOM React untuk mencerna stream instruksi Flight RPC yang dihasilkan Server Actions.\n" +
+                    "- **Keterikatan pada Kuki Peramban**: Server Actions mengandalkan otomatisasi cookie jar browser. Klien mobile beroperasi secara terpisah dan membutuhkan token JWT stateless pada header `Authorization: Bearer <token>`.\n" +
+                    "- **Kebutuhan Kontrak Universal**: Klien mobile dan pihak ketiga (webhook/cURL) menuntut payload data universal: `application/json` murni dengan status code HTTP standar via Route Handlers (`src/app/api/.../route.ts`).\n\n" +
+                    "2. Blueprint Teknis: 6 Komponen & Berkas Pembangun Decoupled Universal REST API:\n" +
+                    "- **Prasyarat Konfigurasi**: Sediakan environment variables (`NEXT_PUBLIC_SUPABASE_URL` & `ANON_KEY`) dan pastikan `Row Level Security (RLS)` PostgreSQL aktif.\n" +
+                    "- **Berkas 1 (Helper Respons & CORS)**: `src/lib/api-response.ts` — Mendeklarasikan objek `corsHeaders` (`Access-Control-Allow-*`), helper `apiSuccess()`, dan standarisasi IETF RFC 7807 `apiError()`.\n" +
+                    "- **Berkas 2 (Gatekeeper Keamanan)**: `src/lib/api-auth.ts` — Fungsi `verifyApiAuth(request)` yang mengekstrak Bearer Token dari header, memvalidasi tanda tangan JWT ke `supabase.auth.getUser(token)`, dan menginisialisasi client Supabase dengan menyematkan token user agar Row Level Security (RLS) PostgreSQL aktif (menolak keras kebocoran `SERVICE_ROLE_KEY`).\n" +
+                    "- **Berkas 3 (Route Koleksi)**: `src/app/api/v1/tasks/route.ts` — Menangani method `OPTIONS` (preflight CORS 204), `GET` (membaca searchParams, filter status, dan pagination range), serta `POST` (membaca request.json(), validasi Zod safeParse, dan insert user_id).\n" +
+                    "- **Berkas 4 (Route Item Dinamis)**: `src/app/api/v1/tasks/[id]/route.ts` — Menangani parameter dinamis asinkron Next.js 16 (`const { id } = await params;`), method `OPTIONS`, `GET` by ID, `PUT` (update parsial via `taskUpdateSchema`), dan `DELETE` (penghapusan aman).\n" +
+                    "- **Berkas 5 (Mobile API Playground Sandbox)**: `src/app/(dashboard)/tasks/api-tester/page.tsx` — Client Component di browser untuk menguji endpoint REST API secara visual (pemilih method HTTP, tombol ambil token sesi otomatis, editor request body JSON, dan inspektur respons status code semantik).\n" +
+                    "- **Berkas 6 (Navigasi Beranda Cerdas)**: `src/app/page.tsx` — Hero CTA yang menghubungkan pengguna ke Dashboard Web Monolith (`/tasks`) dan Mobile API Tester (`/tasks/api-tester`).\n\n" +
+                    "3. Menyatukan Dua Dunia via Prinsip DRY (Don't Repeat Yourself):\n" +
+                    "Meskipun jalur komputasi terpisah (Web via Flight RPC vs Mobile via REST JSON), aturan bisnis (*business rules*) **DILARANG KERAS** diduplikasi. Skema Zod dideklarasikan satu kali saja di `src/lib/schemas.ts` dan diimpor bersama oleh Server Action form web serta Route Handler REST API.",
+              code: `// src/lib/schemas.ts (Shared Single Source of Truth)
 import { z } from 'zod';
 
 export const taskSchema = z.object({
-  title: z.string().min(3, 'Judul minimal 3 karakter').max(100),
+  title: z
+    .string()
+    .min(3, 'Judul tugas minimal 3 karakter')
+    .max(100, 'Judul tugas maksimal 100 karakter'),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  status: z.enum(['pending', 'in_progress', 'completed']).default('pending'),
+  // Opsional dari klien; diselesaikan otomatis oleh backend ke UUID proyek aktif user (Relasi 3-Tier)
+  project_id: z.string().uuid('Project ID wajib berupa UUID yang sah').optional(),
 });
 
-export type TaskInput = z.infer<typeof taskSchema>;`,
+export const taskUpdateSchema = taskSchema.partial();
+export type TaskInput = z.infer<typeof taskSchema>;
+export type TaskUpdateInput = z.infer<typeof taskUpdateSchema>;`,
               language: "typescript",
-              caption: "Skema Zod Tunggal yang Dibagikan Antara Form Web dan REST API"
+              caption: "Skema Zod Tunggal yang Dibagikan (DRY) Antara Form Web dan REST API"
             },
             {
-              label: "Standarisasi Format Respons RESTful & HTTP Status Code Semantics",
-              text: "1. Format Respons RFC 7807: Aplikasi mobile membutuhkan kontrak JSON yang konsisten agar parser data (misal: serialisasi Dart di Flutter) tidak crash saat menerima error. Struktur baku wajib memuat properti: status, data (jika sukses), atau code dan details (jika gagal).\n\n" +
-                    "2. Semantika Status Code: Dilarang keras mengembalikan HTTP 200 OK jika terjadi kesalahan (anti-pattern: { status: 200, error: 'Password salah' }). Gunakan kode status resmi:\n" +
-                    "   - 200 OK: Pembacaan data (GET) atau pembaruan sukses (PUT).\n" +
-                    "   - 201 Created: Pembuatan entitas baru berhasil (POST).\n" +
-                    "   - 400 Bad Request: Format JSON rusak atau malformed syntax.\n" +
-                    "   - 401 Unauthorized: Kredensial Bearer Token tidak ada atau kedaluwarsa.\n" +
-                    "   - 404 Not Found: Data dengan ID spesifik tidak ditemukan di database.\n" +
-                    "   - 422 Unprocessable Content: Data tidak lolos validasi skema Zod.\n" +
-                    "   - 500 Internal Server Error: Kesalahan sistem serverless / database terputus.",
-              code: `// Format Standar Respons Sukses (200 OK / 201 Created):
-{
-  "status": "success",
-  "data": { "id": "uuid-1", "title": "Implementasi Flutter REST Client" },
-  "meta": { "page": 1, "total": 1 }
+              label: "Standarisasi Format Respons RESTful & HTTP Status Code Semantics (RFC 7807)",
+              text: "1. Kebutuhan Kontrak Respons Terstandarisasi:\n" +
+                    "Aplikasi mobile (seperti parser model Dart di Flutter) rentan mengalami *fatal crash* jika struktur respons error berubah-ubah secara acak. Oleh karena itu, kita mengadopsi spesifikasi industri baku **IETF RFC 7807 (Problem Details for HTTP APIs)**.\n\n" +
+                    "2. 5 Properti Baku Format RFC 7807:\n" +
+                    "- **`type`**: URI identifier jenis kesalahan (contoh: `https://httpstatuses.com/422`).\n" +
+                    "- **`title`**: Kode ringkas kesalahan dalam format SCREAMING_SNAKE_CASE (contoh: `VALIDATION_ERROR`).\n" +
+                    "- **`status`**: HTTP Status Code numerik yang sinkron dengan status header HTTP (contoh: `422`).\n" +
+                    "- **`detail`**: Penjelasan kesalahan yang ramah dibaca manusia (contoh: `Input data tidak memenuhi validasi skema`).\n" +
+                    "- **`errors`**: Objek rincian kesalahan per-kolom (*field-level errors*) dari Zod (`{ title: ['Judul minimal 3 karakter'] }`).\n\n" +
+                    "3. Semantika Status Code HTTP:\n" +
+                    "Dilarang keras mengembalikan HTTP 200 OK jika terjadi kesalahan (*anti-pattern*: `{ status: 200, error: 'Password salah' }`). Gunakan kode status resmi:\n" +
+                    "- **`200 OK`**: Pembacaan data (`GET`) atau pembaruan sukses (`PUT`).\n" +
+                    "- **`201 Created`**: Pembuatan entitas baru berhasil (`POST`).\n" +
+                    "- **`400 Bad Request`**: Format JSON rusak atau *malformed syntax*.\n" +
+                    "- **`401 Unauthorized`**: Kredensial Bearer Token tidak ada atau kedaluwarsa.\n" +
+                    "- **`404 Not Found`**: Data dengan ID spesifik tidak ditemukan di database.\n" +
+                    "- **`422 Unprocessable Content`**: Data tidak lolos validasi skema Zod.\n" +
+                    "- **`500 Internal Server Error`**: Kesalahan sistem serverless / database terputus.",
+              code: `// src/lib/api-response.ts (Helper Respons Baku RFC 7807)
+import { NextResponse } from 'next/server';
+
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// 1. Format Standar Respons Sukses (200 OK / 201 Created):
+export function apiSuccess<T>(data: T, meta?: unknown, status = 200) {
+  return NextResponse.json({ status: 'success', data, meta }, { status, headers: corsHeaders });
 }
 
-// Format Standar Respons Kesalahan (422 Unprocessable Content):
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Input data tidak memenuhi validasi skema",
-  "errors": [{ "field": "title", "message": "Judul minimal 3 karakter" }]
+// 2. Format Standar Respons Error IETF RFC 7807:
+export function apiError(detail: string, code = 'BAD_REQUEST', status = 400, errors?: unknown) {
+  return NextResponse.json({
+    type: \`https://httpstatuses.com/\${status}\`,
+    title: code,
+    status,
+    detail,
+    errors
+  }, { status, headers: corsHeaders });
 }`,
               language: "typescript",
-              caption: "Standarisasi Struktur Payload JSON Sukses dan Error RFC 7807"
+              caption: "Helper Standarisasi Respons Sukses dan Kontrak Error RFC 7807"
             }
           ],
           comparisonTable: {
@@ -3682,13 +3792,19 @@ export type TaskInput = z.infer<typeof taskSchema>;`,
         {
           title: "2. Standar Keamanan Optimal Serverless REST API (Bearer JWT, CORS & RLS)",
           badge: "Pilar 2: Benteng Keamanan REST API",
-          content: "Membuka endpoint REST API ke publik berarti mengekspos aplikasi ke potensi serangan brute-force, pencurian data lintas akun, dan manipulasi origin. Kita menerapkan standar keamanan industri berlapis: autentikasi Bearer Token JWT stateless, konfigurasi CORS (Cross-Origin Resource Sharing) dengan penanganan Preflight OPTIONS, serta penegakan mutlak Row Level Security (RLS) PostgreSQL.",
+          content: "Membuka endpoint REST API ke publik berarti mengekspos sistem ke risiko **serangan brute-force**, kebocoran data lintas akun (*privilege escalation*), dan manipulasi domain origin peramban. Kita menerapkan **tiga pilar pertahanan keamanan serverless**:\n\n" +
+                   "1. **Autentikasi Stateless Bearer JWT**: Verifikasi kriptografis token pada header `Authorization: Bearer <jwt>` tanpa ketergantungan pada session store peramban.\n\n" +
+                   "2. **CORS & Preflight Handling**: Pengendalian hak akses origin domain luar serta penanganan method pra-uji HTTP `OPTIONS` dengan status `204 No Content`.\n\n" +
+                   "3. **Penegakan Mutlak RLS PostgreSQL**: Isolasi data baris per baris via `auth.uid() = user_id`, serta **MENOLAK MUTLAK** penggunaan `SERVICE_ROLE_KEY` di rute publik.",
           subpoints: [
             {
               label: "Autentikasi Stateless Bearer Token JWT & Validasi Supabase Auth",
-              text: "1. Mengapa Aplikasi Mobile Menggunakan Bearer Token: Berbeda dengan web browser yang otomatis mengelola cookie, aplikasi mobile (Flutter/React Native) menyimpan Access Token di penyimpanan aman perangkat (Flutter Secure Storage / Keychain). Setiap kali mobile memanggil API, token tersebut dikirimkan pada header: `Authorization: Bearer <jwt_access_token>`.\n\n" +
-                    "2. Ekstraksi & Verifikasi di Route Handler: Route Handler membaca header Authorization, memisahkan prefiks 'Bearer ', lalu memanggil method resmi `supabase.auth.getUser(token)`. Supabase akan memverifikasi tanda tangan kriptografis token secara stateless.\n\n" +
-                    "3. Penolakan Instan (Fast-Fail 401): Jika header tidak ditemukan, token berformat salah, atau token telah kedaluwarsa, Route Handler langsung mengembalikan respons `401 Unauthorized` sebelum mengeksekusi kueri apa pun ke database.",
+              text: "1. Mengapa Klien Mobile Membutuhkan Bearer Token:\n" +
+                    "Berbeda dengan peramban web yang otomatis mengelola kuki, aplikasi mobile (`Flutter`, `React Native`, `iOS/Android`) menyimpan Access Token di media terenkripsi perangkat (*Keychain / EncryptedSharedPreferences*). Setiap permintaan HTTP wajib menyertakan header resmi: `Authorization: Bearer <jwt_access_token>`.\n\n" +
+                    "2. Ekstraksi & Verifikasi Tanda Tangan Kriptografis di Route Handler:\n" +
+                    "Route Handler membaca header `Authorization`, memisahkan prefiks `Bearer `, lalu memanggil method resmi `supabase.auth.getUser(token)`. Supabase memvalidasi keabsahan tanda tangan JWT secara stateless tanpa latensi kueri tabel sesi.\n\n" +
+                    "3. Penolakan Cepat (Fast-Fail HTTP 401):\n" +
+                    "Jika header `Authorization` kosong, token berformat cacat, atau masa berlaku token telah habis, Route Handler **langsung memutus eksekusi** dan mengembalikan respons `401 Unauthorized` sebelum menyentuh database.",
               code: `// src/lib/api-auth.ts
 import { createClient } from '@supabase/supabase-js';
 
@@ -3722,12 +3838,14 @@ export async function verifyApiAuth(request: Request) {
             },
             {
               label: "CORS (Cross-Origin Resource Sharing) & Penanganan Preflight OPTIONS",
-              text: "1. Mekanisme Keamanan Same-Origin Browser: Saat aplikasi web frontend (misal: frontend terpisah di domain client.com) atau mobile web memanggil API di api.com, browser secara otomatis memblokir respons kecuali server memberikan izin eksplisit via header CORS.\n\n" +
-                    "2. Preflight Request (HTTP OPTIONS): Sebelum peramban mengirimkan method berbahaya (POST, PUT, DELETE) atau header non-standar (Authorization), browser mengirim permintaan pendahuluan otomatis bertipe `OPTIONS`. Route Handler wajib menangkap method OPTIONS ini dan merespons dengan status 204 No Content beserta header CORS yang sah.\n\n" +
-                    "3. Header CORS Wajib: Respons API wajib menyertakan:\n" +
-                    "   - `Access-Control-Allow-Origin`: Menentukan domain mana yang diizinkan (gunakan '*' untuk mobile/public API atau domain spesifik untuk dashboard web).\n" +
-                    "   - `Access-Control-Allow-Methods`: 'GET, POST, PUT, DELETE, OPTIONS'.\n" +
-                    "   - `Access-Control-Allow-Headers`: 'Content-Type, Authorization'.",
+              text: "1. Mekanisme Keamanan Same-Origin Browser:\n" +
+                    "Saat aplikasi web frontend terpisah (`client.com`) atau aplikasi mobile web memanggil API di domain berbeda (`api.com`), peramban secara otomatis **memblokir respons** kecuali server memberikan izin eksplisit via header CORS.\n\n" +
+                    "2. Pra-uji Otomatis Peramban (HTTP OPTIONS Preflight):\n" +
+                    "Sebelum mengirimkan method dengan potensi mutasi data (`POST`, `PUT`, `DELETE`) atau header kustom (`Authorization`), peramban mengirim permintaan pendahuluan otomatis bertipe `OPTIONS`. Route Handler wajib menangkap method `OPTIONS` ini dan segera merespons dengan status `204 No Content` beserta header CORS yang sah.\n\n" +
+                    "3. 3 Header CORS Wajib pada Arsitektur Serverless:\n" +
+                    "- **`Access-Control-Allow-Origin`**: Mengizinkan origin pemanggil (`'*'` untuk mobile/API publik, atau domain spesifik untuk dashboard internal).\n" +
+                    "- **`Access-Control-Allow-Methods`**: `GET, POST, PUT, DELETE, OPTIONS`.\n" +
+                    "- **`Access-Control-Allow-Headers`**: `Content-Type, Authorization`.",
               code: `// Helper CORS Headers baku di Next.js 16:
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -3747,9 +3865,12 @@ export async function OPTIONS() {
             },
             {
               label: "Isolasi Keamanan: RLS Enforcement vs Bahaya Service Role Key di Endpoint Publik",
-              text: "1. Golden Rule Keamanan Cloud: DILARANG KERAS mengimpor `SUPABASE_SERVICE_ROLE_KEY` di dalam Route Handler yang dapat diakses publik! Service Role Key memiliki hak akses admin super (bypass all RLS) yang menonaktifkan seluruh kebijakan Row Level Security.\n\n" +
-                    "2. Bahaya Privilege Escalation: Jika Route Handler menggunakan Service Role Key, seorang penyerang dapat mengirim request `GET /api/v1/tasks/uuid-orang-lain` dan berhasil membaca data rahasia orang lain karena RLS tidak dievaluasi oleh PostgreSQL.\n\n" +
-                    "3. Penerapan RLS yang Benar: Selalu bangun instance client Supabase menggunakan token pengguna dari header request: `createClient(url, anonKey, { global: { headers: { Authorization: \`Bearer \${token}\` } } })`. Dengan demikian, PostgreSQL secara otomatis menyisipkan klaim `auth.uid() = user_id` ke setiap kueri SELECT, INSERT, UPDATE, dan DELETE.",
+              text: "1. Aturan Emas Keamanan Serverless (Golden Rule):\n" +
+                    "**DILARANG KERAS** mengimpor `SUPABASE_SERVICE_ROLE_KEY` di dalam Route Handler yang dapat diakses publik! Service Role Key memiliki hak akses *superuser admin* yang **mem-bypass seluruh kebijakan Row Level Security (RLS)** PostgreSQL.\n\n" +
+                    "2. Bahaya Fatal Privilege Escalation (Injeksi Lintas Akun):\n" +
+                    "Jika Route Handler memakai Service Role Key, penyerang dapat mengirim request `GET /api/v1/tasks/<uuid-orang-lain>` dan membaca seluruh data rahasia orang lain karena RLS tidak dievaluasi oleh PostgreSQL.\n\n" +
+                    "3. Pola Penegakan RLS yang Aman (Best Practice):\n" +
+                    "Selalu inisialisasi client Supabase menggunakan token pengguna dari header request: `createClient(url, anonKey, { global: { headers: { Authorization: \`Bearer \${token}\` } } })`. PostgreSQL secara otomatis menyuntikkan klaim `auth.uid() = user_id` ke setiap kueri `SELECT`, `INSERT`, `UPDATE`, dan `DELETE`.",
               code: `// ❌ ANTI-PATTERN FATAL (Bypass RLS - Bahaya Kebocoran Data!):
 // const supabaseAdmin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 // await supabaseAdmin.from('tasks').select('*'); // Mengembalikan seluruh data semua user!
@@ -3773,13 +3894,18 @@ const { data, error } = await supabaseUser.from('tasks').select('*');`,
         {
           title: "3. Endpoint REST API CRUD Lengkap & Penanganan Async Params Next.js 16",
           badge: "Pilar 3: Implementasi Route Handlers",
-          content: "Implementasi REST API di Next.js 16 App Router terbagi menjadi dua kategori struktur rute: Endpoint Koleksi (/api/v1/tasks) untuk operasi jamak, serta Endpoint Item Spesifik (/api/v1/tasks/[id]) untuk operasi data tunggal. Next.js 16 memperkenalkan perubahan breaking change arsitektur di mana parameter rute dinamis bersifat asinkron (Promise).",
+          content: "Implementasi REST API di Next.js 16 App Router terbagi menjadi dua kategori struktur rute terpisah:\n\n" +
+                   "1. **Endpoint Koleksi** (`src/app/api/v1/tasks/route.ts`): Menangani operasi data jamak seperti pemfilteran kata kunci (`?search=...`), paginasi berindeks (`.range(from, to)`), dan pembuatan entitas baru (`POST` + validasi `taskSchema`).\n\n" +
+                   "2. **Endpoint Item Spesifik** (`src/app/api/v1/tasks/[id]/route.ts`): Menangani operasi entitas tunggal (`GET`, `PUT`, `DELETE`). Rute ini menerapkan **Breaking Change Next.js 16** di mana `params` bersifat asinkron (`Promise`) sehingga wajib diekstrak via `const { id } = await params;`.",
           subpoints: [
             {
               label: "Endpoint Koleksi: GET (Filtering & Pagination) & POST (Creation)",
-              text: "1. Struktur Berkas src/app/api/v1/tasks/route.ts: Menangani pemanggilan pada path koleksi. Method GET menerima URL query parameters untuk filter status, pencarian kata kunci, dan pagination.\n\n" +
-                    "2. Membaca Query String di Route Handler: Gunakan `const { searchParams } = new URL(request.url)` untuk mengekstrak parameter seperti ?search=laporan&page=1&limit=10.\n\n" +
-                    "3. Method POST dengan Validasi Zod: Membaca request body dengan `await request.json()`, memvalidasi data menggunakan `taskSchema.safeParse(body)`, lalu menyisipkan `user_id: user.id` dari token terverifikasi sebelum mengirim kueri INSERT ke Supabase.",
+              text: "1. Struktur Berkas src/app/api/v1/tasks/route.ts:\n" +
+                    "Menangani operasi data pada path koleksi. Method `GET` membaca query parameters URL untuk memfilter status, kata kunci judul, dan nomor halaman secara server-side.\n\n" +
+                    "2. Ekstraksi Query String URL di Route Handler:\n" +
+                    "Gunakan `const { searchParams } = new URL(request.url)` untuk mengekstrak parameter seperti `?search=laporan&page=1&limit=10`.\n\n" +
+                    "3. Method POST dengan Validasi Skema Zod Terpusat:\n" +
+                    "Membaca request body via `await request.json()`, memvalidasi data menggunakan `taskSchema.safeParse(body)`, lalu menyisipkan `user_id: user.id` dari token JWT terverifikasi sebelum mengirim kueri `INSERT` ke database PostgreSQL Supabase.",
               code: `// src/app/api/v1/tasks/route.ts
 import { NextResponse } from 'next/server';
 import { verifyApiAuth } from '@/lib/api-auth';
@@ -3824,31 +3950,75 @@ export async function GET(request: Request) {
               code: `// src/app/api/v1/tasks/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { verifyApiAuth } from '@/lib/api-auth';
-import { corsHeaders } from '@/lib/api-response';
+import { taskSchema } from '@/lib/schemas';
+import { apiSuccess, apiError, corsHeaders } from '@/lib/api-response';
 
-// ⚠️ Next.js 16: params adalah Promise<{ id: string }>
+// 1. Preflight CORS OPTIONS
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders });
+}
+
+// 2. GET by ID (Detail Item) - Next.js 16 wajib await params!
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
+
+  const { data, error: dbError } = await supabase.from('tasks').select('*').eq('id', id).single();
+  if (dbError || !data) return apiError('Data tugas tidak ditemukan', 'NOT_FOUND', 404);
+
+  return apiSuccess(data);
+}
+
+// 3. PUT (Update Parsial / Penuh)
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const { user, supabase, error } = await verifyApiAuth(request);
+  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
+
+  try {
+    const body = await request.json();
+    const parsed = taskSchema.partial().safeParse(body);
+    if (!parsed.success) {
+      return apiError('Validasi update gagal', 'VALIDATION_ERROR', 422, parsed.error.flatten().fieldErrors);
+    }
+
+    const { data, error: dbError } = await supabase
+      .from('tasks')
+      .update(parsed.data)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
+    return apiSuccess(data);
+  } catch {
+    return apiError('Format JSON malformed atau tidak valid', 'BAD_REQUEST', 400);
+  }
+}
+
+// 4. DELETE (Penghapusan Bersih Terproteksi RLS)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Wajib di-await!
+  const { id } = await params;
   const { user, supabase, error } = await verifyApiAuth(request);
-  if (error || !user || !supabase) {
-    return NextResponse.json({ status: 'error', message: error }, { status: 401, headers: corsHeaders });
-  }
+  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
 
   const { error: dbError } = await supabase.from('tasks').delete().eq('id', id);
-  if (dbError) {
-    return NextResponse.json({ status: 'error', message: dbError.message }, { status: 500, headers: corsHeaders });
-  }
+  if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
 
-  return NextResponse.json({
-    status: 'success',
-    message: \`Tugas dengan ID '\${id}' berhasil dihapus\`
-  }, { headers: corsHeaders });
+  return apiSuccess({ message: \`Data tugas dengan ID '\${id}' berhasil dihapus\` });
 }`,
               language: "typescript",
-              caption: "Implementasi DELETE Route Handler dengan Async Params Next.js 16"
+              caption: "Implementasi Route Handler Item Spesifik [id] Lengkap (GET, PUT, DELETE) dengan Async Params Next.js 16"
             }
           ],
           callout: {
@@ -3860,13 +4030,19 @@ export async function DELETE(
         {
           title: "4. URL as State & Server-Side Filtering & Pagination",
           badge: "Pilar 4: State Management & UX",
-          content: "Pada arsitektur modern, URL peramban adalah Single Source of Truth untuk status antarmuka pengguna. Menyimpan kata kunci pencarian, filter status, dan nomor halaman di URL parameters (?search=...&page=...) menjamin bahwa halaman dapat di-refresh, di-bookmark, dan dibagikan secara instan tanpa kehilangan konteks data.",
+          content: "Pada arsitektur modern Next.js 16, **URL peramban adalah Single Source of Truth** untuk seluruh status antarmuka data. Menyimpan kata kunci pencarian, filter status, dan nomor halaman di parameter URL (`?search=...&page=...`) menjamin tiga pilar pengalaman pengguna:\n\n" +
+                   "1. **Shareable & Bookmarkable**: Tautan URL dapat disalin dan dibagikan ke rekan tim dengan jaminan menampilkan hasil filter yang identik.\n\n" +
+                   "2. **State Persistence on Reload**: Data filter tidak hilang saat peramban di-*refresh*, dan riwayat navigasi peramban (*Back / Forward*) bekerja secara alami tanpa state library eksternal.\n\n" +
+                   "3. **Eliminasi Request Storm via Debounce 300ms**: Menggunakan hook `useDebouncedCallback` dari pustaka `use-debounce` untuk menunda sinkronisasi URL hingga pengetikan jeda selama `300ms`, mencegah kebanjiran kueri database yang tidak perlu.",
           subpoints: [
             {
               label: "URL Search Parameters sebagai Single Source of Truth",
-              text: "1. Kekurangan Menyimpan Filter di useState Lokal: Jika state pencarian hanya disimpan di memori React (useState), saat pengguna menyalin tautan website dan mengirimkannya ke rekan kerja, rekan kerja akan membuka halaman kosong tanpa filter yang sama. Demikian pula saat tombol reload browser ditekan, filter akan hilang.\n\n" +
-                    "2. URL as State Pattern: Setiap ketikan input memperbarui query string URL peramban melalui pustaka Next.js (`useRouter`, `usePathname`, dan `useSearchParams`). Server Component di App Router secara otomatis menangkap nilai terbaru via `await searchParams` dan merender ulang data dari database.\n\n" +
-                    "3. Browser History & Navigasi Back/Forward: Dengan URL as State, tombol Back dan Forward peramban berfungsi secara alami untuk mengembalikan filter sebelumnya.",
+              text: "1. Keterbatasan Fatal Menyimpan Filter di useState Lokal:\n" +
+                    "Jika status pencarian hanya disimpan di memori klien (`useState`), saat pengguna menyalin tautan dan mengirimkannya ke orang lain, penerima akan melihat halaman awal kosong tanpa filter. Demikian pula saat pengguna menekan tombol *reload*, filter akan ter-reset hilang seketika.\n\n" +
+                    "2. Paradigma URL as State di App Router:\n" +
+                    "Setiap ketikan input memperbarui query string URL peramban melalui navigasi Next.js (`useRouter`, `usePathname`, dan `useSearchParams`). Server Component di App Router secara otomatis menangkap nilai terbaru via `await searchParams` dan merender ulang data berindeks langsung dari PostgreSQL Supabase.\n\n" +
+                    "3. Dukungan Native Browser History & Navigasi Back/Forward:\n" +
+                    "Dengan URL as State, tombol *Back* dan *Forward* peramban berfungsi secara alami untuk memulihkan status filter sebelumnya tanpa pustaka *state management* eksternal (seperti Redux atau Zustand).",
               code: `// src/components/tasks/task-search-input.tsx ('use client')
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
@@ -3903,12 +4079,15 @@ export function TaskSearchInput() {
             },
             {
               label: "Server-Side Range Query Supabase & Debounced Input",
-              text: "1. Async searchParams di Next.js 16: Pada Server Component page.tsx, props searchParams bertipe Promise: `const { search, page } = await searchParams;`.\n\n" +
-                    "2. Rumus Matematika Pagination Supabase: Supabase menggunakan method `.range(from, to)`. Rumus perhitungan offset dan limit:\n" +
-                    "   - `from = (page - 1) * pageSize`\n" +
-                    "   - `to = from + pageSize - 1`\n" +
-                    "   Contoh untuk pageSize = 10: Halaman 1 membaca range(0, 9), Halaman 2 membaca range(10, 19), Halaman 3 membaca range(20, 29).\n\n" +
-                    "3. ILIKE Search di Postgres: Gunakan `.ilike('title', \`%\${search}%\`)` untuk pencarian case-insensitive yang efisien memanfaatkan B-Tree index pada kolom teks.",
+              text: "1. Breaking Change Async searchParams di Next.js 16:\n" +
+                    "Pada Server Component `page.tsx`, props `searchParams` bersifat asinkron (`Promise`). Anda **WAJIB** mengeksekusi `const { search, page } = await searchParams;` sebelum mengakses propertinya.\n\n" +
+                    "2. Rumus Matematika Paginasi PostgreSQL Supabase:\n" +
+                    "Supabase menggunakan klausa berbasis range indeks: `.range(from, to)`. Rumus perhitungan offset dan limit:\n" +
+                    "- **`from`**: `(page - 1) * pageSize`\n" +
+                    "- **`to`**: `from + pageSize - 1`\n" +
+                    "Contoh untuk `pageSize = 10`: Halaman 1 membaca `range(0, 9)`, Halaman 2 membaca `range(10, 19)`, Halaman 3 membaca `range(20, 29)`.\n\n" +
+                    "3. Optimasi ILIKE Search & B-Tree Indexing:\n" +
+                    "Gunakan kueri `.ilike('title', \`%\${search}%\`)` untuk pencarian *case-insensitive* yang cepat dengan memanfaatkan indeks B-Tree PostgreSQL yang telah kita konfigurasikan.",
               code: `// src/app/(dashboard)/tasks/page.tsx (Server Component)
 import { createClient } from '@/utils/supabase/server';
 
@@ -3947,14 +4126,164 @@ export default async function TasksPage({
       { title: "RFC 7807: Problem Details for HTTP APIs", url: "https://datatracker.ietf.org/doc/html/rfc7807", source: "IETF" }
     ],
     lab: {
-      prerequisites: ["Proyek Modul 5 (Supabase Auth & Database) berjalan", "Pustaka use-debounce terpasang"],
+      prerequisites: [
+        "Proyek Next.js 16 dari Pertemuan 5 telah aktif dan terhubung ke Supabase Cloud",
+        "Pustaka use-debounce terpasang: 'npm install use-debounce'",
+        "Tabel public.tasks dengan RLS aktif telah siap di database PostgreSQL Supabase"
+      ],
       steps: [
         {
           stepNumber: 1,
-          instruction: "Instal modul pembantu debounce dan buat berkas utilitas respons standar & CORS",
-          code: `npm install use-debounce
+          badge: "Fondasi Skema Terbagi (DRY)",
+          actionType: "hybrid",
+          targetPromptStep: 1,
+          instruction: "Tahap 1: Deklarasikan Skema Validasi Terpusat di src/lib/schemas.ts",
+          code: `// src/lib/schemas.ts (Shared Single Source of Truth)
+import { z } from 'zod';
 
-// src/lib/api-response.ts
+export const taskSchema = z.object({
+  title: z
+    .string()
+    .min(3, 'Judul tugas minimal 3 karakter')
+    .max(100, 'Judul tugas maksimal 100 karakter'),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  status: z.enum(['pending', 'in_progress', 'completed']).default('pending'),
+  // Opsional dari input form/klien; di-resolve otomatis ke ID proyek aktif user jika kosong
+  project_id: z.string().uuid('Project ID wajib berupa UUID yang sah').optional(),
+});
+
+export const taskUpdateSchema = taskSchema.partial();
+
+export type TaskInput = z.infer<typeof taskSchema>;
+export type TaskUpdateInput = z.infer<typeof taskUpdateSchema>;`,
+          language: "typescript",
+          explanation: "1) Langkah Manual: Buat berkas src/lib/schemas.ts untuk mendeklarasikan kontrak validasi Zod tunggal termasuk field project_id opsional. 2) Manfaat Arsitektur: Skema ini diimpor oleh Server Actions form web DAN Route Handlers REST API mobile, menjamin aturan bisnis 100% konsisten tanpa duplikasi (Prinsip DRY)."
+        },
+        {
+          stepNumber: 2,
+          badge: "Paradigma 1: Monolith Web (Tahap 1)",
+          actionType: "prompt",
+          targetPromptStep: 1,
+          instruction: "Tahap 2: Rakit Server Actions & Form Tugas Web di src/actions/tasks.ts",
+          code: `// src/actions/tasks.ts ('use server')
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/utils/supabase/server';
+import { taskSchema } from '@/lib/schemas';
+
+// Helper Resolusi Relasi 3-Tier: Menjamin tasks.project_id selalu terisi UUID sah (Modul 4)
+async function resolveTargetProjectId(supabase: any, userId: string, customProjectId?: string): Promise<string> {
+  if (customProjectId) return customProjectId;
+  const { data: existingProject } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingProject?.id) return existingProject.id;
+
+  // Auto-provisioning proyek default jika user baru pertama kali menambahkan tugas
+  const { data: newProject, error } = await supabase
+    .from('projects')
+    .insert({
+      user_id: userId,
+      title: 'Proyek Utama (General)',
+      description: 'Proyek inisialisasi otomatis untuk tugas baru'
+    })
+    .select('id')
+    .single();
+
+  if (error || !newProject) throw new Error('Gagal menginisialisasi proyek induk');
+  return newProject.id;
+}
+
+export async function createTaskAction(prevState: unknown, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { success: false, error: 'Sesi login telah habis' };
+
+  const parsed = taskSchema.safeParse({
+    title: formData.get('title'),
+    priority: formData.get('priority') || 'medium',
+    project_id: formData.get('project_id') || undefined,
+  });
+
+  if (!parsed.success) {
+    return { success: false, errors: parsed.error.flatten().fieldErrors };
+  }
+
+  // Auto-resolve project_id agar mematuhi konstrain NOT NULL relasi 3-tier
+  let resolvedProjectId: string;
+  try {
+    resolvedProjectId = await resolveTargetProjectId(supabase, user.id, parsed.data.project_id);
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+
+  const { error } = await supabase.from('tasks').insert({
+    ...parsed.data,
+    project_id: resolvedProjectId,
+    user_id: user.id
+  });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath('/tasks');
+  return { success: true, message: 'Tugas berhasil ditambahkan!' };
+}
+
+export async function deleteTaskAction(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('tasks').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/tasks');
+}`,
+          language: "typescript",
+          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 1 di bawah untuk merakit Server Actions dan form tugas web src/components/tasks/task-form.tsx dengan auto-resolusi project_id. 2) Karakteristik Monolith: Mutasi form diproses langsung di server via React Flight RPC dengan membaca sesi kuki peramban (@supabase/ssr) dan memicu pembaruan UI instan via revalidatePath()."
+        },
+        {
+          stepNumber: 3,
+          badge: "Paradigma 1: URL as State (Tahap 1)",
+          actionType: "prompt",
+          targetPromptStep: 1,
+          instruction: "Tahap 3: Sinkronisasi Pencarian URL via Debounced Input di tasks/page.tsx",
+          code: `// src/components/tasks/task-search-input.tsx ('use client')
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useDebouncedCallback } from 'use-debounce';
+
+export function TaskSearchInput() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const handleSearch = useDebouncedCallback((term: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) params.set('search', term);
+    else params.delete('search');
+    params.set('page', '1');
+    router.replace(\`\${pathname}?\${params.toString()}\`);
+  }, 300);
+
+  return (
+    <input
+      type="text"
+      placeholder="Cari tugas..."
+      defaultValue={searchParams.get('search')?.toString()}
+      onChange={(e) => handleSearch(e.target.value)}
+      className="w-full px-3 py-2 text-xs rounded-lg border bg-background"
+    />
+  );
+}`,
+          language: "tsx",
+          explanation: "1) Eksekusi AI Agent: Komponen pencarian memperbarui searchParams di URL dengan jeda debounce 300ms. 2) Keunggulan UX: Halaman menjadi shareable dan bookmarkable. Server Component page.tsx membaca parameter secara asinkron (await searchParams) dan mengeksekusi kueri range Supabase."
+        },
+        {
+          stepNumber: 4,
+          badge: "Paradigma 2: Keamanan REST (Tahap 2)",
+          actionType: "prompt",
+          targetPromptStep: 2,
+          instruction: "Tahap 4: Buat Helper Respons RFC 7807 & Verifikasi Bearer Token JWT",
+          code: `// src/lib/api-response.ts
 import { NextResponse } from 'next/server';
 
 export const corsHeaders = {
@@ -3963,26 +4292,28 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export function apiSuccess<T>(data: T, meta?: any, status = 200) {
+export function apiSuccess<T>(data: T, meta?: unknown, status = 200) {
   return NextResponse.json({ status: 'success', data, meta }, { status, headers: corsHeaders });
 }
 
-export function apiError(message: string, code = 'BAD_REQUEST', status = 400, details?: any) {
-  return NextResponse.json({ status: 'error', code, message, details }, { status, headers: corsHeaders });
-}`,
-          language: "typescript",
-          explanation: "Helper ini menjamin seluruh endpoint REST API mengembalikan format JSON yang seragam dan menyertakan header CORS untuk akses aplikasi mobile."
-        },
-        {
-          stepNumber: 2,
-          instruction: "Buat helper verifikasi autentikasi Bearer Token JWT di src/lib/api-auth.ts",
-          code: `// src/lib/api-auth.ts
+// Kontrak Error IETF RFC 7807 Problem Details
+export function apiError(detail: string, code = 'BAD_REQUEST', status = 400, errors?: unknown) {
+  return NextResponse.json({
+    type: \`https://httpstatuses.com/\${status}\`,
+    title: code,
+    status,
+    detail,
+    errors
+  }, { status, headers: corsHeaders });
+}
+
+// src/lib/api-auth.ts
 import { createClient } from '@supabase/supabase-js';
 
 export async function verifyApiAuth(request: Request) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return { user: null, supabase: null, error: 'Kredensial Bearer Token tidak ditemukan di header' };
+    return { user: null, supabase: null, error: 'Header Authorization: Bearer <jwt> wajib disertakan' };
   }
 
   const token = authHeader.split(' ')[1];
@@ -3991,11 +4322,9 @@ export async function verifyApiAuth(request: Request) {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  const supabase = createClient(
-    supabaseUrl,
-    supabaseKey,
-    { global: { headers: { Authorization: \`Bearer \${token}\` } } }
-  );
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    global: { headers: { Authorization: \`Bearer \${token}\` } }
+  });
 
   const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) {
@@ -4005,153 +4334,258 @@ export async function verifyApiAuth(request: Request) {
   return { user, supabase, error: null };
 }`,
           language: "typescript",
-          explanation: "Helper ini memvalidasi token JWT secara stateless ke Supabase Auth dan membangun instance database client yang patuh pada RLS."
-        },
-        {
-          stepNumber: 3,
-          instruction: "Bangun Endpoint Koleksi REST API di src/app/api/v1/tasks/route.ts",
-          code: `// src/app/api/v1/tasks/route.ts
-import { verifyApiAuth } from '@/lib/api-auth';
-import { apiSuccess, apiError, corsHeaders } from '@/lib/api-response';
-import { taskSchema } from '@/lib/schemas';
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: corsHeaders });
-}
-
-export async function GET(request: Request) {
-  const { user, supabase, error } = await verifyApiAuth(request);
-  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
-
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search');
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  let query = supabase.from('tasks').select('*', { count: 'exact' }).range(from, to);
-  if (search) query = query.ilike('title', \`%\${search}%\`);
-
-  const { data, count, error: dbError } = await query;
-  if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
-
-  return apiSuccess(data, { page, limit, total: count });
-}
-
-export async function POST(request: Request) {
-  const { user, supabase, error } = await verifyApiAuth(request);
-  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
-
-  try {
-    const body = await request.json();
-    const parsed = taskSchema.safeParse(body);
-    if (!parsed.success) {
-      return apiError('Validasi data gagal', 'VALIDATION_ERROR', 422, parsed.error.flatten().fieldErrors);
-    }
-
-    const { data, error: dbError } = await supabase
-      .from('tasks')
-      .insert({ ...parsed.data, user_id: user.id })
-      .select()
-      .single();
-
-    if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
-    return apiSuccess(data, undefined, 201);
-  } catch {
-    return apiError('Format JSON malformed atau tidak valid', 'BAD_REQUEST', 400);
-  }
-}`,
-          language: "typescript",
-          explanation: "Endpoint ini melayani pembacaan koleksi tugas dengan filter pencarian dan pagination, serta pembuatan tugas baru dengan validasi skema Zod."
-        },
-        {
-          stepNumber: 4,
-          instruction: "Bangun Endpoint Item Spesifik di src/app/api/v1/tasks/[id]/route.ts",
-          code: `// src/app/api/v1/tasks/[id]/route.ts
-import { verifyApiAuth } from '@/lib/api-auth';
-import { apiSuccess, apiError, corsHeaders } from '@/lib/api-response';
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: corsHeaders });
-}
-
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params; // ⚠️ Next.js 16 wajib await params
-  const { user, supabase, error } = await verifyApiAuth(request);
-  if (error || !user || !supabase) return apiError(error || 'Unauthorized', 'UNAUTHORIZED', 401);
-
-  const { error: dbError } = await supabase.from('tasks').delete().eq('id', id);
-  if (dbError) return apiError(dbError.message, 'DB_ERROR', 500);
-
-  return apiSuccess({ message: \`Data tugas '\${id}' berhasil dihapus\` });
-}`,
-          language: "typescript",
-          explanation: "Endpoint dinamis ini menangani penghapusan item tugas spesifik berdasarkan UUID yang diproteksi RLS."
+          explanation: "1) Standarisasi RFC 7807: Menyediakan struktur error baku yang mudah diparsing oleh parser mobile (Dart/Kotlin). 2) Stateless Auth: Verifikasi token Bearer JWT secara stateless tanpa bergantung pada cookie peramban dan membangun instance Supabase client yang patuh pada RLS (auth.uid)."
         },
         {
           stepNumber: 5,
-          instruction: "Uji coba pemanggilan endpoint menggunakan cURL atau Thunder Client",
-          code: `# 1. Tes Preflight CORS:
-curl -X OPTIONS http://localhost:3000/api/v1/tasks -i
+          badge: "Paradigma 2: Route Handlers (Tahap 2)",
+          actionType: "prompt",
+          targetPromptStep: 2,
+          instruction: "Tahap 5: Bangun Route Handlers Koleksi (/tasks) & Item Spesifik (/tasks/[id])",
+          code: `// src/app/api/v1/tasks/route.ts & src/app/api/v1/tasks/[id]/route.ts
+// Ringkasan HTTP Handlers yang Dibangun:
+// 1. OPTIONS: Merespons Preflight CORS dengan 204 No Content
+// 2. GET /api/v1/tasks: Koleksi data dengan ?search, ?page, ?limit via Supabase .range(from, to)
+// 3. POST /api/v1/tasks: Validasi body JSON via taskSchema, auto-resolve project_id ke proyek aktif user, insert record (project_id + user_id), return 201
+// 4. GET /api/v1/tasks/[id]: Detail data dengan await params Next.js 16
+// 5. PUT /api/v1/tasks/[id]: Update data via taskUpdateSchema.safeParse()
+// 6. DELETE /api/v1/tasks/[id]: Hapus entitas terproteksi RLS`,
+          language: "typescript",
+          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 2 di bawah untuk merakit endpoint REST API serverless utuh dengan auto-resolusi project_id pada method POST. 2) Next.js 16 Breaking Changes: Parameter dinamis kedua [id] bertipe Promise wajib dieksekusi dengan const { id } = await params;."
+        },
+        {
+          stepNumber: 6,
+          badge: "Simulator Mobile & Verifikasi Dua Jalur",
+          actionType: "hybrid",
+          targetPromptStep: 2,
+          instruction: "Tahap 6: Bangun Halaman Mobile Playground di /tasks/api-tester & Uji Dua Jalur",
+          code: `# 1. Uji Jalur Monolith Web di Peramban:
+# Buka http://localhost:3000/tasks
+# Coba submit tugas baru via form web dan amati filter URL (?search=proyek)
 
-# 2. Tes GET tanpa Token (Wajib ditolak 401):
-curl -X GET http://localhost:3000/api/v1/tasks -i
+# 2. Uji Jalur REST API via Mobile Playground Sandbox di Peramban:
+# Buka http://localhost:3000/tasks/api-tester
+# Pilih method GET, masukkan Bearer Token, klik 'Kirim Request', dan amati respon JSON RFC 7807!
 
-# 3. Tes GET dengan Bearer Token:
-curl -X GET "http://localhost:3000/api/v1/tasks?search=laporan&page=1" \\
-  -H "Authorization: Bearer YOUR_SUPABASE_ACCESS_TOKEN"`,
+# 3. Uji Validasi Terminal cURL (Tanpa Token - Wajib Ditolak 401):
+curl -X GET http://localhost:3000/api/v1/tasks -i`,
           language: "bash",
-          explanation: "Pengujian cURL memverifikasi penegakan status 401 Unauthorized saat tanpa token dan respons 200 OK saat token valid disertakan."
+          explanation: "1) Keunggulan Edukatif: Mahasiswa dapat menguji endpoint REST API langsung di peramban via halaman Mobile API Tester (/tasks/api-tester) tanpa perlu menginstal aplikasi eksternal seperti Postman. 2) Verifikasi Lengkap: Menjamin bahwa kedua arsitektur (Web Monolith & Mobile REST) berjalan harmonis berdampingan."
         }
       ],
       aiPromptTemplate: {
-        role: "Senior Cloud Architect & REST API Specialist",
+        role: "Senior Cloud Architect, Next.js 16 Specialist & API Security Engineer",
         prompt: `Bertindaklah sebagai Senior Cloud Architect & Next.js 16 Specialist.
-Tugas Anda adalah merancang arsitektur ganda (Dual Architecture) pada aplikasi "The Serverless Odyssey":
-1. Server Actions untuk kebutuhan Web Dashboard internal.
-2. REST API Route Handlers terproteksi (/api/v1/tasks) untuk kebutuhan Klien Mobile (Flutter/React Native) dan integrasi publik.
+Tugas Anda adalah merancang dan mengimplementasikan Arsitektur Ganda (Dual Architecture) pada aplikasi "The Serverless Odyssey":
+1. Paradigma 1 (Monolith Web): Dashboard tugas internal berbasis React Server Components, Server Actions ('use server'), form feedback, dan sinkronisasi pencarian via URL as State (?search=...&page=...).
+2. Paradigma 2 (Decoupled Universal REST API): REST API Route Handlers terproteksi (/api/v1/tasks) untuk kebutuhan Klien Mobile (Flutter/React Native) dan integrasi publik lengkap dengan halaman Mobile API Tester Playground di /tasks/api-tester.
 
-Silakan periksa dan pasang dependensi prasyarat:
-- Pastikan pustaka 'use-debounce' terpasang: 'npm install use-debounce'
-- Pastikan skema Zod 'taskSchema' di 'src/lib/schemas.ts' dapat diimpor secara modular.
+PRINSIP KELANJUTAN PROYEK (METODE BOLA SALJU / SNOWBALLING):
+Proyek ini adalah KELANJUTAN BERTAHAP dari Modul 1 s.d. Modul 5. Berkas rute /tasks, skema Zod, koneksi Supabase PostgreSQL, dan sistem autentikasi sesi SUDAH ADA di repositori Anda.
+Tugas Anda pada Modul 6 ini bersifat MELENGKAPI, MENGHUBUNGKAN, DAN MENYEMPURNAKAN (incremental refactoring) berkas yang sudah ada, BUKAN merombak ulang atau menghapus layout dan middleware yang telah berjalan.
 
-Rakit kode produksi utuh siap jalan (tanpa placeholder atau komentar terpotong) untuk 6 berkas berikut:
-1. 'src/lib/api-response.ts': Standarisasi JSON response helper (apiSuccess, apiError) dan objek 'corsHeaders' lengkap dengan penanganan Access-Control-Allow-*.
-2. 'src/lib/api-auth.ts': Helper ekstraksi 'Authorization: Bearer <token>', verifikasi via 'supabase.auth.getUser(token)', dan inisialisasi client Supabase berbasis token pengguna (menjaga kepatuhan RLS, 0 pemakaian service role key).
-3. 'src/app/api/v1/tasks/route.ts': Route Handler koleksi:
-   - 'OPTIONS': Handler preflight CORS 204 No Content.
-   - 'GET': Ekstraksi URL query string (?search, ?page, ?limit), kueri range Supabase, dan pagination metadata.
-   - 'POST': Validasi JSON body via 'taskSchema.safeParse()', penolakan 422 jika gagal, penyisipan user_id dari token, dan pengembalian 201 Created.
-4. 'src/app/api/v1/tasks/[id]/route.ts': Dynamic Route Handler:
-   - Menangani Next.js 16 async params: 'const { id } = await params;'
-   - 'OPTIONS', 'GET' spesifik, dan 'DELETE' terproteksi Bearer Auth.
-5. 'src/components/tasks/task-search-input.tsx': Komponen Client ('use client') input pencarian tersinkronisasi URL via useRouter & useSearchParams dengan debounce 300ms.
-6. 'src/app/page.tsx': Perbarui Landing Page utama di root '/' dengan Banner Hero navigasi dan tombol CTA jelas menuju Dashboard Tugas (/tasks) serta dokumentasi singkat endpoint REST API Mobile.
+LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
+1. Periksa apakah pustaka 'use-debounce' sudah terpasang:
+   npm install use-debounce
+2. Periksa apakah komponen Shadcn UI yang dibutuhkan sudah ada (Button, Card, Input, Label, Badge, Separator, Table):
+   npx shadcn@latest add button card input label badge separator table
 
-Batasan Arsitektur Ketat:
-- Dilarang keras menggunakan 'SUPABASE_SERVICE_ROLE_KEY' di Route Handler publik.
-- Next.js 16: Parameter dinamis 'params' dan 'searchParams' WAJIB di-await.
-- 0 tipe 'any', gunakan TypeScript strict.`,
-        tip: "Dapatkan Access Token pengguna yang sedang login di browser melalui console peramban: `(await supabase.auth.getSession()).data.session?.access_token` untuk menguji endpoint via Postman atau cURL."
+BATASAN ARSITEKTUR KETAT:
+1. DILARANG KERAS menggunakan 'SUPABASE_SERVICE_ROLE_KEY' di Route Handler publik atau Server Actions biasa.
+2. Next.js 16 Async APIs: Parameter dinamis Route Handler wajib dieksekusi dengan 'const { id } = await params;', dan searchParams di Server Component wajib 'const { search, page } = await searchParams;'.
+3. Direktif 'use client' HANYA boleh berada di leaf components (TaskSearchInput, TaskForm, ApiTesterClient). DILARANG di page.tsx atau layout.tsx.
+4. Standarisasi Respons Error: Route Handler wajib mengembalikan format IETF RFC 7807 (type, title, status, detail, errors).
+5. Zero TypeScript 'any' types.
+6. Konsistensi Relasi 3-Tier (Modul 4): Sesuai DDL database, kolom tasks.project_id berstatus NOT NULL REFERENCES projects(id). Baik pada Server Action (createTaskAction) maupun REST API (POST /api/v1/tasks), buat helper auto-resolving 'resolveTargetProjectId' yang memeriksa apakah user memiliki project di tabel 'projects'. Jika ada, gunakan project.id tersebut; jika belum ada, buatkan otomatis proyek default bernama 'Proyek Utama (General)' sehingga tasks.project_id TIDAK PERNAH NULL.
+
+STRUKTUR 7 BERKAS YANG WAJIB DIRAKIT / DISEMPURNAKAN (SIAP JALAN 100%, TANPA POTONGAN KODE):
+
+BERKAS 1: src/lib/schemas.ts (Shared Single Source of Truth - Sempurnakan yang sudah ada)
+- Sempurnakan skema Zod terpusat 'taskSchema' (title min 3 max 100, priority enum low/medium/high, status enum pending/in_progress/completed, project_id: z.string().uuid().optional()).
+- Tambahkan 'taskUpdateSchema = taskSchema.partial()'. Ekspor tipe 'TaskInput' dan 'TaskUpdateInput'.
+
+BERKAS 2: src/actions/tasks.ts ('use server' - Hubungkan dengan Kuki Sesi Asli)
+- Sempurnakan fungsi mutasi agar membaca user aktif dari kuki @supabase/ssr via createClient().
+- Sertakan helper 'resolveTargetProjectId(supabase, userId, customProjectId)' agar saat insert tugas baru, 'project_id' selalu terisi UUID valid dan tidak pernah bernilai NULL.
+- 'createTaskAction(prevState, formData)': Validasi via taskSchema.safeParse(), resolve project_id, insert user_id & project_id, revalidatePath('/tasks').
+- 'deleteTaskAction(id: string)': Hapus tugas dengan .eq('id', id), revalidatePath('/tasks').
+- 'toggleTaskStatusAction(id: string, currentStatus: string)': Update status ke completed/pending, revalidatePath('/tasks').
+
+BERKAS 3: src/components/tasks/task-search-input.tsx + src/components/tasks/task-form.tsx
+- task-search-input.tsx ('use client'): Komponen baru untuk sinkronisasi URL search params dengan useDebouncedCallback(300ms).
+- task-form.tsx ('use client'): Sempurnakan form tambah tugas menggunakan useActionState & useFormStatus (indikator loading tombol).
+
+BERKAS 4: src/app/(dashboard)/tasks/page.tsx (Server Component - Sempurnakan Dashboard Eksisting)
+- Pertahankan struktur dashboard yang sudah ada dari modul sebelumnya.
+- Tambahkan pembacaan 'const { search, page = "1" } = await searchParams;'.
+- Hitung indeks pagination Supabase: from = (currentPage - 1) * 10, to = from + 9.
+- Eksekusi kueri Supabase tasks dengan .range(from, to) dan .ilike('title', \`%\${search}%\`).
+- Render form tambah tugas, input pencarian, tabel tugas, dan tombol tautan navigasi menuju Mobile API Tester (/tasks/api-tester).
+
+BERKAS 5: src/lib/api-response.ts + src/lib/api-auth.ts (REST Core & Security - Baru Ditambahkan)
+- api-response.ts: Objek 'corsHeaders' (Origin: *, Methods, Headers), helper 'apiSuccess(data, meta, status = 200)', dan helper RFC 7807 'apiError(detail, code, status, errors)'.
+- api-auth.ts: Helper 'verifyApiAuth(request)' yang mengekstrak 'Authorization: Bearer <token>', memverifikasi via supabase.auth.getUser(token), dan mengembalikan client Supabase berbasis token pengguna (menjaga kepatuhan RLS). Tolak 401 jika token kosong/invalid.
+
+BERKAS 6: src/app/api/v1/tasks/route.ts + src/app/api/v1/tasks/[id]/route.ts (REST Endpoints - Baru Ditambahkan)
+- route.ts: Handler OPTIONS (204 No Content), GET (filtering ?search, pagination ?page, ?limit dengan range query), dan POST (validasi Zod taskSchema, auto-resolve project_id ke proyek user jika belum ada, insert dengan project_id & user_id, return 201 atau 422).
+- [id]/route.ts: Next.js 16 async params 'const { id } = await params;'. Handler OPTIONS, GET spesifik ID, PUT update (taskUpdateSchema), dan DELETE.
+
+BERKAS 7: src/app/(dashboard)/tasks/api-tester/page.tsx (Mobile REST Sandbox Playground - Baru Ditambahkan)
+- Halaman simulator klien mobile interaktif:
+  * Pemilih Method: GET, POST, PUT, DELETE.
+  * Input Endpoint URL (default: /api/v1/tasks) dan input Header Authorization: Bearer <token> (sediakan tombol otomatis "Salin Token Sesi Saya").
+  * Input JSON Body editor (untuk POST/PUT).
+  * Tombol aksi "Kirim Request REST API".
+  * Panel Inspeksi Respons: Badge HTTP Status semantik (200, 201, 401, 422), latency timer, dan kartu syntax highlighting menampilkan JSON RFC 7807.
+
+BERKAS 8: src/app/page.tsx (ROOT NAVIGATION RULE)
+- Perbarui Landing Page root '/' dengan Hero CTA cerdas: tautan menuju Dashboard Web Monolith (/tasks) dan Mobile REST Playground (/tasks/api-tester).`,
+        tip: "Dapatkan Access Token sesi aktif Anda langsung dari console peramban via \`(await supabase.auth.getSession()).data.session?.access_token\`, atau gunakan tombol instan 'Salin Token Sesi Saya' pada halaman /tasks/api-tester!",
+        steppedPrompts: [
+          {
+            stepNumber: 1,
+            title: "Tahap 1: Paradigma Monolith Web (Server Actions, RSC & URL as State)",
+            badge: "Paradigma 1: Monolith Web",
+            description: "Membangun dashboard tugas internal berbasis React Server Components, Server Actions ('use server'), form feedback interaktif, serta sinkronisasi kata kunci pencarian dan pagination melalui URL as State.",
+            targetFiles: [
+              "src/lib/schemas.ts",
+              "src/actions/tasks.ts",
+              "src/components/tasks/task-search-input.tsx",
+              "src/components/tasks/task-form.tsx",
+              "src/app/(dashboard)/tasks/page.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Senior Full-Stack Engineer & Next.js 16 Specialist.
+Tugas Anda adalah mengimplementasikan Tahap 1: Paradigma Full-Stack Monolith Web (Dashboard Tugas Internal) pada proyek "The Serverless Odyssey".
+
+PRINSIP KELANJUTAN PROYEK (METODE BOLA SALJU / SNOWBALLING):
+Proyek ini adalah KELANJUTAN BERTAHAP dari Modul 1–5. Layout dashboard, koneksi database Supabase (Modul 4), dan autentikasi sesi (Modul 5) SUDAH TERSEDIA di repositori.
+Tugas Anda adalah MELENGKAPI dan MENYEMPURNAKAN berkas yang sudah ada (incremental refinement), BUKAN merombak ulang atau menghapus layout/middleware yang sudah berjalan.
+
+LANGKAH PRE-KONDISI & DEPENDENSI:
+1. Pastikan pustaka 'use-debounce' terpasang:
+   npm install use-debounce
+2. Pastikan komponen Shadcn UI tersedia (Button, Card, Input, Label, Badge, Table):
+   npx shadcn@latest add button card input label badge table
+
+BATASAN ARSITEKTUR KETAT:
+1. Server Components (RSC): Halaman tasks/page.tsx adalah Server Component. Dilarang menambahkan 'use client' di page.tsx.
+2. Next.js 16 Async searchParams: Props searchParams bertipe Promise, wajib dieksekusi dengan 'const { search, page = "1" } = await searchParams;'.
+3. Form Feedback: Gunakan hook React 19 useActionState dan useFormStatus untuk umpan balik interaktif tanpa page reload.
+4. Cache Invalidation: Wajib panggil revalidatePath('/tasks') di setiap Server Action mutasi.
+5. Zero TypeScript 'any' types.
+6. Relasi 3-Tier (tasks.project_id NOT NULL): Sediakan helper 'resolveTargetProjectId(supabase, userId, customProjectId)' agar tasks.project_id selalu terisi UUID proyek aktif atau auto-create 'Proyek Utama (General)' jika kosong.
+
+STRUKTUR 5 BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
+
+BERKAS 1: src/lib/schemas.ts (Shared Single Source of Truth - Sempurnakan yang sudah ada)
+- Deklarasikan skema Zod terpusat 'taskSchema' (title: string min 3 max 100, priority: enum ['low', 'medium', 'high'] default 'medium', status: enum ['pending', 'in_progress', 'completed'] default 'pending', project_id: z.string().uuid().optional()).
+- Ekspor 'taskUpdateSchema = taskSchema.partial()', tipe 'TaskInput' dan 'TaskUpdateInput'.
+
+BERKAS 2: src/actions/tasks.ts ('use server' - Hubungkan dengan Kuki Sesi Asli)
+- Buat helper 'resolveTargetProjectId' yang memeriksa apakah user memiliki proyek di tabel 'projects'. Jika ada kembalikan project.id, jika belum ada buatkan otomatis proyek default 'Proyek Utama (General)'.
+- 'createTaskAction(prevState: unknown, formData: FormData)': Baca user via cookies @supabase/ssr, validasi input via taskSchema.safeParse(), resolve target project_id, insert { ...parsed.data, project_id, user_id: user.id } ke tabel public.tasks, revalidatePath('/tasks'). Kembalikan { success: true } atau { success: false, errors }.
+- 'deleteTaskAction(id: string)': Hapus data tugas dengan .eq('id', id), revalidatePath('/tasks').
+- 'toggleTaskStatusAction(id: string, currentStatus: string)': Update status tugas menjadi 'completed' atau 'pending', revalidatePath('/tasks').
+
+BERKAS 3: src/components/tasks/task-search-input.tsx ('use client' - Komponen Baru)
+- Input pencarian tersinkronisasi URL via useRouter(), usePathname(), dan useSearchParams() dengan debounce 300ms dari 'use-debounce'.
+- Saat teks berubah, set parameter ?search=... dan reset ?page=1.
+
+BERKAS 4: src/components/tasks/task-form.tsx ('use client' - Sempurnakan yang sudah ada)
+- Form tambah tugas menggunakan useActionState(createTaskAction, null) dan hook useFormStatus() untuk menampilkan spinner/status pending pada tombol submit. Tampilkan pesan kesalahan Zod per field jika ada.
+
+BERKAS 5: src/app/(dashboard)/tasks/page.tsx (Server Component - Sempurnakan Dashboard Eksisting)
+- Baca 'const { search, page = "1" } = await searchParams;'.
+- Hitung from = (parseInt(page) - 1) * 10 dan to = from + 9.
+- Eksekusi kueri Supabase dengan .range(from, to) dan .ilike('title', \`%\${search}%\`).
+- Render UI dashboard elegan: Header dengan tombol CTA menuju "/tasks/api-tester", komponen TaskSearchInput, komponen TaskForm, tabel daftar tugas dengan badge prioritas, dan tombol navigasi pagination.`,
+            checkpoint: "Jalankan 'npm run dev' dan buka http://localhost:3000/tasks di peramban. Pastikan form input tugas dapat menambahkan data baru tanpa full page reload via Server Actions, dan ketikan di kotak pencarian memperbarui URL (?search=...) secara halus dengan jeda debounce 300ms.",
+            tip: "Pastikan Anda sudah login terlebih dahulu agar kuki sesi pengguna aktif dikenali oleh Server Actions dan kueri RSC."
+          },
+          {
+            stepNumber: 2,
+            title: "Tahap 2: Paradigma Universal REST API & Mobile Tester Sandbox",
+            badge: "Paradigma 2: Universal REST API",
+            description: "Membangun endpoint REST API serverless (/api/v1/tasks) untuk klien mobile multi-platform, pengamanan stateless Bearer Token JWT, kepatuhan RLS, penanganan CORS Preflight OPTIONS, kontrak error RFC 7807, serta halaman simulator Mobile Playground di /tasks/api-tester.",
+            targetFiles: [
+              "src/lib/api-response.ts",
+              "src/lib/api-auth.ts",
+              "src/app/api/v1/tasks/route.ts",
+              "src/app/api/v1/tasks/[id]/route.ts",
+              "src/app/(dashboard)/tasks/api-tester/page.tsx",
+              "src/app/page.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Senior Cloud Architect & API Security Specialist.
+Tugas Anda adalah mengimplementasikan Tahap 2: Paradigma Decoupled Universal REST API Gateway & Mobile Sandbox Tester pada proyek "The Serverless Odyssey".
+
+PRINSIP KELANJUTAN PROYEK (METODE BOLA SALJU / SNOWBALLING):
+Tahap 2 menambahkan lapisan endpoint HTTP universal (/api/v1/tasks/...) dan Mobile Tester Sandbox (/tasks/api-tester) untuk melayani klien mobile (Flutter/React Native) dan integrasi eksternal, berdampingan secara harmonis dengan Monolith Web yang telah disempurnakan di Tahap 1. Dilarang merusak rute dashboard web /tasks yang sudah ada.
+
+BATASAN ARSITEKTUR KETAT:
+1. DILARANG KERAS menggunakan 'SUPABASE_SERVICE_ROLE_KEY' di Route Handler publik. Wajib menggunakan ANON_KEY + Bearer Token pengguna agar RLS PostgreSQL tetap aktif.
+2. Next.js 16 Async params: Parameter dinamis kedua [id] bertipe Promise<{ id: string }>, wajib di-await: 'const { id } = await params;'.
+3. Kontrak Error RFC 7807: Wajib mengembalikan struktur JSON terstandarisasi (type, title, status, detail, errors).
+4. Penanganan CORS: Seluruh handler wajib menyertakan header CORS dan mendukung method OPTIONS (status 204 No Content).
+5. Zero TypeScript 'any' types.
+6. Relasi 3-Tier (tasks.project_id NOT NULL): Handler POST /api/v1/tasks meng-auto-resolve project_id jika body JSON klien tidak menyertakannya (mencari proyek user pertama atau membuatkan proyek default), sehingga operasi insert tidak memicu pelanggaran konstrain NOT NULL.
+
+STRUKTUR 6 BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
+
+BERKAS 1: src/lib/api-response.ts (Baru Ditambahkan)
+- Ekspor objek 'corsHeaders' (Access-Control-Allow-Origin: '*', Methods: GET, POST, PUT, DELETE, OPTIONS, Headers: Content-Type, Authorization).
+- Ekspor fungsi 'apiSuccess(data, meta?, status = 200)' dengan header CORS.
+- Ekspor fungsi 'apiError(detail, code = "BAD_REQUEST", status = 400, errors?)' dengan struktur spesifikasi IETF RFC 7807.
+
+BERKAS 2: src/lib/api-auth.ts (Baru Ditambahkan)
+- Ekspor fungsi 'verifyApiAuth(request: Request)':
+  1. Baca header 'Authorization'. Jika tidak diawali 'Bearer ', tolak dengan pesan error.
+  2. Ekstrak token dan bangun instance client Supabase: createClient(url, key, { global: { headers: { Authorization: \`Bearer \${token}\` } } }).
+  3. Panggil supabase.auth.getUser(token). Jika gagal/kedaluwarsa, return { user: null, supabase: null, error: 'Token invalid atau kedaluwarsa' }.
+  4. Return { user, supabase, error: null }.
+
+BERKAS 3: src/app/api/v1/tasks/route.ts (Collection Endpoint - Baru Ditambahkan)
+- 'OPTIONS()': Return new Response(null, { status: 204, headers: corsHeaders }).
+- 'GET(request)': Ekstraksi query string (?search, ?page, ?limit), jalankan kueri Supabase range(from, to), return apiSuccess(data, { page, limit, total }).
+- 'POST(request)': Baca await request.json(), validasi via taskSchema.safeParse(body). Jika gagal return apiError('Validasi gagal', 'VALIDATION_ERROR', 422, errors). Auto-resolve project_id ke proyek aktif user atau buat proyek default jika tidak ada. Sisipkan user_id: user.id & project_id, simpan ke database. Return apiSuccess(data, undefined, 201).
+
+BERKAS 4: src/app/api/v1/tasks/[id]/route.ts (Item Dynamic Endpoint - Baru Ditambahkan)
+- 'const { id } = await params;' di semua method.
+- 'OPTIONS()': Handler preflight 204 No Content.
+- 'GET(request, { params })': Ambil detail tugas by ID dengan .eq('id', id).single(). Return 404 jika tidak ditemukan.
+- 'PUT(request, { params })': Validasi body via taskUpdateSchema.safeParse(), update data tugas milik user, return data terbaru.
+- 'DELETE(request, { params })': Hapus tugas by ID, return konfirmasi sukses 200 OK.
+
+BERKAS 5: src/app/(dashboard)/tasks/api-tester/page.tsx (Mobile API Tester Sandbox - Baru Ditambahkan)
+- Halaman Client Component ('use client') bergaya Mobile / Postman API Playground:
+  * Tab pemilih method: GET, POST, PUT, DELETE.
+  * Input URL endpoint (default: /api/v1/tasks).
+  * Input Bearer Token dengan tombol cerdas "Gunakan Token Sesi Saya" (mengambil token aktif dari session Supabase browser).
+  * Textarea input JSON Request Body untuk method POST dan PUT.
+  * Tombol pemicu "Kirim Request HTTP".
+  * Panel Inspeksi Respons: Badge status HTTP (200, 201, 401, 422), latency timer, dan kotak syntax highlighting menampilkan respons JSON RFC 7807.
+
+BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
+- Perbarui Landing Page root '/' dengan Hero CTA jelas yang menghubungkan pengguna ke Dashboard Web Monolith (/tasks) dan Mobile REST Playground (/tasks/api-tester).`,
+            checkpoint: "Buka http://localhost:3000/tasks/api-tester di peramban. Uji pemanggilan GET tanpa token (harus gagal 401 Unauthorized), lalu klik tombol 'Gunakan Token Sesi Saya' dan kirim request POST tugas baru. Verifikasi respons mengembalikan status 201 Created dan JSON berformat RFC 7807.",
+            tip: "Token Bearer JWT dapat disalin otomatis melalui tombol 'Gunakan Token Sesi Saya' di halaman /tasks/api-tester, atau via console browser: (await supabase.auth.getSession()).data.session?.access_token"
+          }
+        ]
       },
       warningZone: {
-        title: "Zona Bahaya: Kebocoran Data Lintas Pengguna via Service Role Key",
-        desc: "Jangan pernah menggunakan SUPABASE_SERVICE_ROLE_KEY di dalam REST Route Handler publik. Kunci ini mematikan seluruh Row Level Security (RLS) PostgreSQL, sehingga penyerang dapat membaca dan menghapus tugas milik pengguna lain hanya dengan menebak parameter UUID."
+        title: "Zona Bahaya Keamanan: Kebocoran Data Lintas Pengguna via Service Role Key",
+        desc: "DILARANG KERAS mengimpor SUPABASE_SERVICE_ROLE_KEY di Route Handler publik atau Server Actions klien biasa. Kunci ini membypass 100% kebijakan Row Level Security (RLS) PostgreSQL, sehingga penyerang dapat membaca dan menghapus data milik pengguna lain hanya dengan menebak parameter UUID."
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 6: Implementasi REST API Terproteksi & Search URL State",
-      taskDesc: "Bangun endpoint REST API serverless lengkap untuk aplikasi mobile yang diamankan dengan Bearer Token JWT dan CORS, serta integrasikan fitur pencarian URL as State pada dashboard web.",
+      taskTitle: "Misi Minggu 6: Implementasi Arsitektur Ganda (Monolith Web & REST API Mobile)",
+      taskDesc: "Bangun sistem tugas berarsitektur ganda: Dashboard Web internal berbasis Server Actions dan URL as State, serta Universal REST API Route Handlers terproteksi Bearer JWT dan CORS lengkap dengan Mobile API Tester Playground.",
       definitionOfDone: [
-        "Endpoint REST API GET /api/v1/tasks mendukung filter pencarian dan pagination dengan format JSON standar",
-        "Endpoint POST /api/v1/tasks memvalidasi input via Zod dan mengembalikan 201 Created atau 422 Unprocessable Content",
-        "Endpoint terproteksi DELETE /api/v1/tasks/[id] mewajibkan header Authorization: Bearer <token> dan menolak request ilegal dengan 401 Unauthorized",
-        "Header CORS (Access-Control-Allow-*) dan preflight OPTIONS terpasang pada route handler untuk mendukung akses klien mobile",
-        "Halaman dashboard web mengintegrasikan pencarian instan tersinkronisasi URL (?search=...) dengan debounce 300ms"
+        "Skema validasi Zod terpusat (src/lib/schemas.ts) memvalidasi form web sekaligus payload REST API (Prinsip DRY)",
+        "Halaman dashboard web (/tasks) memuat data via RSC, mendukung filter pencarian tersinkronisasi URL (debounce 300ms), dan menjalankan mutasi via Server Actions",
+        "Endpoint REST API GET & POST /api/v1/tasks mendukung pagination berindeks, validasi skema Zod (201 / 422), dan format respons RFC 7807",
+        "Endpoint dinamis /api/v1/tasks/[id] mendukung async params Next.js 16 (await params) untuk operasi GET, PUT, dan DELETE terproteksi Bearer JWT",
+        "Header CORS (Access-Control-Allow-*) dan preflight OPTIONS 204 No Content terpasang aktif pada seluruh route handler",
+        "Halaman Mobile API Tester Sandbox (/tasks/api-tester) berhasil mensimulasikan pemanggilan REST API dengan header Bearer Token dan menampilkan status HTTP semantik di peramban"
       ],
       gitBranchTask: "git checkout -b feature/crud-rest-api-security"
     },

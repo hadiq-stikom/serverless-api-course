@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -92,7 +93,7 @@ import {
   ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
   Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
-  Info, Lightbulb, ShieldAlert, Code, Brain, GraduationCap
+  Info, Lightbulb, ShieldAlert, Code, Brain, GraduationCap, FileCode
 } from "lucide-react";
 
 // Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 14 Subpoin Konsep Pertemuan 2
@@ -569,53 +570,156 @@ const MODULE_6_VISUALIZERS: Record<string, { key: string; title: string; subtitl
   },
 };
 
+// Helper to format inline markdown like `code`, **bold**, and *italic*
+function formatInlineText(str: string) {
+  if (!str) return null;
+  // Regex for matching `code`, **bold**, or *italic*
+  const parts = str.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      const code = part.slice(1, -1);
+      return (
+        <code
+          key={idx}
+          className="px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/70 mx-0.5 inline-block align-baseline"
+        >
+          {code}
+        </code>
+      );
+    }
+    if (part.startsWith("**") && part.endsWith("**")) {
+      const bold = part.slice(2, -2);
+      return (
+        <strong key={idx} className="font-bold text-zinc-950 dark:text-white">
+          {bold}
+        </strong>
+      );
+    }
+    if (part.startsWith("*") && part.endsWith("*")) {
+      const italic = part.slice(1, -1);
+      return (
+        <em key={idx} className="italic text-zinc-800 dark:text-zinc-200 font-medium">
+          {italic}
+        </em>
+      );
+    }
+    return <span key={idx}>{part}</span>;
+  });
+}
+
 function FormattedSubpointText({ text }: { text: string }) {
   if (!text) return null;
 
   // Split into paragraphs by double newlines or single newlines
   const paragraphs = text.split(/\n\n+/).filter(Boolean);
 
-  // Helper to format inline markdown like `code`, **bold**, and *italic*
-  const formatInline = (str: string) => {
-    // Regex for matching `code`, **bold**, or *italic*
-    const parts = str.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
-    return parts.map((part, idx) => {
-      if (part.startsWith("`") && part.endsWith("`")) {
-        const code = part.slice(1, -1);
-        return (
-          <code
-            key={idx}
-            className="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/70 mx-0.5 inline-block align-baseline"
-          >
-            {code}
-          </code>
-        );
-      }
-      if (part.startsWith("**") && part.endsWith("**")) {
-        const bold = part.slice(2, -2);
-        return (
-          <strong key={idx} className="font-bold text-zinc-900 dark:text-zinc-100">
-            {bold}
-          </strong>
-        );
-      }
-      if (part.startsWith("*") && part.endsWith("*")) {
-        const italic = part.slice(1, -1);
-        return (
-          <em key={idx} className="italic text-zinc-800 dark:text-zinc-200 font-medium">
-            {italic}
-          </em>
-        );
-      }
-      return <span key={idx}>{part}</span>;
-    });
+  const renderDescription = (descText: string) => {
+    if (!descText) return null;
+
+    // Normalisasi: pecah bullet point yang terformat inline (misal " - **Berkas" atau " - Prasyarat")
+    const normalizedText = descText
+      .replace(/\s+-\s+(?=(\*\*|Berkas|Prasyarat|Route|Helper|Client|Server))/g, "\n- ")
+      .trim();
+
+    const rawLines = normalizedText.split("\n").map((l) => l.trim()).filter(Boolean);
+
+    if (rawLines.length <= 1 && !rawLines[0]?.match(/^[-*•]\s+/)) {
+      return (
+        <div className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-xs md:text-sm">
+          {formatInlineText(descText)}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2.5 pt-1 text-zinc-600 dark:text-zinc-300">
+        {rawLines.map((line, lIdx) => {
+          const bulletMatch = line.match(/^[-*•]\s+(.*)$/);
+          if (!bulletMatch) {
+            return (
+              <p key={lIdx} className="leading-relaxed text-xs md:text-sm text-zinc-700 dark:text-zinc-300 font-medium">
+                {formatInlineText(line)}
+              </p>
+            );
+          }
+
+          const bulletContent = bulletMatch[1].trim();
+
+          // Cek apakah item adalah Blueprint Berkas / Prasyarat Komponen Teknis
+          // Format contoh: "**Berkas 1 (Kontrak Validasi)**: `src/lib/schemas.ts` — Skema Zod..."
+          // atau "**Prasyarat Proyek**: Pemasangan pustaka..."
+          const fileMatch = bulletContent.match(/^\*\*(Berkas\s+\d+[^:*]*|Prasyarat[^:*]*)\*\*:\s*(.*)$/);
+
+          if (fileMatch) {
+            const fileBadge = fileMatch[1].trim();
+            const restContent = fileMatch[2].trim();
+            const isPrerequisite = fileBadge.toLowerCase().includes("prasyarat");
+
+            return (
+              <div
+                key={lIdx}
+                className={`p-3 rounded-xl border transition-all ${
+                  isPrerequisite
+                    ? "bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/20 dark:border-amber-500/30 text-amber-950 dark:text-amber-100"
+                    : "bg-zinc-50/90 dark:bg-zinc-800/60 border-zinc-200/90 dark:border-zinc-700/80 hover:border-indigo-400 dark:hover:border-indigo-500/70"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold font-mono tracking-tight ${
+                      isPrerequisite
+                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                        : "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30"
+                    }`}
+                  >
+                    {isPrerequisite ? <Sparkles className="w-3 h-3 text-amber-500" /> : <FileCode className="w-3 h-3 text-indigo-500" />}
+                    {fileBadge}
+                  </span>
+                </div>
+                <div className="text-xs md:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 pl-0.5">
+                  {formatInlineText(restContent)}
+                </div>
+              </div>
+            );
+          }
+
+          // Cek apakah bullet memiliki judul tebal: "- **Judul**: Deskripsi..."
+          const titleMatch = bulletContent.match(/^\*\*([^*]+)\*\*:\s*(.*)$/);
+          if (titleMatch) {
+            return (
+              <div key={lIdx} className="flex items-start gap-2.5 pl-1 py-0.5 group/item">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 shrink-0 group-hover/item:scale-125 transition-transform" />
+                <div className="flex-1 leading-relaxed text-xs md:text-sm">
+                  <strong className="font-bold text-zinc-950 dark:text-white mr-1.5">
+                    {titleMatch[1]}:
+                  </strong>
+                  <span className="text-zinc-600 dark:text-zinc-300">
+                    {formatInlineText(titleMatch[2])}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+
+          // Bullet standar
+          return (
+            <div key={lIdx} className="flex items-start gap-2.5 pl-1 py-0.5 group/item">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 shrink-0 group-hover/item:scale-125 transition-transform" />
+              <div className="flex-1 leading-relaxed text-xs md:text-sm text-zinc-600 dark:text-zinc-300">
+                {formatInlineText(bulletContent)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   // If there's only 1 paragraph and it's not a numbered list item
   if (paragraphs.length === 1 && !paragraphs[0].match(/^\d+\.\s+/)) {
     return (
       <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-        {formatInline(paragraphs[0])}
+        {formatInlineText(paragraphs[0])}
       </p>
     );
   }
@@ -623,15 +727,41 @@ function FormattedSubpointText({ text }: { text: string }) {
   return (
     <div className="space-y-3 pt-1">
       {paragraphs.map((p, pIdx) => {
-        // Check if paragraph is a numbered item: "1. Title: Description" or "1. Description"
-        const numMatch = p.match(/^(\d+)\.\s+([^:]+):?\s*([\s\S]*)$/);
+        // Cek apakah paragraf adalah numbered item:
+        // Pola multi-line: baris pertama "1. Judul: ...", sisa baris adalah deskripsi/list
+        const firstLineEnd = p.indexOf("\n");
+        let num = "";
+        let itemTitle = "";
+        let itemDesc = "";
+        let isNumbered = false;
 
-        if (numMatch) {
-          const num = numMatch[1];
-          const hasColon = p.includes(":");
-          const itemTitle = hasColon ? numMatch[2].trim() : "";
-          const itemDesc = hasColon ? numMatch[3].trim() : numMatch[2].trim() + (numMatch[3] ? ": " + numMatch[3].trim() : "");
+        if (firstLineEnd !== -1) {
+          const firstLine = p.slice(0, firstLineEnd).trim();
+          const rest = p.slice(firstLineEnd + 1).trim();
+          const numMatch = firstLine.match(/^(\d+)\.\s+(.*)$/);
+          if (numMatch) {
+            isNumbered = true;
+            num = numMatch[1];
+            let rawTitle = numMatch[2].trim();
+            if (rawTitle.endsWith(":")) rawTitle = rawTitle.slice(0, -1).trim();
+            itemTitle = rawTitle;
+            itemDesc = rest;
+          }
+        }
 
+        // Fallback untuk single-line numbered item
+        if (!isNumbered) {
+          const singleMatch = p.match(/^(\d+)\.\s+([^:]+):?\s*([\s\S]*)$/);
+          if (singleMatch) {
+            isNumbered = true;
+            num = singleMatch[1];
+            const hasColon = p.includes(":");
+            itemTitle = hasColon ? singleMatch[2].trim() : "";
+            itemDesc = hasColon ? singleMatch[3].trim() : singleMatch[2].trim() + (singleMatch[3] ? ": " + singleMatch[3].trim() : "");
+          }
+        }
+
+        if (isNumbered) {
           return (
             <div
               key={pIdx}
@@ -642,13 +772,11 @@ function FormattedSubpointText({ text }: { text: string }) {
               </span>
               <div className="space-y-1.5 flex-1 text-xs md:text-sm leading-relaxed">
                 {itemTitle && (
-                  <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 flex-wrap">
-                    {formatInline(itemTitle)}
+                  <div className="font-bold text-zinc-950 dark:text-zinc-50 flex items-center gap-1.5 flex-wrap">
+                    {formatInlineText(itemTitle)}
                   </div>
                 )}
-                <div className="text-zinc-600 dark:text-zinc-300">
-                  {formatInline(itemDesc)}
-                </div>
+                {renderDescription(itemDesc)}
               </div>
             </div>
           );
@@ -660,7 +788,7 @@ function FormattedSubpointText({ text }: { text: string }) {
             key={pIdx}
             className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium"
           >
-            {formatInline(p)}
+            {formatInlineText(p)}
           </p>
         );
       })}
@@ -860,10 +988,28 @@ export default function ModuleDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/5 font-semibold text-xs py-0.5">
             +{currentModule.xp} XP
           </Badge>
+          <Link
+            href="/dosen"
+            title="Dosen Pengampu: Hadiq, ST, M.Kom (STIKOM PGRI Banyuwangi)"
+            className="flex items-center gap-1.5 p-1 pr-2 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-all cursor-pointer group"
+          >
+            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-indigo-500/60 shrink-0 bg-indigo-50 dark:bg-indigo-950">
+              <Image
+                src="/dosen.png"
+                alt="Dosen Pengampu"
+                fill
+                className="object-cover object-top"
+                sizes="24px"
+              />
+            </div>
+            <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 hidden xl:inline">
+              Dosen
+            </span>
+          </Link>
           <ThemeToggle />
         </div>
       </header>
@@ -937,6 +1083,9 @@ export default function ModuleDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 text-xs font-semibold">
                 {currentModule.worldTitle}
+              </Badge>
+              <Badge variant="outline" className="border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-mono font-semibold">
+                MK: KK112112
               </Badge>
               <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" /> {currentModule.duration}
@@ -1280,10 +1429,20 @@ export default function ModuleDetailPage() {
                           )}
                         </div>
 
-                        {/* Main Content Paragraph */}
-                        <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                          {section.content}
-                        </p>
+                        {/* Main Content Card with Architecture Foundation Badge & Semantic Emphasis */}
+                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50/70 via-zinc-50/40 to-white dark:from-indigo-950/30 dark:via-zinc-900/50 dark:to-zinc-900/70 p-4 sm:p-5 border border-indigo-100/90 dark:border-indigo-900/50 shadow-xs space-y-3">
+                          <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-xs uppercase tracking-wider">
+                            <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
+                            <span>Landasan Konsep & Arsitektur</span>
+                          </div>
+                          <div className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed space-y-2.5">
+                            {section.content.split(/\n\n+/).map((par, pIdx) => (
+                              <p key={pIdx} className="leading-relaxed">
+                                {formatInlineText(par)}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
 
                         {/* Subpoints */}
                         {section.subpoints && section.subpoints.length > 0 && (

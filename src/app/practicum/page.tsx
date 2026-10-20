@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import {
@@ -147,13 +148,16 @@ export default async function PracticumCatalogPage() {
               <FlaskConical className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
               <span>Studio Praktikum Terpadu</span>
             </div>
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-500/10 dark:bg-teal-950/40 border border-teal-500/30 text-teal-700 dark:text-teal-300 text-xs font-mono font-bold">
+              <span>Kode Praktikum: KK112113</span>
+            </div>
           </div>
 
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-100">
             Laboratorium & Laporan Praktikum
           </h1>
           <p className="text-sm md:text-base text-slate-600 dark:text-zinc-400 leading-relaxed font-normal">
-            7 modul pengujian empiris, analisis berbantuan AI, dan pembuatan laporan digital resmi dengan pengesahan tanda tangan.
+            7 modul pengujian empiris matakuliah Pengembangan Aplikasi Serverless API (Kode MK: <strong className="font-mono text-slate-900 dark:text-zinc-100 font-semibold">KK112112</strong>), analisis berbantuan AI, dan pembuatan laporan digital resmi dengan pengesahan dosen pengampu: <strong className="text-slate-900 dark:text-zinc-100 font-semibold">Hadiq, ST, M.Kom</strong>.
           </p>
         </div>
 
@@ -166,9 +170,17 @@ export default async function PracticumCatalogPage() {
               <Link href="/dosen">
                 <Button
                   size="sm"
-                  className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs gap-1.5 rounded-xl shadow-xs h-9 px-3.5 transition-all"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs gap-2 rounded-xl shadow-xs h-9 px-3 transition-all"
                 >
-                  <Award className="w-3.5 h-3.5" />
+                  <div className="relative w-5 h-5 rounded-full overflow-hidden border border-white/60 shrink-0">
+                    <Image
+                      src="/dosen.png"
+                      alt="Dosen"
+                      fill
+                      className="object-cover object-top"
+                      sizes="20px"
+                    />
+                  </div>
                   <span>Portal Dosen ({lecturer.fullName.split(" ")[0]})</span>
                 </Button>
               </Link>
@@ -197,10 +209,18 @@ export default async function PracticumCatalogPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 font-medium rounded-xl h-9 px-3 gap-1.5"
+                className="text-xs text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 font-medium rounded-xl h-9 px-2.5 gap-2"
               >
-                <Award className="w-3.5 h-3.5" />
-                <span>Masuk Dosen</span>
+                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-amber-500/60 shrink-0">
+                  <Image
+                    src="/dosen.png"
+                    alt="Dosen Pengampu"
+                    fill
+                    className="object-cover object-top"
+                    sizes="20px"
+                  />
+                </div>
+                <span>Portal Dosen</span>
               </Button>
             </Link>
           )}

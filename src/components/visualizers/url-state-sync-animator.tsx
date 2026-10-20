@@ -29,7 +29,7 @@ export function UrlStateSyncAnimator() {
       setDebouncedValue(inputValue);
       setIsDebouncing(false);
       setFetchCounter((prev) => prev + 1);
-    }, 400);
+    }, 300);
 
     return () => clearTimeout(handler);
   }, [inputValue, currentPage]);
@@ -74,7 +74,7 @@ export function UrlStateSyncAnimator() {
         <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-              <Search className="w-4 h-4 text-cyan-500" /> Kotak Pencarian Klien (Debounce 400ms):
+              <Search className="w-4 h-4 text-cyan-500" /> Kotak Pencarian Klien (Debounce 300ms):
             </label>
             {isDebouncing && (
               <span className="text-[10px] text-amber-500 font-mono flex items-center gap-1">

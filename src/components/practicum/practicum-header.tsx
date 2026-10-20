@@ -184,6 +184,12 @@ export function PracticumHeader({
               <Badge variant="outline" className={`${theme?.badge ?? "border-teal-500/25 text-teal-800 dark:text-teal-300"} font-mono text-xs px-2.5 py-0.5`}>
                 Praktikum {practicum?.id ?? 1} of 7
               </Badge>
+              <Badge variant="outline" className="border-teal-500/30 text-teal-700 dark:text-teal-300 text-xs font-mono font-semibold">
+                Kode Praktikum: KK112113
+              </Badge>
+              <Badge variant="outline" className="border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-mono font-semibold">
+                Kode MK: KK112112
+              </Badge>
               <Badge variant="outline" className="text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-800 text-xs font-mono">
                 Ref: Modul {practicum.lectureModule} Kuliah
               </Badge>
@@ -221,7 +227,7 @@ export function PracticumHeader({
             </div>
             <div className="space-y-0.5">
               <div className="font-semibold text-slate-900 dark:text-zinc-100 flex items-center gap-1.5">
-                <span>{isInstructor ? (lecturerName ?? student.fullName) : student.fullName}</span>
+                <span>{isInstructor ? (lecturerName ?? "Hadiq, ST, M.Kom") : student.fullName}</span>
                 {isInstructor && (
                   <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-md bg-amber-600 text-white font-mono">
                     Dosen
@@ -230,7 +236,7 @@ export function PracticumHeader({
               </div>
               <div className="text-slate-500 dark:text-zinc-400 font-mono text-[11px]">
                 {isInstructor
-                  ? `NIDN: ${student.nim} • Instruktur Praktikum`
+                  ? `NIDN: ${student.nim} • Instruktur Praktikum (KK112113)`
                   : `${student.nim} • ${student.classGroup}`}
               </div>
             </div>

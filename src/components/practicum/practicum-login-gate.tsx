@@ -16,6 +16,8 @@ import {
   ShieldCheck,
   ArrowRight,
   Laptop,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,10 +48,12 @@ export function PracticumLoginGate({
   // Student form state
   const [nim, setNim] = useState("");
   const [password, setPassword] = useState("");
+  const [showStudentPassword, setShowStudentPassword] = useState(false);
 
   // Lecturer form state
   const [nidn, setNidn] = useState("0012345678");
   const [lecturerPassword, setLecturerPassword] = useState("0012345678");
+  const [showLecturerPassword, setShowLecturerPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -325,15 +329,30 @@ export function PracticumLoginGate({
                       <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                       <span>Kata Sandi Dosen</span>
                     </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Masukkan kata sandi..."
-                      value={lecturerPassword}
-                      onChange={(e) => setLecturerPassword(e.target.value)}
-                      disabled={isLoading}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showLecturerPassword ? "text" : "password"}
+                        required
+                        placeholder="Masukkan kata sandi..."
+                        value={lecturerPassword}
+                        onChange={(e) => setLecturerPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="w-full px-3.5 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all"
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => setShowLecturerPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 p-0.5 transition-colors"
+                        title={showLecturerPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                      >
+                        {showLecturerPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <Button
@@ -403,15 +422,30 @@ export function PracticumLoginGate({
                     <KeyRound className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                     <span>Kata Sandi (Default = NIM)</span>
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Masukkan kata sandi..."
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500/50 transition-all"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showStudentPassword ? "text" : "password"}
+                      required
+                      placeholder="Masukkan kata sandi..."
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLoading}
+                      className="w-full px-3.5 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500/50 transition-all"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowStudentPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 p-0.5 transition-colors"
+                      title={showStudentPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                    >
+                      {showStudentPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <Button

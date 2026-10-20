@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { MODULES } from "@/data/curriculum";
 
 export interface StudentSession {
@@ -102,7 +103,7 @@ export async function loginStudentAction(
 
     if (isLiveSupabase) {
       try {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         const { data, error } = await supabase
           .from("students")
           .select("nim, full_name, class_group, password_hash")
@@ -117,6 +118,7 @@ export async function loginStudentAction(
           };
           if (data.password_hash) {
             expectedPassword = data.password_hash;
+            customPasswordsStore[nim] = data.password_hash;
           }
         }
       } catch (err) {
@@ -139,6 +141,25 @@ export async function loginStudentAction(
           fullName: `Mahasiswa (${nim})`,
           classGroup: "Kelas A",
         };
+      }
+
+      // Pastikan akun mahasiswa ter-record permanen di database Supabase
+      if (isLiveSupabase && studentData) {
+        try {
+          const supabase = createAdminClient();
+          await supabase.from("students").upsert(
+            {
+              nim: studentData.nim,
+              full_name: studentData.fullName,
+              class_group: studentData.classGroup,
+              password_hash: null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "nim" }
+          );
+        } catch (err) {
+          console.warn("Supabase upsert student on login fallback:", err);
+        }
       }
     }
 
@@ -270,7 +291,7 @@ export async function changeStudentPasswordAction(
 
   if (isLiveSupabase) {
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       const { data } = await supabase
         .from("students")
         .select("password_hash")
@@ -292,18 +313,27 @@ export async function changeStudentPasswordAction(
     return { success: false, message: "Kata sandi baru minimal 4 karakter." };
   }
 
+  // Update memory cache
   customPasswordsStore[nim] = newPassword;
 
+  // Persist ke Supabase database dengan upsert agar terjamin tersimpan
   if (isLiveSupabase) {
     try {
-      const supabase = await createClient();
-      await supabase
-        .from("students")
-        .update({
+      const supabase = createAdminClient();
+      const { error: upsertErr } = await supabase.from("students").upsert(
+        {
+          nim: nim,
+          full_name: session.student.fullName,
+          class_group: session.student.classGroup || "Kelas A",
           password_hash: newPassword,
           updated_at: new Date().toISOString(),
-        })
-        .eq("nim", nim);
+        },
+        { onConflict: "nim" }
+      );
+
+      if (upsertErr) {
+        console.error("Gagal menyimpan password mahasiswa ke Supabase:", upsertErr);
+      }
     } catch (err) {
       console.warn("Supabase persist password fallback:", err);
     }
@@ -311,7 +341,7 @@ export async function changeStudentPasswordAction(
 
   return {
     success: true,
-    message: "Kata sandi berhasil diperbarui. Harap ingat kata sandi baru Anda.",
+    message: "Kata sandi berhasil diperbarui secara permanen. Harap ingat kata sandi baru Anda.",
   };
 }
 
@@ -329,7 +359,7 @@ export async function resetStudentPasswordByLecturerAction(
 
   if (isLiveSupabase) {
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       await supabase
         .from("students")
         .update({

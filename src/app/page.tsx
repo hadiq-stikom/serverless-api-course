@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -272,19 +273,32 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold tracking-wide uppercase">
               <Map className="w-3.5 h-3.5" />
-              Buku Rancangan Pembelajaran (RPS)
+              <span>RPS (MK: KK112112)</span>
             </div>
 
             <Link href="/practicum">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase hover:bg-emerald-500/20 transition-all cursor-pointer">
                 <FlaskConical className="w-3.5 h-3.5" />
-                <span>7 Modul Praktikum</span>
+                <span>7 Modul Praktikum (KK112113)</span>
                 <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </div>
             </Link>
 
-            {/* Mobile Auth Button */}
+            {/* Mobile Auth & Lecturer Button */}
             <div className="lg:hidden flex items-center gap-2">
+              <Link
+                href="/dosen"
+                title="Dosen Pengampu: Hadiq, ST, M.Kom"
+                className="relative w-7 h-7 rounded-full overflow-hidden border-2 border-indigo-500/60 shadow-xs shrink-0 bg-indigo-50 dark:bg-indigo-950"
+              >
+                <Image
+                  src="/dosen.png"
+                  alt="Dosen Pengampu: Hadiq, ST, M.Kom"
+                  fill
+                  className="object-cover object-top"
+                  sizes="28px"
+                />
+              </Link>
               {studentSession ? (
                 <Link href="/dashboard">
                   <Button size="sm" className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-2.5">
@@ -332,6 +346,90 @@ export default function Home() {
             <span className="text-zinc-900 dark:text-white font-semibold">Supabase</span>,{" "}
             <span className="text-zinc-900 dark:text-white font-semibold">Cloudinary</span>, dan <span className="text-zinc-900 dark:text-white font-semibold">Vercel</span> dengan bantuan AI.
           </motion.p>
+
+          {/* Kartu Profil Dosen Pengampu Terhormat (Hero Instructor Card) */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="group relative p-3.5 sm:p-4 rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-indigo-200/80 dark:border-indigo-900/60 shadow-sm hover:shadow-lg hover:border-indigo-400 dark:hover:border-indigo-500/70 transition-all duration-300 max-w-2xl mt-2"
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 sm:gap-4">
+              {/* Foto Dosen Portrait Proporsional (Anti-Gepeng) */}
+              <div className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-2xl overflow-hidden border-2 border-indigo-500/50 shadow-md shrink-0 bg-indigo-50 dark:bg-indigo-950">
+                <Image
+                  src="/dosen.png"
+                  alt="Foto Resmi Dosen Pengampu: Hadiq, ST, M.Kom"
+                  fill
+                  className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 640px) 64px, 80px"
+                  priority
+                />
+                <span
+                  className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900 shadow-xs"
+                  title="Dosen Pengampu Aktif"
+                />
+              </div>
+
+              {/* Detail Identitas Dosen & Institusi Kampus */}
+              <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 text-[10px] font-semibold">
+                    <ShieldCheck className="w-3 h-3 mr-1 text-emerald-500" />
+                    Dosen Pengampu Matakuliah
+                  </Badge>
+                  <Badge variant="outline" className="border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono">
+                    MK: KK112112
+                  </Badge>
+                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono">
+                    Prak: KK112113
+                  </Badge>
+                  <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Aktif Mengajar
+                  </span>
+                </div>
+
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-snug">
+                    Hadiq, ST, M.Kom
+                  </h2>
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                    STIKOM PGRI Banyuwangi
+                  </p>
+                </div>
+
+                <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed font-normal line-clamp-2">
+                  Membimbing perancangan arsitektur Serverless API (KK112112), integrasi database Supabase PostgreSQL, keamanan RLS, dan 7 Modul Praktikum terpadu (KK112113).
+                </p>
+
+                <div className="pt-1 flex flex-wrap items-center gap-2">
+                  <Link href="/dosen">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs px-2.5 rounded-lg border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 font-semibold gap-1.5"
+                    >
+                      <Award className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>Masuk Portal Dosen</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </Button>
+                  </Link>
+
+                  <Link href="/practicum">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs px-2.5 rounded-lg text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-semibold gap-1.5"
+                    >
+                      <FlaskConical className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>7 Modul Praktikum</span>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Student Progress Card & Auth Controls */}
@@ -370,9 +468,17 @@ export default function Home() {
                 </Button>
               </div>
             ) : lecturerSession ? (
-              <div className="flex items-center gap-2 p-1 pl-2.5 bg-white dark:bg-zinc-900 border border-amber-500/30 rounded-xl shadow-xs">
-                <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium">
-                  <Award className="w-3.5 h-3.5 text-amber-500" />
+              <div className="flex items-center gap-2 p-1 pl-2 bg-white dark:bg-zinc-900 border border-amber-500/30 rounded-xl shadow-xs">
+                <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 font-medium">
+                  <div className="relative w-6 h-6 rounded-full overflow-hidden border border-amber-500/60 shrink-0">
+                    <Image
+                      src="/dosen.png"
+                      alt="Dosen"
+                      fill
+                      className="object-cover object-top"
+                      sizes="24px"
+                    />
+                  </div>
                   <span className="font-semibold max-w-[140px] truncate">{lecturerSession.fullName}</span>
                 </div>
                 <Link href="/dosen">
@@ -392,14 +498,35 @@ export default function Home() {
                 </Button>
               </div>
             ) : (
-              <Button
-                size="sm"
-                onClick={() => setShowLoginModal(true)}
-                className="gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white h-8 font-semibold shadow-xs rounded-xl"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Masuk / Login</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/dosen"
+                  className="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500/60 shadow-xs transition-all text-xs"
+                  title="Portal Dosen Pengampu: Hadiq, ST, M.Kom"
+                >
+                  <div className="relative w-5 h-5 rounded-full overflow-hidden border border-indigo-500/50 shrink-0">
+                    <Image
+                      src="/dosen.png"
+                      alt="Dosen Pengampu"
+                      fill
+                      className="object-cover object-top"
+                      sizes="20px"
+                    />
+                  </div>
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300 text-[11px] hidden xl:inline">
+                    Dosen Pengampu
+                  </span>
+                </Link>
+
+                <Button
+                  size="sm"
+                  onClick={() => setShowLoginModal(true)}
+                  className="gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white h-8 font-semibold shadow-xs rounded-xl"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Masuk / Login</span>
+                </Button>
+              </div>
             )}
             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 mx-0.5" />
             <ThemeToggle />

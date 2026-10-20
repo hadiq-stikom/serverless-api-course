@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ShieldAlert,
@@ -31,7 +32,9 @@ import {
   User,
   MessageSquare,
   Bot,
-  Fingerprint
+  Fingerprint,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -121,6 +124,7 @@ export default function DosenPortalPage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [authError, setAuthError] = useState("");
 
   // State Monitoring Data
@@ -153,6 +157,8 @@ export default function DosenPortalPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState("");
 
   // Cek Sesi Dosen saat mount
@@ -257,14 +263,28 @@ export default function DosenPortalPage() {
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Kembali ke Beranda Utama</span>
             </Link>
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-inner">
-              <Award className="w-7 h-7" />
+            <div className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-xl mx-auto bg-amber-50 dark:bg-amber-950/40">
+              <Image
+                src="/dosen.png"
+                alt="Foto Profil Dosen Pengampu"
+                fill
+                className="object-cover object-top"
+                sizes="96px"
+                priority
+              />
+              <span
+                className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900 shadow-xs"
+                title="Dosen Pengampu Aktif"
+              />
             </div>
             <h1 className="text-2xl font-black text-foreground">
               Portal Dosen Pengampu
             </h1>
+            <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
+              Hadiq, ST, M.Kom
+            </p>
             <p className="text-xs text-muted-foreground">
-              Masuk menggunakan Username dan Password Anda untuk mengakses Pusat Kendali &amp; Monitoring.
+              STIKOM PGRI Banyuwangi • Matakuliah: <span className="font-mono font-semibold">KK112112</span> | Praktikum: <span className="font-mono font-semibold">KK112113</span>
             </p>
           </div>
 
@@ -300,14 +320,29 @@ export default function DosenPortalPage() {
                     <KeyRound className="w-3.5 h-3.5 text-amber-500" />
                     Password
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Masukkan password..."
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-input bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showLoginPassword ? "text" : "password"}
+                      required
+                      placeholder="Masukkan password..."
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      className="w-full px-3.5 pr-10 py-2.5 rounded-xl border border-input bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowLoginPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
+                      title={showLoginPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    >
+                      {showLoginPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <Button
@@ -361,15 +396,22 @@ export default function DosenPortalPage() {
               </Button>
             </Link>
             <div className="h-4 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                <Award className="w-4 h-4" />
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-sm shrink-0 bg-amber-500/10">
+                <Image
+                  src="/dosen.png"
+                  alt="Foto Resmi Dosen Pengampu"
+                  fill
+                  className="object-cover object-top"
+                  sizes="36px"
+                  priority
+                />
               </div>
               <div>
-                <h1 className="text-sm font-bold text-foreground">
+                <h1 className="text-sm font-bold text-foreground leading-tight">
                   Dashboard Monitoring Dosen
                 </h1>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground font-medium">
                   {lecturerSession.fullName}
                 </p>
               </div>
@@ -1756,27 +1798,57 @@ export default function DosenPortalPage() {
                   <label className="text-[11px] font-semibold text-muted-foreground">
                     Password Lama
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Masukkan password saat ini..."
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showOldPassword ? "text" : "password"}
+                      required
+                      placeholder="Masukkan password saat ini..."
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      className="w-full px-3 pr-8 py-2 text-xs rounded-lg border border-input bg-background"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowOldPassword((prev) => !prev)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 transition-colors"
+                      title={showOldPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    >
+                      {showOldPassword ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold text-muted-foreground">
                     Password Baru
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Masukkan password baru..."
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      required
+                      placeholder="Masukkan password baru..."
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-3 pr-8 py-2 text-xs rounded-lg border border-input bg-background"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowNewPassword((prev) => !prev)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 transition-colors"
+                      title={showNewPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button

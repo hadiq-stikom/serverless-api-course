@@ -32,6 +32,8 @@ import {
   Coffee,
   MessageSquareHeart,
   Pause,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -100,12 +102,15 @@ export function ModuleQuizPanel({
   const [authLoading, setAuthLoading] = useState(true);
   const [nimInput, setNimInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [authError, setAuthError] = useState("");
 
   // State Ubah Password
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState("");
 
   // State Kuis
@@ -549,25 +554,55 @@ export function ModuleQuizPanel({
               <label className="text-[11px] font-semibold text-muted-foreground">
                 Kata Sandi Lama (Default: NIM)
               </label>
-              <input
-                type="password"
-                required
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
-              />
+              <div className="relative">
+                <input
+                  type={showOldPassword ? "text" : "password"}
+                  required
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  className="w-full px-3 pr-8 py-2 text-xs rounded-lg border border-input bg-background"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowOldPassword((prev) => !prev)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 transition-colors"
+                  title={showOldPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                >
+                  {showOldPassword ? (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-muted-foreground">
                 Kata Sandi Baru
               </label>
-              <input
-                type="password"
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-input bg-background"
-              />
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3 pr-8 py-2 text-xs rounded-lg border border-input bg-background"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 transition-colors"
+                  title={showNewPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button
@@ -657,14 +692,29 @@ export function ModuleQuizPanel({
                     Default = NIM
                   </span>
                 </div>
-                <input
-                  type="password"
-                  required
-                  placeholder="Masukkan kata sandi..."
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-input bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type={showLoginPassword ? "text" : "password"}
+                    required
+                    placeholder="Masukkan kata sandi..."
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="w-full px-3.5 pr-10 py-2.5 rounded-xl border border-input bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all"
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowLoginPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
+                    title={showLoginPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                  >
+                    {showLoginPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <Button

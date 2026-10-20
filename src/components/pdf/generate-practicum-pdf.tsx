@@ -339,9 +339,15 @@ export function PracticumReportDocument({
       <Page size="A4" style={styles.page}>
         {/* KOP LAPORAN */}
         <View style={styles.headerContainer}>
-          <Text style={styles.instTitle}>PROGRAM STUDI TEKNIK INFORMATIKA</Text>
+          <Text style={styles.instTitle}>STIKOM PGRI BANYUWANGI</Text>
+          <Text style={{ fontSize: 9.5, fontFamily: "Helvetica-Bold", color: "#334155", marginTop: 2 }}>
+            PROGRAM STUDI TEKNIK INFORMATIKA
+          </Text>
           <Text style={styles.subInstTitle}>
-            Matakuliah: Pengembangan Aplikasi Serverless API (Next.js, Supabase, Cloudinary, Vercel)
+            Pengembangan Aplikasi Serverless API (Kode MK: KK112112 | Kode Praktikum: KK112113)
+          </Text>
+          <Text style={{ fontSize: 8, color: "#64748b", marginTop: 1 }}>
+            Dosen Pengampu: Hadiq, ST, M.Kom
           </Text>
           <Text style={styles.reportMainTitle}>LAPORAN HASIL PRAKTIKUM</Text>
           <Text style={styles.reportSubTitle}>
@@ -367,9 +373,19 @@ export function PracticumReportDocument({
             <Text style={styles.metaValue}>{student.classGroup}</Text>
           </View>
           <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Kode Matakuliah / Praktikum</Text>
+            <Text style={styles.metaColon}>:</Text>
+            <Text style={styles.metaValue}>KK112112 / KK112113</Text>
+          </View>
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Dosen Pengampu</Text>
+            <Text style={styles.metaColon}>:</Text>
+            <Text style={styles.metaValue}>Hadiq, ST, M.Kom</Text>
+          </View>
+          <View style={styles.metaRow}>
             <Text style={styles.metaLabel}>Modul Teori Kuliah</Text>
             <Text style={styles.metaColon}>:</Text>
-            <Text style={styles.metaValue}>Modul {practicum.lectureModule}</Text>
+            <Text style={styles.metaValue}>Modul {practicum.lectureModule} (The Serverless Odyssey)</Text>
           </View>
           <View style={styles.metaRow}>
             <Text style={styles.metaLabel}>Tanggal Pengiriman</Text>
@@ -494,9 +510,9 @@ export function PracticumReportDocument({
               )}
             </View>
             <Text style={styles.signName}>
-              {approvedByName ? approvedByName : "(Nama Dosen Pengampu)"}
+              {approvedByName ? approvedByName : "Hadiq, ST, M.Kom"}
             </Text>
-            <Text style={styles.signId}>Dosen Pengampu Serverless API</Text>
+            <Text style={styles.signId}>Dosen Pengampu (KK112112 / KK112113)</Text>
             {approvalStatus === "approved" && (
               <View style={styles.stampApproved}>
                 <Text style={styles.stampText}>
