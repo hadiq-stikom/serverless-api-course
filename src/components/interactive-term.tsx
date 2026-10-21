@@ -31,7 +31,7 @@ import {
   KeyRound
 } from "lucide-react";
 
-export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "proxy" | "jwt" | "supabase-auth" | "route-handler" | "rest-api" | "bearer-token" | "cors";
+export type TermKey = "faas" | "baas" | "rls" | "server-actions" | "cloudinary" | "rsc" | "client-component" | "shadcn" | "app-router" | "zod" | "use-action-state" | "postgresql" | "uuid" | "oauth" | "middleware" | "proxy" | "jwt" | "supabase-auth" | "route-handler" | "rest-api" | "bearer-token" | "cors" | "framer-motion" | "spring-physics" | "variants" | "animate-presence" | "layout-id";
 
 interface TermData {
   title: string;
@@ -372,6 +372,81 @@ const TERMS_DATA: Record<TermKey, TermData> = {
       "🌐 Universal Access: Wajib dikonfigurasi saat frontend web terpisah domain dari backend API"
     ],
     courseRole: "Di kuliah ini: Pengaturan gerbang keamanan HTTP agar aplikasi mobile dan web eksternal tidak diblokir browser."
+  },
+  "framer-motion": {
+    title: "Framer Motion",
+    fullName: "Declarative React Animation Library",
+    badgeColor: "from-purple-500 to-indigo-600",
+    icon: Sparkles,
+    type: "general",
+    summary: "Pustaka animasi deklaratif standar emas untuk React dan Next.js. Menyediakan komponen 'motion.*', gesture handlers, dan integrasi hardware-accelerated GPU tanpa memanipulasi DOM secara manual.",
+    analogy: "💡 Analogi: Seperti sutradara teater profesional. Anda cukup memberitahu aktor 'wujud akhir yang diinginkan', dan sutradara yang mengatur kecepatan, ritme, dan kehalusan gerak panggung secara otomatis.",
+    keyPoints: [
+      "🎬 Declarative API: Cukup definisikan initial, animate, dan transition",
+      "⚡ Hardware Acceleration: Animasi 60 FPS pada GPU compositor (transform & opacity)",
+      "🎛️ Gestures Bawaan: Dukungan whileHover, whileTap, whileFocus, dan drag instan"
+    ],
+    courseRole: "Di kuliah ini: Engine utama untuk menghidupkan UI, transisi layout, dan micro-interactions sebelum UTS."
+  },
+  "spring-physics": {
+    title: "Spring Physics",
+    fullName: "Physics-Based Simulation (Stiffness & Damping)",
+    badgeColor: "from-indigo-500 to-cyan-600",
+    icon: Zap,
+    type: "general",
+    summary: "Model animasi berbasis hukum alam pegas nyata (kekakuan/stiffness, peredam/damping, massa/mass). Menggantikan durasi waktu milidetik kaku dengan elastisitas yang adaptif terhadap interupsi pengguna.",
+    analogy: "💡 Analogi: Seperti suspensi mobil mewah. Ketika jalan bergelombang atau mobil mengerem mendadak, getaran diredam secara alami tanpa sentakan kasar.",
+    keyPoints: [
+      "🧲 Kecepatan Alami: Gerakan ditentukan oleh keseimbangan gaya, bukan timer statis",
+      "🛑 Anti-Glitch Interupsi: Momentum kecepatan tetap terjaga saat user mengklik berulang-ulang",
+      "⚖️ Parameter Fleksibel: Stiffness mengatur responsivitas, damping mengatur kestabilan pendaratan"
+    ],
+    courseRole: "Di kuliah ini: Standar transisi seluruh komponen UI agar gerakan terasa organik dan memukau."
+  },
+  variants: {
+    title: "Variants",
+    fullName: "Visual State Orchestration Objects",
+    badgeColor: "from-cyan-500 to-teal-600",
+    icon: Layers,
+    type: "general",
+    summary: "Objek konfigurasi deklaratif yang memisahkan definisi state visual (hidden, visible, exit) dari JSX. Memungkinkan propagasi otomatis ke elemen anak dengan efek stagger bertahap.",
+    analogy: "💡 Analogi: Seperti partitur musik konduktor orkestra. Satu aba-aba 'mainkan lagu' dari konduktor membuat seluruh instrumen musik masuk secara berurutan sesuai tempo.",
+    keyPoints: [
+      "🧹 Clean JSX: Memisahkan properti animasi dari tag elemen HTML",
+      "🌊 Stagger Effect: Mengatur jeda kemunculan elemen anak secara berurutan (staggerChildren)",
+      "🔗 Parent-Child Sync: Mengubah state induk otomatis memicu perubahan seluruh anak"
+    ],
+    courseRole: "Di kuliah ini: Mengorkestrasi kemunculan daftar kartu tugas dan grid data agar tampil mewah."
+  },
+  "animate-presence": {
+    title: "AnimatePresence",
+    fullName: "React Unmounting Lifecycle Interceptor",
+    badgeColor: "from-rose-500 to-pink-600",
+    icon: RefreshCw,
+    type: "general",
+    summary: "Komponen pembungkus khusus yang menahan elemen di Virtual DOM saat React hendak mencabutnya, memberi waktu bagi animasi 'exit' untuk selesai diputar sebelum elemen dihapus permanen.",
+    analogy: "💡 Analogi: Seperti pintu lift otomatis dengan sensor. Pintu menahan keberangkatan sebentar sampai penumpang terakhir benar-benar keluar dengan selamat, baru lift bergerak.",
+    keyPoints: [
+      "🚪 Exit Animations: Mengatasi unmounting instan 0 ms bawaan React",
+      "🔑 Kunci Wajib: Membutuhkan prop key unik berbasis ID deterministik (UUID)",
+      "📐 Mode Layout: Mendukung mode 'wait' dan 'popLayout' untuk transisi halaman dan list"
+    ],
+    courseRole: "Di kuliah ini: Menghidupkan animasi saat tugas dihapus, filter list berubah, dan modal dialog ditutup."
+  },
+  "layout-id": {
+    title: "layoutId",
+    fullName: "Shared Element Transitions Identifier",
+    badgeColor: "from-amber-500 to-orange-600",
+    icon: Layout,
+    type: "general",
+    summary: "Identifier unik yang menghubungkan dua elemen berbeda pada cabang pohon React terpisah, menciptakan ilusi optik bahwa satu elemen fisik meluncur dan bertransformasi bentuk antar posisi.",
+    analogy: "💡 Analogi: Seperti proyektor sorot lampu di panggung teater. Lampu sorot meluncur mulus mengikuti aktor utama yang berpindah dari sisi kiri panggung ke sisi kanan.",
+    keyPoints: [
+      "✨ Magis Tanpa Koordinat: Framer Motion menghitung delta posisi via GPU FLIP otomatis",
+      "🗂️ Sliding Tab Indicators: Standar emas pembuatan indikator tab dan navigasi mengambang",
+      "🔄 Smooth Resizing: Berinterpolasi ukuran dimensi dan radius border secara presisi"
+    ],
+    courseRole: "Di kuliah ini: Membuat pill slider aktif yang meluncur anggun pada filter status tugas."
   }
 };
 
@@ -947,6 +1022,136 @@ export function InteractiveTerm({ term, children, showIcon = true }: Interactive
                   </div>
                   <p className="text-[10px] text-amber-300/90 text-center font-mono">
                     CORS = Pengaman browser lintas-domain, wajib dikonfigurasi pada REST API
+                  </p>
+                </div>
+              )}
+
+              {/* Framer Motion Pipeline */}
+              {term === "framer-motion" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 flex flex-col items-center justify-center">
+                      <Code className="w-4 h-4 text-purple-400 mb-1" />
+                      <span className="font-semibold text-purple-300">initial</span>
+                      <span className="text-[9px] text-zinc-400">State awal DOM</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-indigo-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-indigo-300">animate</span>
+                      <span className="text-[9px] text-zinc-400">Target visual</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <Zap className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">GPU Composite</span>
+                      <span className="text-[9px] text-zinc-400">60-120 FPS</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-indigo-300/90 text-center font-mono">
+                    Framer Motion = Deklaratif, hardware-accelerated, dan physics-driven
+                  </p>
+                </div>
+              )}
+
+              {/* Spring Physics Pipeline */}
+              {term === "spring-physics" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-indigo-950/40 border border-indigo-500/40 flex flex-col items-center justify-center">
+                      <Zap className="w-4 h-4 text-indigo-400 mb-1" />
+                      <span className="font-semibold text-indigo-300">stiffness</span>
+                      <span className="text-[9px] text-zinc-400">Gaya tarikan</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-cyan-950/40 border border-cyan-500/40 flex flex-col items-center justify-center">
+                      <Workflow className="w-4 h-4 text-cyan-400 mb-1" />
+                      <span className="font-semibold text-cyan-300">damping</span>
+                      <span className="text-[9px] text-zinc-400">Redaman gesekan</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">No Glitch</span>
+                      <span className="text-[9px] text-zinc-400">Interupsi mulus</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-cyan-300/90 text-center font-mono">
+                    Spring = Animasi berbasis energi alamiah yang kebal terhadap klik cepat
+                  </p>
+                </div>
+              )}
+
+              {/* Variants Pipeline */}
+              {term === "variants" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-cyan-950/40 border border-cyan-500/40 flex flex-col items-center justify-center">
+                      <Layers className="w-4 h-4 text-cyan-400 mb-1" />
+                      <span className="font-semibold text-cyan-300">Parent State</span>
+                      <span className="text-[9px] text-zinc-400">hidden / visible</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-teal-950/40 border border-teal-500/40 flex flex-col items-center justify-center">
+                      <Workflow className="w-4 h-4 text-teal-400 mb-1" />
+                      <span className="font-semibold text-teal-300">staggerChildren</span>
+                      <span className="text-[9px] text-zinc-400">Jeda sekuensial</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Children Sync</span>
+                      <span className="text-[9px] text-zinc-400">Cascade waterfall</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-teal-300/90 text-center font-mono">
+                    Variants = Mengorkestrasi state visual puluhan elemen dalam satu kendali
+                  </p>
+                </div>
+              )}
+
+              {/* AnimatePresence Pipeline */}
+              {term === "animate-presence" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-rose-950/40 border border-rose-500/40 flex flex-col items-center justify-center">
+                      <X className="w-4 h-4 text-rose-400 mb-1" />
+                      <span className="font-semibold text-rose-300">Unmount Call</span>
+                      <span className="text-[9px] text-zinc-400">React hapus node</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-pink-950/40 border border-pink-500/40 flex flex-col items-center justify-center">
+                      <RefreshCw className="w-4 h-4 text-pink-400 mb-1 animate-spin" />
+                      <span className="font-semibold text-pink-300">exit Play</span>
+                      <span className="text-[9px] text-zinc-400">Ditahan sementara</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">DOM Release</span>
+                      <span className="text-[9px] text-zinc-400">Hapus permanen</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-pink-300/90 text-center font-mono">
+                    AnimatePresence = Mencegat unmounting React agar animasi exit berjalan
+                  </p>
+                </div>
+              )}
+
+              {/* layoutId Pipeline */}
+              {term === "layout-id" && (
+                <div className="py-2 space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex flex-col items-center justify-center">
+                      <Layout className="w-4 h-4 text-amber-400 mb-1" />
+                      <span className="font-semibold text-amber-300">Element A</span>
+                      <span className="text-[9px] text-zinc-400">layoutId="pill"</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-orange-950/40 border border-orange-500/40 flex flex-col items-center justify-center">
+                      <ArrowRight className="w-4 h-4 text-orange-400 mb-1 animate-pulse" />
+                      <span className="font-semibold text-orange-300">FLIP Matrix</span>
+                      <span className="text-[9px] text-zinc-400">GPU delta morph</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mb-1" />
+                      <span className="font-semibold text-emerald-300">Element B</span>
+                      <span className="text-[9px] text-zinc-400">Meluncur mulus</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-amber-300/90 text-center font-mono">
+                    layoutId = Shared element transitions tanpa perlu hitung getBoundingClientRect
                   </p>
                 </div>
               )}

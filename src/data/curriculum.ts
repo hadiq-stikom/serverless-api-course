@@ -4657,46 +4657,991 @@ BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
     worldId: "world-1",
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 7,
-    title: "Advanced UI/UX 1: Animasi & Framer Motion",
-    subtitle: "Menghidupkan antarmuka web dengan animasi transisi halaman, micro-interactions, dan layout animations.",
-    cpmk: "Mahasiswa mampu mengintegrasikan pustaka Framer Motion untuk menghasilkan pengalaman visual yang responsif, dinamis, dan halus.",
+    title: "Advanced UI/UX 1: Animasi & Framer Motion (Transisi Layout, Exit Animations & Micro-Interactions)",
+    subtitle: "Menghidupkan antarmuka web modern dengan animasi deklaratif, fisika pegas (spring physics), transisi layout FLIP, exit animations (AnimatePresence), gesture micro-interactions, dan akselerasi GPU 60 FPS pada Next.js 16.",
+    cpmk: "Mahasiswa mampu merancang dan mengimplementasikan animasi antarmuka web tingkat lanjut menggunakan pustaka Framer Motion pada Next.js 16, menguasai fisika pegas (spring physics), orkestrasi variants bertingkat (stagger children), penanganan exit animations via AnimatePresence, transisi layout otomatis (layoutId shared element transitions), gesture micro-interactions (whileHover, whileTap), serta menerapkan optimasi performa komposit GPU (transform/opacity) dan aksesibilitas reduced motion.",
+    cpmkPoints: [
+      {
+        code: "CPMK 7.1",
+        badge: "Declarative & Springs",
+        title: "Penguasaan Paradigma Animasi Deklaratif & Fisika Pegas (Spring Physics)",
+        desc: "Merancang animasi berbasis fisika pegas (`stiffness`, `damping`, `mass`) menggunakan `motion.*` primitives yang adaptif terhadap interupsi pengguna, membedakannya dari kurva durasi waktu linier kaku CSS Transitions, serta mengisolasi eksekusi pada Client Component boundary (`'use client'`) daun terluar.",
+        keywords: ["Framer Motion", "Spring Physics", "stiffness & damping", "Declarative Animation", "RSC Client Boundary"]
+      },
+      {
+        code: "CPMK 7.2",
+        badge: "Variants & Stagger",
+        title: "Orkestrasi State Visual Bersarang (Variants & Stagger Children)",
+        desc: "Mengorkestrasi perubahan state antarmuka kompleks secara deklaratif menggunakan objek *Variants*, propagasi state visual otomatis dari kontainer induk ke elemen turunan (*parent-child propagation*), efek sekuensial bertahap (*stagger children*), serta injeksi prop dinamis berbasis indeks (*custom variants*).",
+        keywords: ["Framer Variants", "staggerChildren", "Visual State Orchestration", "Parent-Child Propagation", "Dynamic Variants"]
+      },
+      {
+        code: "CPMK 7.3",
+        badge: "AnimatePresence & LayoutId",
+        title: "Siklus Hidup Unmounting (AnimatePresence) & Transisi Layout (FLIP & layoutId)",
+        desc: "Mengatasi kendala unmounting instan React dengan pembungkus `AnimatePresence` untuk transisi elemen keluar (*exit animations*), mengotomasi transisi perubahan posisi DOM melalui algoritma *FLIP (First, Last, Invert, Play)* via prop `layout`, serta merancang *Shared Element Transitions* magis menggunakan `layoutId`.",
+        keywords: ["AnimatePresence", "Exit Animations", "FLIP Technique", "layout Prop", "Shared Element (layoutId)"]
+      },
+      {
+        code: "CPMK 7.4",
+        badge: "Micro-Gestures & 60 FPS",
+        title: "Mikro-Interaksi Gestur Taktil & Rekayasa Performa GPU 60 FPS",
+        desc: "Mengembangkan respons antarmuka taktil instan melalui gestur `whileHover`, `whileTap`, dan `whileFocus`, mencegah *layout thrashing* dengan membatasi animasi pada lapisan komposit GPU (`transform` & `opacity`), serta menerapkan kepatuhan aksesibilitas universal menggunakan hook `useReducedMotion`.",
+        keywords: ["Micro-interactions", "whileHover & whileTap", "GPU Compositing (60 FPS)", "Layout Thrashing Prevention", "useReducedMotion"]
+      }
+    ],
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 400,
     concepts: {
-      summary: "Micro-animations meningkatkan persepsi performa aplikasi dan memberikan umpan balik instan atas tindakan pengguna.",
+      summary: "Animasi antarmuka pada rekayasa web modern bukan sekadar pemanis visual (gimmick), melainkan instrumen kognitif krusial yang memberikan umpan balik spasial (spatial orientation), mengomunikasikan hubungan sebab-akibat (affordance), dan meningkatkan persepsi kecepatan aplikasi. Menggunakan pustaka Framer Motion di Next.js 16, kita mentransformasi antarmuka statis menjadi sistem interaktif yang hidup melalui 4 pilar utama: fisika pegas (spring physics) yang adaptif terhadap interupsi pengguna, orkestrasi variants dan stagger sekuensial, penanganan siklus unmount dengan AnimatePresence dan transisi layoutId yang magis, serta rekayasa mikro-interaksi gestur yang terakselerasi penuh pada lapisan GPU 60 FPS tanpa mengorbankan performa bundle Server Components.",
       points: [
-        { title: "AnimatePresence & Layout Animations", desc: "Menghasilkan transisi mulus saat elemen DOM masuk atau dihapus dari layar." },
-        { title: "Spring Physics vs Ease", desc: "Animasi berbasis fisika pegas (spring) terasa jauh lebih alami dibanding transisi linier CSS biasa." }
+        { title: "Declarative Spring Physics", desc: "Animasi berbasis gaya fisika alamiah (kekakuan/stiffness dan peredam/damping) yang adaptif dan elastis saat diinterupsi oleh interaksi pengguna yang cepat." },
+        { title: "Variants & Stagger Orchestration", desc: "Pemisahan state visual dari deklarasi JSX; propagasi state otomatis dari parent ke anak menghasilkan efek stagger grid kartu yang mewah dan teratur." },
+        { title: "AnimatePresence & FLIP Layout", desc: "Menahan komponen di Virtual DOM hingga animasi keluar (exit) tuntas, serta menghitung transisi pergeseran layout otomatis tanpa lag via algoritma FLIP dan layoutId." },
+        { title: "Micro-Gestures & 60 FPS GPU Composite", desc: "Umpan balik taktil instan (whileHover & whileTap) yang diakselerasi langsung oleh GPU (transform & opacity) dengan perlindungan aksesibilitas useReducedMotion." }
+      ],
+      diagramNote: "User Gesture (whileHover/Tap) ➔ Spring Physics Engine (Stiffness/Damping) ➔ GPU Compositor (Transform & Opacity Layer) ➔ AnimatePresence Exit Hold ➔ FLIP Layout Reconciler (layoutId) ➔ 60 FPS Zero-Jank UI",
+      deepDiveSections: [
+        {
+          title: "1. Paradigma Animasi Modern: Fisika Pegas (Spring Physics) vs Transisi Durasi Linier & Batasan RSC Next.js 16",
+          badge: "Pilar 1: Fondasi Fisika Animasi",
+          content: "Sebelum era pustaka fisika modern, animasi web didominasi oleh transisi waktu linier CSS (`transition: all 300ms ease-in-out`). Pendekatan ini memiliki kelemahan fundamental: jika pengguna mengklik elemen di tengah-tengah animasi, browser akan memotong jalur gerakan secara tiba-tiba (*jarring snap*) atau membalikkan waktu secara tidak natural.\n\n" +
+                   "Framer Motion merevolusi cara kerja ini dengan memperkenalkan **Fisika Pegas (Spring Physics)** yang mensimulasikan hukum fisika dunia nyata: elemen memiliki massa (*mass*), gaya lentur pegas (*stiffness*), dan hambatan gesek (*damping*). Gerakan tidak lagi ditentukan oleh durasi detik yang kaku, melainkan oleh keseimbangan energi kinetik yang elastis dan mulus.\n\n" +
+                   "Di lingkungan **Next.js 16 App Router**, animasi melibatkan komputasi Virtual DOM dan event listener browser pada setiap frame (60–120 FPS). Oleh karena itu, kita wajib menerapkan arsitektur *'Pushing use client to the Leaves'*: menjaga Server Components (RSC) tetap murni 0 kB bundle di level layout dan halaman, lalu membungkus animasi ke dalam komponen daun (*leaf components*) terluar.",
+          subpoints: [
+            {
+              label: "Anatomi Animasi Deklaratif: Motion Primitives, Properti initial, animate, & transition",
+              text: "1. Konsep Dasar Motion Primitives:\n" +
+                    "Framer Motion menyediakan elemen HTML yang telah disuntikkan kemampuan animasi supercharged melalui namespace `motion.*` (seperti `motion.div`, `motion.button`, `motion.ul`, `motion.li`). Elemen ini menerima properti animasi secara deklaratif tanpa memerlukan manipulasi DOM manual (`document.querySelector`) atau keyframe CSS rumit.\n\n" +
+                    "2. Tiga Pilar Properti Utama:\n" +
+                    "- **`initial`**: Menentukan state visual awal elemen saat pertama kali masuk ke pohon DOM (misal: transparan `opacity: 0` dan bergeser ke bawah `y: 20`). Jika diset ke `false`, elemen langsung merender state `animate` tanpa transisi awal (berguna untuk Server-Side Rendering).\n" +
+                    "- **`animate`**: Menentukan state visual target akhir yang ingin dicapai (misal: `opacity: 1` dan kembali ke posisi normal `y: 0`). Properti ini bereaksi reaktif terhadap perubahan *state* React.\n" +
+                    "- **`transition`**: Mengonfigurasi matematika di balik gerakan, menentukan apakah menggunakan fisika pegas (`type: 'spring'`) atau interpolasi kurva bezier (`type: 'tween'`).\n\n" +
+                    "3. Mengapa Animasi Deklaratif Lebih Unggul:\n" +
+                    "Developer cukup mendeskripsikan *'seperti apa wujud akhirnya'*, dan Framer Motion yang bertugas menghitung diferensial kecepatan, percepatan, serta interpolasi frame per frame secara otomatis.",
+              code: `// src/components/ui/fade-in-card.tsx
+'use client';
+
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface FadeInCardProps {
+  children: React.ReactNode;
+  delay?: number;
+}
+
+export function FadeInCard({ children, delay = 0 }: FadeInCardProps) {
+  return (
+    <motion.div
+      // 1. Posisi awal: tembus pandang dan bergeser 16px ke bawah
+      initial={{ opacity: 0, y: 16 }}
+      // 2. Posisi target: solid dan berada di posisi koordinat asli
+      animate={{ opacity: 1, y: 0 }}
+      // 3. Konfigurasi transisi berbasis fisika pegas alami
+      transition={{
+        type: 'spring',
+        stiffness: 300, // Kecepatan respons tarikan pegas
+        damping: 24,    // Redaman gesekan agar osilasi berhenti mulus
+        delay: delay,   // Jeda sebelum animasi dimulai
+      }}
+    >
+      <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
+        <CardContent className="p-6">
+          {children}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}`,
+              language: "tsx",
+              caption: "Anatomi dasar komponen motion.div deklaratif dengan transisi spring physics."
+            },
+            {
+              label: "Fisika Pegas (Spring Physics) vs Kurva Durasi Linier CSS: Mengapa Pegas Terasa Alami?",
+              text: "1. Anatomi Parameter Matematika Fisika Pegas:\n" +
+                    "- **`stiffness` (Kekakuan Pegas)**: Mengontrol seberapa kuat gaya tarik pegas menuju posisi target. Semakin tinggi nilainya (misal: `400–600`), gerakan semakin cepat dan agresif (*snappy*).\n" +
+                    "- **`damping` (Gaya Redaman/Gesekan)**: Mengontrol seberapa cepat osilasi getaran diredam hingga berhenti. Nilai rendah (`< 15`) menghasilkan pantulan elastis (*bouncy*); nilai seimbang (`20–30`) menghasilkan pendaratan mantap tanpa getaran berlebih (*critical damping*).\n" +
+                    "- **`mass` (Inersia Bobot)**: Mensimulasikan berat elemen. Elemen berbobot besar (`mass: 2`) membutuhkan energi lebih besar untuk bergerak dan membutuhkan waktu lebih lama untuk berhenti.\n" +
+                    "- **`velocity` (Kecepatan Awal)**: Kecepatan bawaan yang diwarisi dari gestur pengguna (misal: kecepatan lemparan saat di-drag).\n\n" +
+                    "2. Keunggulan Menghadapi Interupsi Pengguna (Interruption Resilience):\n" +
+                    "Dalam antarmuka nyata, pengguna sering mengklik tombol atau berpindah tab secara cepat sebelum animasi sebelumnya selesai. Pada CSS biasa (`transition: 300ms`), membalikkan animasi di tengah jalan memicu lonjakan visual (*visual glitch*). Namun pada Fisika Pegas, vektor kecepatan saat ini langsung diintegrasikan ke arah target baru, menjaga kesinambungan momentum gerak secara organik.",
+              code: `// Perbandingan: CSS Duration vs Framer Spring Physics
+
+// ❌ 1. Pendekatan Tradisional (CSS Tween / Easing Kaku)
+// Kelemahan: Kecepatan tidak realistis; jika diinterupsi akan terasa kaku dan artifisial
+const rigidTransition = {
+  type: "tween",
+  duration: 0.35, // Memaksa durasi tepat 350 milidetik
+  ease: [0.25, 0.1, 0.25, 1.0], // Kurva cubic-bezier statis
+};
+
+// ✅ 2. Standar Emas Industri (Framer Motion Spring Physics)
+// Keunggulan: Durasi dihitung dinamis oleh hukum fisika; mulus saat diinterupsi
+const organicSpringTransition = {
+  type: "spring",
+  stiffness: 400, // Cepat merespons sentuhan (snappy)
+  damping: 28,    // Teredam sempurna tanpa getaran lebay (no-overshoot)
+  mass: 1,        // Bobot elemen normal
+};`,
+              language: "typescript",
+              caption: "Perbandingan matematis antara CSS Tween berbasis durasi statis vs Spring Physics adaptif."
+            },
+            {
+              label: "Arsitektur Animasi pada Next.js 16: Pushing 'use client' to the Leaves",
+              text: "1. Batasan Arsitektur App Router:\n" +
+                    "Pustaka animasi seperti Framer Motion bergantung pada siklus render browser, Web Animations API, dan event listener DOM peramban. Oleh karena itu, komponen yang mengimpor `motion.*` **WAJIB** berada di lingkungan Client Component (`'use client'`).\n\n" +
+                    "2. Hukum Dosa: Dilarang Menjadikan Seluruh Page 'use client'!\n" +
+                    "Banyak developer pemula secara sembrono menambahkan direktif `'use client'` di puncak file `src/app/(dashboard)/tasks/page.tsx` hanya agar bisa menambahkan animasi fade-in pada halaman. Hal ini menghancurkan seluruh keunggulan Server Components (RSC): data fetching Supabase beralih ke browser, token database terancam bocor, dan bundle JavaScript klien membengkak puluhan kilobyte!\n\n" +
+                    "3. Solusi Pola Desain (Interleaving Leaf Pattern):\n" +
+                    "- Halaman utama `page.tsx` tetap murni **React Server Component (0 kB)** yang mengambil data tugas langsung dari PostgreSQL Supabase.\n" +
+                    "- Data hasil kueri dilewatkan ke komponen pembungkus animasi daun (*leaf component*) seperti `AnimatedTaskList.tsx` yang bertindak sebagai *client boundary* terisolasi.",
+              code: `// src/app/(dashboard)/tasks/page.tsx (Server Component - 0 kB Bundle!)
+import { createClient } from '@/utils/supabase/server';
+import { AnimatedTaskGrid } from '@/components/tasks/animated-task-grid';
+
+export default async function TasksPage() {
+  const supabase = await createClient();
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('*, project:projects(title)')
+    .order('created_at', { ascending: false });
+
+  return (
+    <main className="container mx-auto py-8 space-y-6">
+      <h1 className="text-2xl font-bold tracking-tight">Daftar Tugas Proyek</h1>
+      {/* Komponen Leaf 'use client' membungkus render animasi grid */}
+      <AnimatedTaskGrid tasks={tasks ?? []} />
+    </main>
+  );
+}`,
+              language: "tsx",
+              caption: "Pola isolasi daun terluar (Pushing 'use client' to the Leaves) pada Next.js 16 Server Components."
+            }
+          ]
+        },
+        {
+          title: "2. Orkestrasi Visual Tingkat Lanjut: Arsitektur Variants, Stagger Children & Dynamic Injections",
+          badge: "Pilar 2: Orkestrasi & Hierarki",
+          content: "Saat membangun antarmuka web modern berskala produksi (seperti dashboard manajemen proyek atau kanban board), kita sering menghadapi antarmuka hierarkis dengan puluhan elemen bersarang: kontainer daftar, kartu tugas, avatar anggota tim, badge status, dan menu dropdown.\n\n" +
+                   "Menuliskan properti `initial` dan `animate` secara *inline* pada setiap tag HTML secara terpisah adalah **anti-pattern** yang memicu *code duplication*, sulit dirawat, dan mustahil dikoordinasikan secara sekuensial.\n\n" +
+                   "Framer Motion menyediakan solusi arsitektur elegan bernama **Variants**: objek konfigurasi deklaratif yang memisahkan definisi state visual dari struktur JSX, sekaligus memungkinkan propagasi state otomatis dari kontainer induk (*parent*) ke seluruh elemen anak (*children*) dengan orkestrasi waktu bertingkat (*staggered timeline*).",
+          subpoints: [
+            {
+              label: "Masalah Hardcoded Props & Keunggulan Arsitektur Variants",
+              text: "1. Anatomi Objek Variants:\n" +
+                    "Variant adalah kamus JavaScript murni bertipe `Variants` yang memetakan nama state semantik (misal: `hidden`, `visible`, `hover`, `exit`) ke target properti gaya visual dan konfigurasinya.\n\n" +
+                    "2. Mekanisme Propagasi Otomatis (Parent-Child Propagation):\n" +
+                    "Ketika komponen induk (`motion.ul`) memiliki variant `hidden` dan `visible`, dan kita mengaktifkan `animate=\"visible\"` pada induk, maka setiap elemen anak (`motion.li`) yang memiliki variant dengan nama kunci yang sama akan otomatis beralih ke state `visible` secara sinkron tanpa perlu menuliskan props `animate` manual pada setiap anak!\n\n" +
+                    "3. Dekopel Logika dari Presentasi:\n" +
+                    "Seluruh aturan animasi dapat diekstraksi ke berkas konfigurasi tersendiri (misal: `src/lib/animations.ts`), menjaga berkas komponen UI tetap bersih, ramping, dan mudah diuji.",
+              code: `// src/lib/animations.ts
+import { Variants } from 'framer-motion';
+
+// Variant Kontainer Induk (Mengorkestrasi Waktu & Urutan Elemen Anak)
+export const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      // 1. Jeda 0.1s sebelum anak pertama mulai muncul
+      delayChildren: 0.1,
+      // 2. Setiap anak muncul berurutan dengan jeda 0.08 detik
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+// Variant Elemen Anak (Kartu Tugas)
+export const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 350,
+      damping: 25,
+    },
+  },
+};`,
+              language: "typescript",
+              caption: "Definisi modular objek Variants untuk kontainer dan elemen anak."
+            },
+            {
+              label: "Efek Sekuensial Bertahap: Stagger Children & Delay Orchestration",
+              text: "1. Mengapa Efek Stagger Sangat Disukai Pengguna:\n" +
+                    "Jika 15 kartu tugas dimuat ke layar secara serentak dalam 1 milidetik, mata pengguna mengalami *cognitive sensory overload* karena seluruh layar berubah sekaligus. Dengan menerapkan `staggerChildren: 0.06`, kartu muncul mengalir berurutan dari atas ke bawah seperti air terjun (*waterfall cascade*). Ini memberikan waktu bagi mata untuk menangkap struktur layout secara intuitif.\n\n" +
+                    "2. Properti Kunci Orkestrasi Waktu:\n" +
+                    "- **`staggerChildren`**: Interval jeda waktu (dalam detik) antara mulainya animasi dari satu anak ke anak berikutnya.\n" +
+                    "- **`staggerDirection`**: Arah urutan kemunculan (`1` untuk urutan maju dari indeks pertama, `-1` untuk urutan mundur dari indeks terakhir).\n" +
+                    "- **`when`**: Mengontrol urutan relasi induk dan anak. Nilai `\"beforeChildren\"` memastikan animasi transisi induk selesai terlebih dahulu sebelum anak mulai beranimasi; nilai `\"afterChildren\"` berlaku sebaliknya.",
+              code: `// src/components/tasks/animated-task-grid.tsx
+'use client';
+
+import { motion } from 'framer-motion';
+import { containerVariants, itemVariants } from '@/lib/animations';
+
+interface Task {
+  id: string;
+  title: string;
+  status: string;
+}
+
+export function AnimatedTaskGrid({ tasks }: { tasks: Task[] }) {
+  return (
+    // Kontainer Induk mengendalikan alur stagger
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
+      {tasks.map((task) => (
+        // Elemen Anak otomatis mewarisi state "hidden" dan "visible"
+        <motion.div
+          key={task.id}
+          variants={itemVariants}
+          className="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm"
+        >
+          <h3 className="font-semibold text-zinc-900 dark:text-white">{task.title}</h3>
+          <span className="text-xs text-zinc-500 mt-2 inline-block uppercase font-bold tracking-wider">
+            {task.status}
+          </span>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}`,
+              language: "tsx",
+              caption: "Implementasi antarmuka grid tugas dengan efek kemunculan beruntun (staggered cascade)."
+            },
+            {
+              label: "Dynamic Variants Berbasis Indeks (Custom Prop Injections)",
+              text: "1. Kebutuhan Animasi Terpersonalisasi per Elemen:\n" +
+                    "Terkadang kita membutuhkan perhitungan dinamis pada masing-masing item, misalnya: elemen yang berada di sisi kiri layar meluncur dari kiri (`x: -50`), sedangkan elemen di sisi kanan meluncur dari kanan (`x: 50`), atau jeda waktu yang dihitung berdasarkan rumus matematika kompleks.\n\n" +
+                    "2. Cara Kerja Prop `custom`:\n" +
+                    "Alih-alih mendefinisikan variant sebagai objek statis, kita dapat menulisnya sebagai sebuah **fungsi** yang menerima argumen: `(custom: T) => TargetAndTransition`. Nilai ini diinjeksikan langsung melalui prop `custom={i}` pada tag `motion.*`.",
+              code: `// src/components/tasks/dynamic-stagger-item.tsx
+'use client';
+
+import { motion, Variants } from 'framer-motion';
+
+// Variant berupa fungsi dinamis menerima indeks item
+const dynamicItemVariants: Variants = {
+  hidden: (index: number) => ({
+    opacity: 0,
+    y: 25,
+    // Elemen bernomor genap sedikit miring ke kiri, ganjil ke kanan
+    rotate: index % 2 === 0 ? -1.5 : 1.5,
+  }),
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    rotate: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 24,
+      // Kalkulasi jeda waktu spesifik per nomor urut
+      delay: index * 0.05,
+    },
+  }),
+};
+
+export function DynamicTaskItem({ task, index }: { task: any; index: number }) {
+  return (
+    <motion.div
+      custom={index} // Melewatkan indeks ke fungsi variant
+      variants={dynamicItemVariants}
+      initial="hidden"
+      animate="visible"
+      className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700"
+    >
+      <span className="text-xs font-mono text-indigo-500">#{index + 1}</span>
+      <p className="text-sm font-medium mt-1">{task.title}</p>
+    </motion.div>
+  );
+}`,
+              language: "tsx",
+              caption: "Injeksi parameter indeks (custom props) untuk variasi animasi matematis per elemen."
+            }
+          ]
+        },
+        {
+          title: "3. Siklus Hidup Unmounting (AnimatePresence) & Transisi Layout Magis (FLIP & layoutId)",
+          badge: "Pilar 3: Siklus Hidup & Layout",
+          content: "Salah satu tantangan terbesar dalam ekosistem React adalah penanganan elemen yang dihapus dari tampilan (*unmounting*). Di React standar, saat sebuah elemen dihilangkan dari Virtual DOM (misal: tugas dihapus atau dialog modal ditutup), React langsung mencabut elemen tersebut dari DOM peramban dalam 0 milidetik. Akibatnya, animasi transisi keluar (*exit animation*) tidak pernah sempat terlihat oleh mata pengguna!\n\n" +
+                   "Framer Motion menyelesaikan dilema arsitektur ini melalui komponen sakral **`AnimatePresence`**: sebuah komponen pembungkus yang mampu 'mencegat' proses penghapusan DOM, menahan elemen yang sedang di-unmount di tempatnya, menunggu hingga animasi `exit` selesai diputar, barulah mengizinkan React mencabut node DOM tersebut secara permanen.\n\n" +
+                   "Selain itu, Framer Motion menghadirkan kekuatan **Shared Element Transitions** berbasis prop **`layout`** dan **`layoutId`**. Dengan algoritma komputasi FLIP internal, elemen antarmuka yang berpindah posisi atau bertransisi antar kontainer dapat meluncur dengan keanggunan tingkat tinggi tanpa developer perlu menghitung koordinat piksel `getBoundingClientRect()` secara manual.",
+          subpoints: [
+            {
+              label: "Dilema Unmounting React & Cara Kerja AnimatePresence",
+              text: "1. Mekanisme Kerja Komponen AnimatePresence:\n" +
+                    "Komponen `<AnimatePresence>` bertindak sebagai penjaga gerbang (*lifecycle gatekeeper*). Ketika kondisi rendering berubah (misal: `{isOpen && <Modal />}` atau saat item dihapus dari array), `AnimatePresence` mendeteksi bahwa elemen anak akan dicabut. Ia membaca konfigurasi pada prop `exit` elemen tersebut, mengeksekusinya hingga tuntas, lalu melepas node DOM.\n\n" +
+                    "2. Aturan Wajib: Identitas Unik Prop `key`!\n" +
+                    "Setiap elemen anak langsung di dalam `<AnimatePresence>` **WAJIB** memiliki prop `key` yang unik dan deterministik (misal: ID database `task.id`). Framer Motion menggunakan `key` untuk melacak apakah sebuah elemen masih ada, sedang masuk, atau sedang keluar. Jangan pernah menggunakan indeks array (`key={index}`) karena akan merusak pelacakan elemen yang dihapus!\n\n" +
+                    "3. Mode Eksekusi AnimatePresence:\n" +
+                    "- **`mode=\"sync\"` (Default)**: Elemen baru yang masuk dan elemen lama yang keluar beranimasi secara bersamaan.\n" +
+                    "- **`mode=\"wait\"`**: Elemen lama menyelesaikan animasi `exit` terlebih dahulu hingga hilang sempurna, barulah elemen baru mulai memutar animasi masuk `initial` ➔ `animate` (sangat ideal untuk transisi halaman atau pergantian tab).\n" +
+                    "- **`mode=\"popLayout\"`**: Elemen yang sedang keluar langsung dilepaskan dari aliran layout normal (*popped out of document flow*), sehingga elemen-elemen di sekitarnya dapat segera meluncur mengisi celah kosong tanpa menunggu exit animation selesai.",
+              code: `// src/components/tasks/dismissable-task-item.tsx
+'use client';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface TaskItemProps {
+  task: { id: string; title: string };
+  onDelete: (id: string) => void;
+}
+
+export function DismissableTaskItem({ task, onDelete }: TaskItemProps) {
+  return (
+    <motion.div
+      key={task.id} // Kunci unik wajib untuk deteksi unmounting
+      layout        // Mengaktifkan kalkulasi pergeseran layout otomatis (FLIP)
+      initial={{ opacity: 0, scale: 0.9, y: 15 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      // Properti exit dieksekusi saat elemen dicabut dari array list
+      exit={{
+        opacity: 0,
+        scale: 0.85,
+        x: -40, // Efek meluncur ke kiri saat dihapus
+        transition: { duration: 0.25, ease: 'easeInOut' }
+      }}
+      className="flex items-center justify-between p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+    >
+      <span className="font-medium text-zinc-900 dark:text-white">{task.title}</span>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onDelete(task.id)}
+        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </motion.div>
+  );
+}`,
+              language: "tsx",
+              caption: "Penggunaan prop exit dan layout untuk penghapusan item daftar yang anggun."
+            },
+            {
+              label: "Transisi Layout Otomatis (Prop layout) & Algoritma FLIP",
+              text: "1. Mengapa Animasi Posisi CSS Tradisional Sangat Lambat:\n" +
+                    "Menganimasikan properti geometri CSS seperti `top`, `left`, `width`, atau `height` memaksa mesin peramban melakukan *Layout Reflow* pada setiap frame (menghitung ulang geometri seluruh halaman). Ini adalah penyebab utama antarmuka web patah-patah (*jank*) pada perangkat mobile.\n\n" +
+                    "2. Revolusi Algoritma FLIP (First, Last, Invert, Play):\n" +
+                    "Saat kita menambahkan prop boolean `layout` pada elemen `motion.*`, Framer Motion secara otomatis menjalankan teknik FLIP:\n" +
+                    "- **F (First)**: Merekam posisi awal elemen di layar.\n" +
+                    "- **L (Last)**: Membiarkan peramban merender posisi akhir elemen secara instan.\n" +
+                    "- **I (Invert)**: Menghitung selisih koordinat (delta X, Y, Scale) dan menggunakan transformasi GPU (`transform: translate(...)`) untuk membalikkan elemen ke posisi awal dalam hitungan fraksi milidetik.\n" +
+                    "- **P (Play)**: Memainkan animasi transisi dari posisi terbalik ke posisi akhir menggunakan akselerasi GPU 60 FPS murni!\n\n" +
+                    "3. Kasus Penggunaan Nyata:\n" +
+                    "Ketika pengguna menyaring daftar tugas berdasarkan status (misal dari 'Semua' ke 'Selesai'), kartu-kartu yang tersisa tidak melompat secara kasar, melainkan bergeser (*glide*) dengan mulus mengisi ruang kosong.",
+              code: `// Contoh implementasi layout FLIP pada daftar yang dapat difilter
+<motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <AnimatePresence mode="popLayout">
+    {filteredTasks.map((task) => (
+      <motion.div
+        key={task.id}
+        layout // Elemen tetangga meluncur mulus mengisi kekosongan
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+      >
+        <TaskCard task={task} />
+      </motion.div>
+    ))}
+  </AnimatePresence>
+</motion.div>`,
+              language: "tsx",
+              caption: "Kombinasi layout dan AnimatePresence mode='popLayout' untuk animasi filter instan tanpa lag."
+            },
+            {
+              label: "Shared Element Transitions dengan layoutId: Efek Magis Antar Elemen Terpisah",
+              text: "1. Konsep Shared Element Transitions:\n" +
+                    "Terkadang kita memiliki dua komponen visual yang berbeda secara hierarki DOM, namun secara mental pengguna memandangnya sebagai satu objek yang berpindah (misal: indikator aktif pill latar belakang pada menu tabs yang meluncur dari satu tab ke tab lain saat diklik).\n\n" +
+                    "2. Cara Kerja Prop `layoutId`:\n" +
+                    "Cukup berikan prop string yang identik `layoutId=\"activeIndicator\"` pada elemen yang aktif. Saat tab yang aktif berpindah, Framer Motion akan secara otomatis membuat ilusi optik bahwa elemen tersebut terbang dan bertransformasi bentuk dari posisi tab lama ke posisi tab baru secara presisi!",
+              code: `// src/components/tasks/animated-filter-tabs.tsx
+'use client';
+
+import { motion } from 'framer-motion';
+
+const TABS = ['Semua', 'Berjalan', 'Selesai'] as const;
+type TabType = typeof TABS[number];
+
+interface FilterTabsProps {
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
+}
+
+export function AnimatedFilterTabs({ activeTab, onTabChange }: FilterTabsProps) {
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 w-fit">
+      {TABS.map((tab) => {
+        const isActive = activeTab === tab;
+        return (
+          <button
+            key={tab}
+            onClick={() => onTabChange(tab)}
+            className={\`relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors z-10 \${
+              isActive
+                ? 'text-indigo-600 dark:text-indigo-400'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }\`}
+          >
+            {/* Pill Slider Meluncur Magis Menggunakan layoutId */}
+            {isActive && (
+              <motion.div
+                layoutId="activeFilterPill"
+                className="absolute inset-0 rounded-lg bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/60 dark:border-zinc-800 -z-10"
+                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+              />
+            )}
+            {tab}
+          </button>
+        );
+      })}
+    </div>
+  );
+}`,
+              language: "tsx",
+              caption: "Pola implementasi Sliding Active Pill Indicator menggunakan layoutId pada tab navigasi."
+            }
+          ]
+        },
+        {
+          title: "4. Mikro-Interaksi Gestur Taktil & Rekayasa Performa GPU 60 FPS (Zero-Jank UI)",
+          badge: "Pilar 4: Gestur & Performa GPU",
+          content: "Di era aplikasi modern, antarmuka statis yang tidak bereaksi terhadap sentuhan terasa 'mati' dan tidak responsif. Pengguna mengharapkan respons visual seketika (*micro-interactions*) yang memberikan konfirmasi taktil saat mereka mengarahkan kursor, menekan tombol, atau menggeser elemen.\n\n" +
+                   "Namun, antarmuka beranimasi yang tidak dioptimalkan dapat menjadi bumerang performa: konsumsi daya baterai melonjak (*battery drain*), kipas laptop berputar kencang, dan framerate peramban anjlok di bawah 60 FPS (*frame drop / jank*).\n\n" +
+                   "Dalam pilar ini, kita mempelajari **Rekayasa Performa Komposit GPU**: prinsip arsitektur yang menjamin animasi berjalan 100% pada chip grafis perangkat tanpa membebani thread utama CPU, disertai penerapan kepatuhan aksesibilitas universal untuk menghormati pengguna dengan kebutuhan *Reduced Motion*.",
+          subpoints: [
+            {
+              label: "Mikro-Interaksi Gestur: whileHover, whileTap, & Haptic Feedback Visual",
+              text: "1. Kekuatan Mikro-Interaksi Gestur:\n" +
+                    "Framer Motion menyediakan penangan gestur deklaratif yang menyederhanakan *event listener* peramban menjadi props intuitif:\n" +
+                    "- **`whileHover`**: State animasi saat kursor mouse berada di atas elemen (misal: elevasi bayangan dan sedikit terangkat `y: -3, scale: 1.02`).\n" +
+                    "- **`whileTap`**: State animasi saat tombol mouse ditekan atau layar sentuh disentuh (misal: efek kompresi tombol `scale: 0.96` yang memberikan umpan balik taktil virtual layaknya tombol fisik).\n" +
+                    "- **`whileFocus`**: State animasi saat elemen menerima fokus keyboard (aksesibilitas tabulasi).\n" +
+                    "- **`whileDrag`**: State visual saat elemen diseret pengguna (misal: rotasi miring dan bayangan melayang tebal).\n\n" +
+                    "2. Menghindari Ketergantungan State Manual:\n" +
+                    "Kita tidak perlu lagi menulis kode imperatif `const [isHovered, setIsHovered] = useState(false)` yang memicu re-render seluruh pohon komponen. Framer Motion menangani transisi gestur ini secara mandiri di luar siklus render React biasa.",
+              code: `// src/components/ui/elastic-button.tsx
+'use client';
+
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+
+interface ElasticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline';
+}
+
+export function ElasticButton({ children, onClick, className }: ElasticButtonProps) {
+  return (
+    <motion.button
+      onClick={onClick}
+      // Mikro-interaksi saat kursor melayang (Elevasi Halus)
+      whileHover={{
+        scale: 1.03,
+        y: -1.5,
+        transition: { type: 'spring', stiffness: 500, damping: 15 },
+      }}
+      // Mikro-interaksi saat tombol ditekan (Sensasi Haptic Taktil)
+      whileTap={{
+        scale: 0.95,
+        y: 0,
+        transition: { type: 'spring', stiffness: 500, damping: 15 },
+      }}
+      className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 active:shadow-none transition-colors"
+    >
+      {children}
+    </motion.button>
+  );
+}`,
+              language: "tsx",
+              caption: "Komponen tombol elastis dengan umpan balik gestur whileHover dan whileTap."
+            },
+            {
+              label: "Rekayasa Performa 60 FPS: Mengapa Wajib Hanya Properti Komposit GPU?",
+              text: "1. Pipeline Rendering Peramban (Browser Rendering Pipeline):\n" +
+                    "Setiap kali peramban menggambar ulang layar, ada 4 tahapan eksekusi:\n" +
+                    "- **1. JavaScript/Recalculate Style**: Menghitung aturan CSS yang berlaku.\n" +
+                    "- **2. Layout (Reflow)**: Menghitung koordinat posisi dan dimensi setiap kotak elemen di layar (Sangat Berat untuk CPU!).\n" +
+                    "- **3. Paint (Repaint)**: Mengisi warna piksel, teks, gambar, dan bayangan ke dalam layer bitmap.\n" +
+                    "- **4. Composite Layers**: Mengirim layer bitmap ke GPU untuk digabungkan dan diproyeksikan ke layar monitor.\n\n" +
+                    "2. Dua Properti Ajaib yang Diakselerasi GPU (Transform & Opacity):\n" +
+                    "Hanya ada **DUA** properti yang dapat dianimasikan sepenuhnya di tahap **Composite** tanpa memicu Layout atau Paint berulang:\n" +
+                    "- **`transform`**: Termasuk `translateX`, `translateY`, `translateZ`, `scale`, dan `rotate`.\n" +
+                    "- **`opacity`**: Mengatur transparansi layer.\n\n" +
+                    "3. Dosa Besar Animasi: Menganimasikan Geometri Layout:\n" +
+                    "Jangan pernah menganimasikan `height`, `width`, `top`, `left`, `margin`, atau `padding`. Menganimasikan properti ini memaksa CPU menghitung ulang layout seluruh halaman pada kecepatan 60 kali per detik, menyebabkan *dropped frames* dan tampilan macet (*stuttering*).",
+              code: `// Tabel Rekayasa Performa Properti Animasi Web
+
+// ❌ 1. PROPERTI TERLARANG (MEMICU CPU REFLOW & PAINT SETIAP FRAME):
+// height, width, top, left, right, bottom, margin, padding, border-width
+const badAnimation = {
+  animate: { height: 200, width: 300, top: 50 }, // ⚠️ HINDARI! 15 FPS di Mobile
+};
+
+// ✅ 2. PROPERTI STANDAR EMAS (100% HARDWARE ACCELERATED PADA GPU COMPOSITOR):
+// transform (x, y, z, scale, rotate), opacity
+const performantAnimation = {
+  animate: { x: 50, scale: 1.1, opacity: 1 }, // 🚀 60-120 FPS Mulus di Semua Device
+  transition: { type: 'spring', stiffness: 350, damping: 25 },
+};`,
+              language: "typescript",
+              caption: "Panduan pemilihan properti animasi ramah GPU vs properti berat pemicu CPU reflow."
+            },
+            {
+              label: "Etika Aksesibilitas Web: Menghormati Reduced Motion (WCAG 2.1 AAA)",
+              text: "1. Mengapa Aksesibilitas Gerak Penting:\n" +
+                    "Bagi pengguna yang menderita gangguan vestibular (gangguan keseimbangan telinga dalam), animasi pergerakan cepat, pergeseran skala besar, atau efek zooming dapat memicu rasa pusing, mual, dan disorientasi spasial yang parah.\n\n" +
+                    "2. Fitur Sistem Operasi 'Prefers Reduced Motion':\n" +
+                    "Sistem operasi modern (macOS, Windows, iOS, Android) menyediakan pengaturan sistem untuk membatasi animasi berlebihan (*Reduce Motion*).\n\n" +
+                    "3. Hook Penyelamat: `useReducedMotion()`:\n" +
+                    "Framer Motion menyediakan hook `useReducedMotion()` yang mendeteksi preferensi pengguna ini. Jika aktif, kita dapat mengganti animasi perpindahan koordinat (`x`, `y`, `scale`) dengan transisi `opacity` (fade) yang lembut dan aman bagi semua kalangan.",
+              code: `// src/components/ui/accessible-motion-card.tsx
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+
+export function AccessibleMotionCard({ children }: { children: React.ReactNode }) {
+  // Mendeteksi apakah sistem operasi pengguna meminta pembatasan gerakan
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      // Jika user memilih reduced motion, gunakan hanya fade-in tanpa gerakan translasi
+      initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+      animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      transition={{
+        duration: shouldReduceMotion ? 0.2 : undefined,
+        type: shouldReduceMotion ? 'tween' : 'spring',
+        stiffness: 300,
+        damping: 25,
+      }}
+      className="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+    >
+      {children}
+    </motion.div>
+  );
+}`,
+              language: "tsx",
+              caption: "Penerapan hook useReducedMotion demi kepatuhan aksesibilitas universal WCAG 2.1 AAA."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Fitur / Kriteria", "CSS Transitions Murni", "Framer Motion (React)", "Imperative JS (GSAP)"],
+            rows: [
+              ["Model Matematika", "Durasi Waktu Linier / Easing Bezier Kaku", "Fisika Pegas Alami (Stiffness/Damping)", "Durasi Waktu / Custom Bezier"],
+              ["Ketahanan Interupsi", "Patah / Jarring saat interupsi cepat", "Sempurna (Momentum Velocity terjaga)", "Sangat Baik via Overwrite Engine"],
+              ["Siklus Unmounting", "Tidak ada (Elemen langsung hilang dari DOM)", "AnimatePresence (Exit Animation otomatis)", "Butuh Callback Manual (onComplete)"],
+              ["Transisi Layout", "Harus hitung koordinat manual (Berat)", "Otomatis via FLIP (layout & layoutId)", "Perlu plugin tambahan (Flip Plugin)"],
+              ["Integrasi Next.js", "Murni CSS (Bisa di Server Component)", "Wajib Client Component ('use client')", "Wajib Client Component (Ref DOM)"],
+              ["Bobot Bundle", "0 kB (Native Browser Engine)", "~30 kB (Gzipped)", "~25-45 kB (Gzipped)"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Peringatan Arsitektur: Hindari Animasi di Level page.tsx Root",
+            text: "Jangan pernah meletakkan direktif 'use client' pada src/app/(dashboard)/tasks/page.tsx hanya untuk membungkus halaman dengan motion.div. Pertahankan halaman utama sebagai React Server Component (RSC) untuk mengambil data dari Supabase tanpa latensi peramban, lalu delegasikan animasi ke komponen pembungkus daun terluar (seperti AnimatedTaskGrid)."
+          }
+        }
       ]
     },
     references: [
-      { title: "Framer Motion Documentation", url: "https://www.framer.com/motion/", source: "Framer Motion" }
+      { title: "Framer Motion Documentation: Gestures & Animation", url: "https://www.framer.com/motion/", source: "Framer Motion" },
+      { title: "React 19 Client Component Composition Patterns", url: "https://react.dev/reference/rsc/use-client", source: "React Foundation" },
+      { title: "Google Web Vitals: Interaction to Next Paint (INP) & GPU Acceleration", url: "https://web.dev/explore/fast", source: "Google Chrome Developers" },
+      { title: "W3C Web Content Accessibility Guidelines (WCAG) 2.1: Motion Actuation", url: "https://www.w3.org/WAI/WCAG21/Understanding/motion-actuation.html", source: "W3C" }
     ],
     lab: {
-      prerequisites: ["Framer Motion terinstal"],
+      prerequisites: [
+        "Repositori Proyek Akhir telah terintegrasi Supabase Auth & CRUD (Modul 1 s.d. 6)",
+        "Pustaka Framer Motion terinstal di proyek Next.js 16 (npm install framer-motion)",
+        "Pustaka Lucide React dan komponen Button / Card / Dialog Shadcn UI terkonfigurasi"
+      ],
       steps: [
         {
           stepNumber: 1,
-          instruction: "Instal paket Framer Motion",
+          badge: "Instalasi & Verifikasi Dependensi",
+          instruction: "Pemasangan Pustaka Framer Motion di Proyek Next.js 16",
           code: "npm install framer-motion",
-          language: "bash"
+          language: "bash",
+          explanation: "Framer Motion kompatibel penuh dengan React 19 dan Next.js 16 App Router sebagai engine animasi deklaratif standar industri.",
+          actionType: "manual"
+        },
+        {
+          stepNumber: 2,
+          badge: "Arsitektur Animasi Modular",
+          instruction: "Membuat Objek Variants Terpusat (src/lib/animations.ts)",
+          code: `// src/lib/animations.ts
+import { Variants } from 'framer-motion';
+
+export const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.1,
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+export const taskCardVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 350,
+      damping: 25,
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.85,
+    x: -30,
+    transition: { duration: 0.2 },
+  },
+};`,
+          language: "typescript",
+          explanation: "Memisahkan definisi animasi dari komponen JSX agar kode bersih, modular, dan dapat digunakan ulang di seluruh aplikasi.",
+          actionType: "manual"
+        },
+        {
+          stepNumber: 3,
+          badge: "Komponen Daun Interaktif",
+          instruction: "Merakit Grid Tugas Beranimasi Stagger & Exit (src/components/tasks/animated-task-grid.tsx)",
+          code: `'use client';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariants, taskCardVariants } from '@/lib/animations';
+import { Trash2, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface Task {
+  id: string;
+  title: string;
+  status: string;
+}
+
+export function AnimatedTaskGrid({
+  tasks,
+  onDeleteTask
+}: {
+  tasks: Task[];
+  onDeleteTask: (id: string) => void;
+}) {
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
+      <AnimatePresence mode="popLayout">
+        {tasks.map((task) => (
+          <motion.div
+            key={task.id}
+            layout
+            variants={taskCardVariants}
+            exit="exit"
+            whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
+            className="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-xs font-mono font-bold text-indigo-500 uppercase">
+                  {task.status}
+                </span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              </div>
+              <h3 className="font-semibold text-zinc-900 dark:text-white text-base">
+                {task.title}
+              </h3>
+            </div>
+            <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDeleteTask(task.id)}
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs gap-1"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Hapus
+              </Button>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </motion.div>
+  );
+}`,
+          language: "tsx",
+          explanation: "Komponen leaf terisolasi yang menerapkan stagger, layout FLIP, mikro-interaksi hover, dan exit animation saat item dihapus.",
+          actionType: "manual"
+        },
+        {
+          stepNumber: 4,
+          badge: "Shared Element Transitions",
+          instruction: "Merakit Tab Filter Geser dengan layoutId (src/components/tasks/animated-filter-tabs.tsx)",
+          code: `'use client';
+
+import { motion } from 'framer-motion';
+
+const TABS = ['Semua', 'Berjalan', 'Selesai'] as const;
+
+export function AnimatedFilterTabs({
+  activeTab,
+  onTabChange
+}: {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 w-fit">
+      {TABS.map((tab) => {
+        const isActive = activeTab === tab;
+        return (
+          <button
+            key={tab}
+            onClick={() => onTabChange(tab)}
+            className={\`relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors z-10 \${
+              isActive
+                ? 'text-indigo-600 dark:text-indigo-400'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }\`}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="activeFilterPill"
+                className="absolute inset-0 rounded-lg bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/60 dark:border-zinc-800 -z-10"
+                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+              />
+            )}
+            {tab}
+          </button>
+        );
+      })}
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "Pill indicator aktif meluncur dinamis menggunakan layoutId antar tab button tanpa komputasi koordinat manual.",
+          actionType: "manual"
+        },
+        {
+          stepNumber: 5,
+          badge: "Integrasi Halaman & Root Navigation",
+          instruction: "Integrasi Komponen Animasi pada Dashboard Tugas (src/app/(dashboard)/tasks/page.tsx)",
+          code: `// src/app/(dashboard)/tasks/page.tsx
+import { createClient } from '@/utils/supabase/server';
+import { AnimatedTaskGrid } from '@/components/tasks/animated-task-grid';
+import { AnimatedFilterTabs } from '@/components/tasks/animated-filter-tabs';
+
+export default async function TasksDashboard() {
+  const supabase = await createClient();
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  return (
+    <div className="container mx-auto py-8 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            Dashboard Tugas
+          </h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            Dikelola dengan animasi deklaratif Framer Motion 60 FPS
+          </p>
+        </div>
+      </div>
+
+      {/* Grid Tugas Beranimasi */}
+      <AnimatedTaskGrid tasks={tasks ?? []} onDeleteTask={async () => {}} />
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "Menghubungkan data dari RSC Supabase ke Client Component grid animasi dengan performa 0 kB bundle pada layout server.",
+          actionType: "manual"
         }
       ],
       aiPromptTemplate: {
-        role: "Creative Frontend Developer",
-        prompt: "Buatkan komponen modal konfirmasi hapus data yang muncul dengan animasi spring scale & fade-in menggunakan Framer Motion (AnimatePresence) di Next.js.",
-        tip: "Pastikan komponen yang menggunakan motion.div diberi deklarasi 'use client'."
+        role: "Senior Frontend UI/UX Engineer & Next.js 16 / Framer Motion Specialist",
+        prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer & Next.js 16 Specialist. Kita sedang memoles antarmuka aplikasi "The Serverless Odyssey" dengan pustaka Framer Motion menjelang UTS Milestone 1.
+
+PERIKSA & INSTALL DEPENDENCY TERLEBIH DAHULU:
+Periksa apakah paket 'framer-motion' sudah terinstal di package.json. Jika belum, jalankan perintah terminal:
+'npm install framer-motion'
+
+BATASAN ARSITEKTURAL & TEKNIS:
+1. Next.js 16 App Router: Dilarang keras menambahkan 'use client' di file src/app/page.tsx atau src/app/(dashboard)/tasks/page.tsx. Pertahankan Server Components untuk fetching data langsung ke Supabase!
+2. Pushing 'use client' to the Leaves: Seluruh animasi Framer Motion (motion.*, AnimatePresence, useReducedMotion) wajib berada di dalam Client Component daun (misal di src/components/tasks/*).
+3. Hanya gunakan animasi berbasis GPU (transform & opacity) dan Spring Physics (stiffness & damping). Jangan menganimasikan properti geometry (height, width, margin).
+4. Gunakan token semantik Tailwind CSS yang konsisten mendukung Dark Mode dan Light Mode.
+
+TARGET STRUKTUR BERKAS YANG DIBANGUN:
+1. BERKAS 1: src/lib/animations.ts
+   - Ekspor konfigurasi Variants modular: containerVariants (staggerChildren: 0.08, delayChildren: 0.1), taskCardVariants (spring physics stiffness: 350, damping: 25, exit scale 0.85 & fade-out), modalVariants, dan buttonVariants.
+2. BERKAS 2: src/components/tasks/animated-task-grid.tsx
+   - Client Component ('use client') yang merender daftar tugas menggunakan layout FLIP, AnimatePresence mode="popLayout", hover gesture elevasi halus, dan tombol hapus dengan konfirmasi animasi exit.
+3. BERKAS 3: src/components/tasks/animated-filter-tabs.tsx
+   - Client Component ('use client') yang merender tab penyaring status ('Semua', 'Berjalan', 'Selesai') dengan shared element transition pill slider magis (layoutId="activeTaskFilterPill").
+4. BERKAS 4: src/components/tasks/animated-confirm-modal.tsx
+   - Client Component modal dialog konfirmasi hapus data berbasis AnimatePresence (backdrop blur fade-in & modal dialog spring scale 0.95 ➔ 1).
+5. BERKAS 5: src/app/(dashboard)/tasks/page.tsx
+   - Server Component RSC yang mengambil data tugas dari Supabase dan membungkusnya ke komponen-komponen beranimasi di atas secara terpadu.
+6. BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
+   - Perbarui Landing Page root '/' dengan Hero CTA visual beranimasi micro-interactions yang mengarahkan pengguna langsung ke Dashboard Tugas (/tasks).`,
+        tip: "Pastikan selalu menyertakan prop key unik berbasis ID (misal key={task.id}) saat menggunakan AnimatePresence untuk menjamin pelacakan unmounting yang presisi.",
+        steppedPrompts: [
+          {
+            stepNumber: 1,
+            title: "Fondasi Objek Variants & Konfigurasi Spring",
+            badge: "Tahap 1: Variants Setup",
+            description: "Menyiapkan berkas sentral konfigurasi animasi reusable (src/lib/animations.ts).",
+            targetFiles: ["src/lib/animations.ts"],
+            prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer. Buatkan berkas 'src/lib/animations.ts' yang mengekspor objek Variants Framer Motion:
+1. containerVariants: initial hidden (opacity 0), visible (opacity 1) dengan transition staggerChildren 0.08 dan delayChildren 0.1.
+2. taskCardVariants: hidden (opacity 0, y: 20, scale: 0.95), visible (opacity 1, y: 0, scale: 1 dengan spring stiffness 350 damping 25), exit (opacity 0, scale: 0.85, x: -30, duration 0.2).
+3. modalBackdropVariants & modalDialogVariants untuk transisi modal spring.`,
+            checkpoint: "Pastikan berkas src/lib/animations.ts bersih dari error TypeScript dan mengekspor tipe Variants secara benar."
+          },
+          {
+            stepNumber: 2,
+            title: "Pill Slider Tab dengan layoutId",
+            badge: "Tahap 2: Shared Element",
+            description: "Membangun tab filter status dengan active indicator yang meluncur mulus.",
+            targetFiles: ["src/components/tasks/animated-filter-tabs.tsx"],
+            prompt: `Bertindaklah sebagai Senior UI/UX Engineer. Buatkan Client Component 'src/components/tasks/animated-filter-tabs.tsx' ('use client') untuk filter status tugas ('Semua', 'Berjalan', 'Selesai').
+Gunakan motion.div dengan layoutId="activeFilterPill" pada tab yang aktif untuk menghasilkan efek pill latar belakang yang meluncur halus di bawah teks tab.`,
+            checkpoint: "Klik tab filter di browser; perhatikan pill aktif meluncur mulus dari satu tombol ke tombol lain tanpa lag."
+          },
+          {
+            stepNumber: 3,
+            title: "Grid Tugas Stagger & AnimatePresence Exit",
+            badge: "Tahap 3: Stagger & Exit",
+            description: "Merakit kartu tugas dengan animasi kemunculan beruntun dan transisi saat dihapus.",
+            targetFiles: ["src/components/tasks/animated-task-grid.tsx"],
+            prompt: `Bertindaklah sebagai Frontend Specialist. Buatkan Client Component 'src/components/tasks/animated-task-grid.tsx' ('use client') yang membungkus list kartu tugas dalam motion.div (containerVariants) dan AnimatePresence mode="popLayout".
+Setiap kartu memiliki prop layout, whileHover elevasi ringan, dan animasi exit saat dihapus.`,
+            checkpoint: "Hapus satu kartu tugas; verifikasi kartu tersebut meluncur keluar secara halus dan kartu di bawahnya bergeser ke atas mengisi ruang kosong via prop layout."
+          },
+          {
+            stepNumber: 4,
+            title: "Modal Konfirmasi Hapus Beranimasi",
+            badge: "Tahap 4: Modal Presence",
+            description: "Membuat modal konfirmasi hapus data yang muncul dengan efek spring scale.",
+            targetFiles: ["src/components/tasks/animated-confirm-modal.tsx"],
+            prompt: `Bertindaklah sebagai Senior UI Engineer. Buatkan Client Component 'src/components/tasks/animated-confirm-modal.tsx' ('use client') menggunakan AnimatePresence.
+Saat isOpen bernilai true, backdrop muncul dengan fade-in blur dan kotak dialog muncul dengan spring scale (0.9 ➔ 1). Saat ditutup, keduanya melakukan exit animation secara elegan.`,
+            checkpoint: "Buka dan tutup modal konfirmasi; pastikan tidak ada kedipan instan saat modal menghilang dari layar."
+          },
+          {
+            stepNumber: 5,
+            title: "Integrasi Dashboard & Root Navigation Hero",
+            badge: "Tahap 5: Dashboard Polish",
+            description: "Menghubungkan data Supabase RSC ke komponen animasi dan memperbarui Landing Page root.",
+            targetFiles: ["src/app/(dashboard)/tasks/page.tsx", "src/app/page.tsx"],
+            prompt: `Bertindaklah sebagai Full-Stack Architect. Integrasikan komponen-komponen animasi yang telah dibuat ke dalam:
+1. src/app/(dashboard)/tasks/page.tsx (tetap Server Component, fetch data dari Supabase, passing data ke AnimatedTaskGrid).
+2. src/app/page.tsx (perbarui hero landing page dengan tombol CTA elastis menuju /tasks dan badge preview visual).`,
+            checkpoint: "Buka http://localhost:3000/ di peramban. Klik tombol CTA Hero, periksa transisi ke /tasks, dan nikmati animasi stagger kartu tugas 60 FPS!"
+          }
+        ]
+      },
+      warningZone: {
+        title: "Zona Bahaya Performa: Animasi Geometri CSS & Penempatan 'use client' Global",
+        desc: "DILARANG KERAS menganimasikan properti geometri (height, width, top, left, margin) karena memicu layout reflow CPU 60 kali per detik. Selalu gunakan properti komposit GPU (transform dan opacity). Selain itu, jangan pernah menambahkan 'use client' di level root layout.tsx atau page.tsx hanya untuk animasi visual!"
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 7: Polish UI Menjelang UTS",
-      taskDesc: "Terapkan animasi transisi pada form, modal, dan list data di Proyek Akhir Anda sebelum presentasi Milestone 1 UTS.",
+      taskTitle: "Misi Minggu 7: Polish Antarmuka Proyek Akhir Menjelang UTS Milestone 1",
+      taskDesc: "Transformasikan antarmuka Proyek Akhir Anda dari tampilan statis menjadi antarmuka dinamis dan responsif menggunakan Framer Motion. Terapkan animasi kemunculan bertahap (stagger), indikator tab geser (layoutId), mikro-interaksi gestur taktil pada tombol, dan transisi exit yang elegan sebelum presentasi UTS.",
       definitionOfDone: [
-        "Terdapat animasi hover/tap pada tombol aksi utama",
-        "List data muncul dengan efek stagger/fade-in yang halus",
-        "Aplikasi bersih dari error console dan siap dipresentasikan"
+        "Pustaka Framer Motion terinstal dan dikonfigurasi pada Client Components daun (0 kB bundle di Server Components)",
+        "Daftar data utama (tugas/proyek) muncul dengan efek sekuensial bertahap (staggerChildren) menggunakan objek Variants terpusat",
+        "Penghapusan data atau pergantian status mengimplementasikan AnimatePresence dan prop layout FLIP tanpa lompatan visual kasar",
+        "Navigasi tab filter status mengimplementasikan Shared Element Transition yang meluncur mulus via layoutId",
+        "Seluruh tombol aksi utama dan kartu interaktif memiliki mikro-interaksi taktil (whileHover dan whileTap elastis)",
+        "Animasi bebas dari layout thrashing (hanya menganimasikan transform & opacity) serta mendukung prefers-reduced-motion via useReducedMotion"
       ],
       gitBranchTask: "git checkout -b feature/framer-motion-polish"
+    },
+    quiz: {
+      totalQuestions: 7,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Mengapa animasi berbasis Fisika Pegas (Spring Physics) pada Framer Motion menghasilkan pengalaman antarmuka yang lebih alami dibanding transisi durasi waktu linier CSS biasa (misal: transition 300ms ease-in-out)? Jelaskan apa yang terjadi saat interaksi pengguna menginterupsi animasi yang sedang berjalan!",
+          rubric: "Mahasiswa wajib menjelaskan konsep fisika pegas (stiffness, damping, mass) yang tidak terikat waktu kaku melainkan keseimbangan gaya alamiah. Mahasiswa juga harus menguraikan fenomena interupsi: pada CSS linier, interupsi memicu patahan visual (jarring snap) atau pembalikan waktu kaku, sedangkan pada spring physics, vektor kecepatan dan momentum saat ini diintegrasikan secara mulus menuju target baru tanpa distorsi gerak.",
+          keyConcepts: ["Spring Physics (Stiffness & Damping)", "Linear CSS Transition Limits", "Momentum & Velocity Preservation", "Interruption Resilience"],
+          weight: 15,
+          socraticHint: "Bayangkan Anda melempar bola dan menangkapnya di udara vs tombol stop kontak yang ditekan. Apa perbedaan perilaku fisika ketika gerakan dihentikan atau dibalikkan di tengah jalan?"
+        },
+        {
+          id: 2,
+          question: "Jelaskan peran arsitektural objek 'Variants' pada Framer Motion dan bagaimana mekanisme propagasi hierarkis (Parent-Child Propagation) menyederhanakan orkestrasi animasi bersarang seperti efek 'staggerChildren' pada daftar kartu tugas!",
+          rubric: "Mahasiswa wajib menjelaskan bahwa Variants memisahkan definisi state visual (hidden, visible, exit) dari JSX ke dalam objek deklaratif. Mahasiswa harus menguraikan mekanisme propagasi otomatis di mana elemen anak mewarisi nama state variant aktif dari induk tanpa prop drilling manual, serta peran staggerChildren dalam mengatur jeda waktu kemunculan elemen anak secara berurutan.",
+          keyConcepts: ["Framer Variants Object", "Decoupling State from JSX", "Parent-Child State Propagation", "staggerChildren Orchestration"],
+          weight: 15,
+          socraticHint: "Jika Anda memiliki 20 kartu tugas di dalam satu list, bagaimana Variants mencegah Anda menuliskan 'initial' dan 'animate' berulang-ulang pada setiap kartu secara terpisah?"
+        },
+        {
+          id: 3,
+          question: "Mengapa pada aplikasi React biasa, animasi keluar (exit animations) tidak dapat dieksekusi saat sebuah komponen di-unmount, dan bagaimana komponen 'AnimatePresence' dari Framer Motion menyelesaikan masalah ini? Mengapa prop 'key' unik sangat mutlak diperlukan?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa siklus hidup React mencabut elemen dari DOM dalam 0 ms saat unmounting terjadi, sehingga CSS exit animation tidak sempat berjalan. AnimatePresence menyelesaikan hal ini dengan mencegat proses unmount, menahan node DOM hingga animasi pada prop 'exit' selesai diputar. Prop 'key' unik mutlak diperlukan agar AnimatePresence dapat membedakan identitas setiap elemen yang masuk atau keluar secara presisi.",
+          keyConcepts: ["React Unmounting Lifecycle Dilemma", "AnimatePresence Interception", "exit Prop Execution", "Deterministic Key Requirement"],
+          weight: 15,
+          socraticHint: "Apa yang terjadi pada elemen DOM peramban saat kondisi {isOpen && <Modal />} berubah menjadi false? Bagaimana AnimatePresence meminta React untuk 'menunggu sebentar' sebelum menghapus elemen tersebut?"
+        },
+        {
+          id: 4,
+          question: "Jelaskan cara kerja teknik FLIP (First, Last, Invert, Play) yang diotomasi oleh prop 'layout' pada Framer Motion! Mengapa pendekatan ini jauh lebih cepat (60 FPS) dibanding menganimasikan properti CSS geometri seperti 'top' atau 'height'?",
+          rubric: "Mahasiswa wajib menguraikan 4 tahapan FLIP: merekam posisi awal (First), merender posisi akhir instan (Last), membalikkan transformasi koordinat via GPU (Invert), dan memutar transisi halus (Play). Mahasiswa harus membandingkan efisiensi GPU Compositing (transform) yang bebas dari kalkulasi ulang layout dokumen (Reflow) dibanding animasi properti geometri CSS yang membebani CPU secara berat pada setiap frame.",
+          keyConcepts: ["FLIP Technique (First, Last, Invert, Play)", "layout Prop Automation", "GPU Compositing vs CPU Reflow", "Layout Thrashing Prevention"],
+          weight: 15,
+          socraticHint: "Bandingkan apa yang dihitung oleh prosesor peramban saat Anda mengubah 'transform: translateY(20px)' vs saat Anda mengubah 'top: 20px'. Mengapa yang satu melibatkan layouting ulang seluruh dokumen dan yang lain tidak?"
+        },
+        {
+          id: 5,
+          question: "Bagaimana cara kerja prop 'layoutId' dalam mewujudkan 'Shared Element Transitions' antar elemen yang terpisah di pohon Virtual DOM? Berikan contoh implementasi praktisnya pada antarmuka navigasi (seperti sliding active tab indicator)!",
+          rubric: "Mahasiswa wajib menjelaskan bahwa layoutId menghubungkan dua elemen berbeda di cabang DOM terpisah yang berbagi ID string sama, sehingga Framer Motion memperlakukannya sebagai satu kesatuan fisik yang berpindah dan berinterpolasi bentuk secara mulus. Contoh implementasi: pill latar belakang putih/warna yang meluncur di bawah teks tab yang sedang aktif saat pengguna berpindah tab filter.",
+          keyConcepts: ["Shared Element Transitions", "layoutId Identification", "Optical Illusion of Single Entity", "Sliding Active Indicator Pattern"],
+          weight: 14,
+          socraticHint: "Bagaimana Framer Motion tahu bahwa kotak di Tab 'Semua' dan kotak di Tab 'Selesai' adalah elemen yang sama yang seharusnya berpindah meluncur, bukan dua kotak berbeda yang muncul dan hilang bergantian?"
+        },
+        {
+          id: 6,
+          question: "Mengapa pada arsitektur Next.js 16 App Router, kita wajib menerapkan prinsip 'Pushing use client to the Leaves' saat menambahkan animasi Framer Motion? Apa bahaya fatal jika Anda menambahkan direktif 'use client' di berkas 'src/app/(dashboard)/tasks/page.tsx'?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa Framer Motion membutuhkan runtime browser (Web Animations API dan React Client Reconciler), sehingga wajib 'use client'. Bahaya menambahkan 'use client' di page.tsx utama: halaman kehilangan keunggulan React Server Components (RSC), data fetching Supabase beralih ke browser, kredensial server terancam terekspos, bundle JavaScript klien membengkak, dan SEO server-side rendering hilang. Solusinya adalah membatasi 'use client' pada leaf component pembungkus.",
+          keyConcepts: ["Pushing 'use client' to the Leaves", "RSC 0 kB Bundle Preservation", "Direct Database Security in Server Components", "Client Boundary Isolation"],
+          weight: 13,
+          socraticHint: "Jika Anda menambahkan 'use client' di file page.tsx paling atas, apa yang terjadi pada kode 'const supabase = await createClient()' dan ukuran berkas JavaScript yang diunduh peramban pengguna?"
+        },
+        {
+          id: 7,
+          question: "Mengapa etika aksesibilitas web (WCAG 2.1 AAA) mewajibkan dukungan terhadap preferensi 'prefers-reduced-motion'? Bagaimana cara mengintegrasikan hook 'useReducedMotion()' dari Framer Motion untuk melindungi pengguna penderita gangguan vestibular?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa animasi pergerakan cepat dan pergeseran koordinat dapat memicu pusing, mual, dan disorientasi pada pengguna dengan gangguan vestibular. Mahasiswa harus menguraikan penggunaan hook useReducedMotion() untuk mendeteksi preferensi sistem operasi, dan secara elegan menggantikan animasi gerak translasi/skala besar dengan transisi opacity (fade) yang lembut dan aman.",
+          keyConcepts: ["WCAG 2.1 AAA Motion Actuation", "Vestibular Disorders Awareness", "useReducedMotion() Hook", "Graceful Degradation to Opacity Fade"],
+          weight: 13,
+          socraticHint: "Bagaimana aplikasi web Anda merespons jika seorang pengguna telah mengaktifkan opsi 'Kurangi Gerakan / Reduce Motion' di pengaturan Windows atau macOS mereka?"
+        }
+      ]
     }
   },
 

@@ -83,6 +83,18 @@ import { CollectionRouteAnimator } from "@/components/visualizers/collection-rou
 import { ItemRouteAnimator } from "@/components/visualizers/item-route-animator";
 import { UrlStateSyncAnimator } from "@/components/visualizers/url-state-sync-animator";
 import { PaginationRangeAnimator } from "@/components/visualizers/pagination-range-animator";
+import { MotionPrimitivesAnimator } from "@/components/visualizers/motion-primitives-animator";
+import { SpringVsLinearAnimator } from "@/components/visualizers/spring-vs-linear-animator";
+import { RscAnimationBoundaryAnimator } from "@/components/visualizers/rsc-animation-boundary-animator";
+import { VariantsOrchestratorAnimator } from "@/components/visualizers/variants-orchestrator-animator";
+import { StaggerChildrenAnimator } from "@/components/visualizers/stagger-children-animator";
+import { DynamicVariantsAnimator } from "@/components/visualizers/dynamic-variants-animator";
+import { AnimatePresenceAnimator } from "@/components/visualizers/animate-presence-animator";
+import { FlipLayoutAnimator } from "@/components/visualizers/flip-layout-animator";
+import { LayoutIdAnimator } from "@/components/visualizers/layout-id-animator";
+import { GestureMicroInteractionsAnimator } from "@/components/visualizers/gesture-micro-interactions-animator";
+import { GpuCompositingAnimator } from "@/components/visualizers/gpu-compositing-animator";
+import { ReducedMotionAnimator } from "@/components/visualizers/reduced-motion-animator";
 import { ModuleQuizPanel } from "@/components/quiz/module-quiz-panel";
 import { VsCodeSnippet } from "@/components/vscode-snippet";
 import { VsCodePrompt } from "@/components/vscode-prompt";
@@ -569,6 +581,90 @@ const MODULE_6_VISUALIZERS: Record<string, { key: string; title: string; subtitl
     component: <PaginationRangeAnimator />,
   },
 };
+
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 12 Subpoin Konsep Pertemuan 7
+const MODULE_7_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Paradigma Animasi Modern: Fisika Pegas vs Durasi Linier & Batasan RSC Next.js 16
+  "0-0": {
+    key: "motion-primitives",
+    title: "Simulasi Anatomi Deklaratif: initial ➔ animate ➔ transition",
+    subtitle: "Eksperimen kontrol interaktif properti dasar motion.div dan amati perubahan transisi secara visual",
+    component: <MotionPrimitivesAnimator />,
+  },
+  "0-1": {
+    key: "spring-vs-linear",
+    title: "Simulasi Interupsi Fisika: Spring Physics (Elastis) vs CSS Tween (Linier Kaku)",
+    subtitle: "Uji coba menginterupsi animasi di tengah jalan dan rasakan kelenturan momentum pegas alami",
+    component: <SpringVsLinearAnimator />,
+  },
+  "0-2": {
+    key: "rsc-animation-boundary",
+    title: "Simulasi Arsitektur Server Components: Pushing 'use client' to the Leaves",
+    subtitle: "Bandingkan bahaya 'use client' di root page vs pola isolasi daun terluar (0 kB RSC bundle)",
+    component: <RscAnimationBoundaryAnimator />,
+  },
+
+  // Pilar 2: Orkestrasi Visual Tingkat Lanjut: Variants, Stagger Children & Dynamic Injections
+  "1-0": {
+    key: "variants-orchestrator",
+    title: "Simulasi Orkestrasi Variants: Propagasi State Otomatis Parent-to-Child",
+    subtitle: "Saksikan bagaimana perubahan state pada kontainer induk mengalir otomatis ke seluruh elemen anak",
+    component: <VariantsOrchestratorAnimator />,
+  },
+  "1-1": {
+    key: "stagger-children",
+    title: "Simulasi Stagger Cascade: Efek Air Terjun Bertingkat pada Elemen Grid",
+    subtitle: "Atur interval jeda stagger dan arah kemunculan untuk mencegah cognitive sensory overload pengguna",
+    component: <StaggerChildrenAnimator />,
+  },
+  "1-2": {
+    key: "dynamic-variants",
+    title: "Simulasi Dynamic Variants: Injeksi Prop custom={index} Berbasis Rumus",
+    subtitle: "Eksplorasi kalkulasi matematika per elemen (pola gelombang, rotasi bergantian, dan jeda dinamis)",
+    component: <DynamicVariantsAnimator />,
+  },
+
+  // Pilar 3: Siklus Hidup Unmounting (AnimatePresence) & Transisi Layout (FLIP & layoutId)
+  "2-0": {
+    key: "animate-presence",
+    title: "Simulasi Siklus Hidup Unmount: AnimatePresence & Mode popLayout / wait / sync",
+    subtitle: "Amati bagaimana React dicegah mencabut DOM instan sebelum animasi exit selesai diputar",
+    component: <AnimatePresenceAnimator />,
+  },
+  "2-1": {
+    key: "flip-layout",
+    title: "Simulasi Algoritma FLIP: First ➔ Last ➔ Invert ➔ Play pada Transisi Layout",
+    subtitle: "Pelajari dekonstruksi 4 fase FLIP saat elemen reorder atau filter tanpa memicu reflow berat",
+    component: <FlipLayoutAnimator />,
+  },
+  "2-2": {
+    key: "layout-id",
+    title: "Simulasi Shared Element Transitions: Sliding Pill & Card-to-Modal dengan layoutId",
+    subtitle: "Saksikan ilusi optik transformatif elemen yang meluncur mulus antar kontainer DOM terpisah",
+    component: <LayoutIdAnimator />,
+  },
+
+  // Pilar 4: Mikro-Interaksi Gestur Taktil & Rekayasa Performa GPU 60 FPS
+  "3-0": {
+    key: "gesture-micro-interactions",
+    title: "Simulasi Gestur Taktil: whileHover, whileTap & Haptic Feedback Visual",
+    subtitle: "Uji respons mikro-interaksi gestur elastis yang hidup tanpa memicu re-render state React",
+    component: <GestureMicroInteractionsAnimator />,
+  },
+  "3-1": {
+    key: "gpu-compositing",
+    title: "Simulasi Kompositor GPU: 60 FPS Transform/Opacity vs 18 FPS CPU Layout Reflow",
+    subtitle: "Bandingkan konsumsi CPU dan frame rate antara animasi komposit GPU vs animasi geometri layout",
+    component: <GpuCompositingAnimator />,
+  },
+  "3-2": {
+    key: "reduced-motion",
+    title: "Simulasi Aksesibilitas WCAG: useReducedMotion untuk Kebutuhan Vestibular",
+    subtitle: "Simulasikan mode hemat gerak sistem operasi dan amati substitusi animasi menjadi fade lembut",
+    component: <ReducedMotionAnimator />,
+  },
+};
+
 
 // Helper to format inline markdown like `code`, **bold**, and *italic*
 function formatInlineText(str: string) {
@@ -1371,6 +1467,26 @@ export default function ModuleDetailPage() {
                       <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
                     </p>
                   </div>
+                ) : currentModule.id === 7 ? (
+                  <div className="space-y-2">
+                    <div className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
+                      Antarmuka web modern ditransformasikan menjadi sistem interaktif yang hidup menggunakan engine{" "}
+                      <InteractiveTerm term="framer-motion">Framer Motion</InteractiveTerm>{" "}
+                      berbasis{" "}
+                      <InteractiveTerm term="spring-physics">Spring Physics</InteractiveTerm>{" "}
+                      alami. Orkestrasi visual bersarang dikendalikan oleh objek{" "}
+                      <InteractiveTerm term="variants">Variants & Stagger</InteractiveTerm>,{" "}
+                      siklus unmounting ditahan oleh{" "}
+                      <InteractiveTerm term="animate-presence">AnimatePresence</InteractiveTerm>,{" "}
+                      serta transisi layout magis meluncur mulus menggunakan{" "}
+                      <InteractiveTerm term="layout-id">layoutId (Shared Element Transitions)</InteractiveTerm>{" "}
+                      terakselerasi penuh pada GPU 60 FPS.
+                    </div>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                      <span>💡</span>
+                      <span>Arahkan kursor (hover) atau klik badge istilah untuk melihat analogi, panduan teknis & simulasi komputasi.</span>
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-zinc-600 dark:text-zinc-300 text-base leading-relaxed">
                     {currentModule.concepts.summary}
@@ -1478,7 +1594,7 @@ export default function ModuleDetailPage() {
 
                                 {/* Interactive Simulation Accordions for Module Concepts (Option 2: Smooth Accordion Unfold) */}
                                 {(() => {
-                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : null;
+                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : currentModule.id === 7 ? MODULE_7_VISUALIZERS : null;
                                   const viz = activeVizMap ? activeVizMap[`${sIdx}-${subIdx}`] : null;
                                   if (!viz) return null;
                                   const isExpanded = !!expandedVisualizers[viz.key];
