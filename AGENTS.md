@@ -174,6 +174,49 @@ Setiap contoh kode, struktur berkas, dan formula prompt harus disajikan mengguna
 
 ---
 
+## 5.1. Standar Otorisasi & Kontrol Akses Berbasis Peran (Pragmatic RBAC: Admin vs Member)
+
+Setiap implementasi autentikasi dan manajemen data pada proyek perkuliahan (*The Serverless Odyssey* maupun aplikasi tugas/misi) menerapkan model otorisasi **Pragmatic Role-Based Access Control (RBAC)** yang membedakan hak akses antara peran `admin` dan `member`:
+
+- **Prinsip "Pragmatic RBAC" (Anti-Overengineering)**:
+  - Mahasiswa **dilarang** membuat sistem perizinan korporat yang berlebihan (*over-engineered*) seperti skema multi-tabel `roles`, `permissions`, dan `role_permissions` junction untuk proyek tahap awal.
+  - Cukup menambahkan **1 kolom `role`** pada tabel profil pengguna (`public.profiles`):
+    ```sql
+    ALTER TABLE public.profiles 
+    ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'member' 
+    CHECK (role IN ('admin', 'member'));
+    ```
+- **Arsitektur "Unified Single Door Login"**:
+  - Sistem autentikasi **TIDAK MEMBEDAKAN** formulir login untuk admin dan member. Keduanya masuk melalui satu pintu gerbang login yang sama (`/login`).
+  - Hak akses dan kemampuan mutasi ditentukan secara dinamis setelah pengguna berhasil diautentikasi berdasarkan kolom `role` di tabel `public.profiles`.
+- **Matriks Hak Akses Baku (Admin vs Member)**:
+  - **👑 Admin (Super-Access)**: Memiliki wewenang lintas entitas (*team-wide / global scope*). Berhak melihat, mengedit, dan menghapus seluruh tugas dan proyek tim, terlepas dari siapa pembuat aslinya (`user_id`).
+  - **👤 Member (Row-Ownership)**: Terikat pada kepemilikan baris (*isolated row-level scope*). Hanya berhak membaca, mengubah, dan menghapus data yang secara eksplisit ia buat sendiri (`user_id = auth.uid()`).
+- **Standar Pertahanan Berlapis (*Defense-in-Depth Authorization*)**:
+  Otorisasi tidak boleh hanya bergantung pada satu layer. Wajib ditegakkan di dua gerbang kritis:
+  1. **Layer 1: Application Logic (Server Actions & Route Handlers)**:
+     - Sebelum mengeksekusi mutasi (misal `deleteTaskAction` atau `DELETE /api/v1/tasks/:id`), periksa apakah pengguna adalah `admin` atau pemilik baris. Jika bukan keduanya, tolak dengan `403 Forbidden` atau kembalikan error `Unauthorized`.
+  2. **Layer 2: Database Kernel (PostgreSQL Row Level Security - RLS)**:
+     - Kebijakan RLS di level PostgreSQL wajib mengevaluasi kondisi kepemilikan atau hak super admin secara native:
+       ```sql
+       CREATE POLICY "Users can delete own tasks or admin can delete any"
+       ON public.tasks
+       FOR DELETE
+       TO authenticated
+       USING (
+         auth.uid() = user_id 
+         OR EXISTS (
+           SELECT 1 FROM public.profiles 
+           WHERE id = auth.uid() AND role = 'admin'
+         )
+       );
+       ```
+- **Protokol Pencegahan Eskalasi Hak Akses (*Anti-Privilege Escalation*)**:
+  - Kolom `role` **DILARANG KERAS** diekspos pada formulir edit profil publik pengguna di peramban. Pengguna biasa tidak boleh memiliki kontrol untuk mengubah `role`-nya sendiri menjadi `'admin'`.
+  - Promosi hak akses menjadi `admin` hanya boleh dilakukan melalui SQL langsung oleh Dosen/DBA, migrasi database, atau endpoint administratif khusus yang diproteksi Service Role Key / Master Admin.
+
+---
+
 ## 6. Aturan Visualisasi Interaktif & Animasi Konsep (Interactive Simulation Standards)
 
 Setiap materi modul perkuliahan wajib menyertakan media visual interaktif dan animasi untuk menjembatani pemahaman mahasiswa terhadap konsep-konsep komputasi abstrak:
@@ -265,6 +308,9 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
     - Default Password Awal: **NIM Mahasiswa**.
     - Fitur Ubah Password Mandiri: Mahasiswa dapat mengganti password melalui menu profil.
     - Kendali Dosen: Dosen berwenang me-reset password mahasiswa kembali ke default NIM jika lupa kata sandi.
+  - **Standar Tampilan Form & Keamanan Sandi**:
+    - **Password Visibility Toggle (`Eye` / `EyeOff`)**: Seluruh input kata sandi (Form Login Dosen/Mahasiswa, Form Ubah Password Profil) wajib menyediakan tombol toggle intip sandi untuk mencegah kesalahan pengetikan tanpa mengurangi privasi.
+    - **Clean Viewport Policy**: Menghilangkan widget melayang (*floating avatar*) di sudut kanan bawah yang berpotensi menghalangi konten materi, teks kode, maupun tombol aksi platform.
 - **Database Tracking & Dashboard Monitoring Dosen**:
   - Terhubung langsung ke database PostgreSQL Supabase Cloud aktif (`supabase/setup_supabase.sql`):
     - Tabel `lecturers`: Data dosen pengampu (NIDN, Nama, Email, Password Hash, Role).
@@ -313,14 +359,14 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - Misi Snowballing: Branch `feature/unified-multi-provider-auth` dengan 6 kriteria DoD terukur dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur dengan passing threshold $\ge 80$.
   - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_05.md` (150 menit timetable, skrip perkuliahan, arsitektur berkas Next.js 16 Proxy, dan uji bukti eksekusi).
-- **Modul 6 (Selesai 100%)**: Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers (Mobile-Ready Backend) & Keamanan API.
-  - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#Dual Architecture`, `#Route Handlers`, `#Shared Zod Schemas`, `#Bearer Token JWT`, `#URL as State`), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
-  - 10 Simulator Interaktif lengkap: Arsitektur Ganda BFF vs Universal REST (`DualArchAnimator`), Skema Validasi Terbagi Web & API (`SharedZodSchemaAnimator`), Standarisasi Respons RFC 7807 & Status Codes (`RestResponseContractAnimator`), Otentikasi Stateless Bearer Token JWT (`BearerAuthFlowAnimator`), Mekanisme CORS Preflight OPTIONS (`CorsPreflightAnimator`), Evaluasi Keamanan RLS vs Bahaya Service Role Key (`RlsVsServiceRoleAnimator`), Route Handler Koleksi GET & POST (`CollectionRouteAnimator`), Route Handler Item Spesifik Async Params Next.js 16 (`ItemRouteAnimator`), Sinkronisasi URL as State & Debounce (`UrlStateSyncAnimator`), serta Rumus Matematika Supabase Pagination Range Query (`PaginationRangeAnimator`).
-  - Interactive Terms: Badges interaktif `route-handler`, `rest-api`, `bearer-token`, `cors`, dan `rls` di ringkasan konsep dengan diagram alur pipeline visual.
+- **Modul 6 (Selesai 100%)**: Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers (Mobile-Ready Backend), Pragmatic RBAC (Admin vs Member) & Keamanan API.
+  - 4 Sub-CPMK Modular (`cpmkPoints`) dengan kartu grid responsif, chip kata kunci (`#Dual Architecture`, `#Route Handlers`, `#Shared Zod Schemas`, `#Bearer Token JWT`, `#Pragmatic RBAC`, `#Admin vs Member`, `#URL as State`), dan efek interaktif **Hover Zoom 1.2x** (`hover:scale-[1.2]`, `hover:z-50`).
+  - 11 Simulator Interaktif lengkap: Arsitektur Ganda BFF vs Universal REST (`DualArchAnimator`), Skema Validasi Terbagi Web & API (`SharedZodSchemaAnimator`), Standarisasi Respons RFC 7807 & Status Codes (`RestResponseContractAnimator`), Otentikasi Stateless Bearer Token JWT (`BearerAuthFlowAnimator`), Mekanisme CORS Preflight OPTIONS (`CorsPreflightAnimator`), Evaluasi Keamanan RLS vs Bahaya Service Role Key (`RlsVsServiceRoleAnimator`), Pragmatic RBAC Admin vs Member pada CRUD & RLS (`MultiRoleRbacAnimator`), Route Handler Koleksi GET & POST (`CollectionRouteAnimator`), Route Handler Item Spesifik Async Params Next.js 16 (`ItemRouteAnimator`), Sinkronisasi URL as State & Debounce (`UrlStateSyncAnimator`), serta Rumus Matematika Supabase Pagination Range Query (`PaginationRangeAnimator`).
+  - Interactive Terms: Badges interaktif `route-handler`, `rest-api`, `bearer-token`, `cors`, `rbac`, dan `rls` di ringkasan konsep dengan diagram alur pipeline visual.
   - Subpoin Konsep: Format penomoran vertikal terstruktur (`1. ...\n\n2. ...\n\n3. ...`) dengan kontras visual kata kunci inline `<code>`.
-  - Lab Praktek: 5 Langkah terpadu dari helper respons standar & CORS, verifikasi Bearer Token JWT, Route Handler koleksi, Route Handler dinamis async params, hingga pengujian endpoint cURL / Thunder Client.
+  - Lab Praktek: 5 Langkah terpadu dari helper respons standar & CORS, verifikasi Bearer Token JWT, Route Handler koleksi, Route Handler dinamis async params & migrasi role RBAC, hingga pengujian endpoint cURL / Thunder Client.
   - Prompt All-in-One 6 Berkas (`src/lib/api-response.ts`, `src/lib/api-auth.ts`, `src/app/api/v1/tasks/route.ts`, `src/app/api/v1/tasks/[id]/route.ts`, `src/components/tasks/task-search-input.tsx`, `src/app/page.tsx` Root Navigation Hero) + Panduan Dual-Mode & Standar Estetika UI Premium.
-  - Misi Snowballing: Branch `feature/crud-rest-api-security` dengan 5 kriteria DoD terukur dan progress bar interaktif.
+  - Misi Snowballing: Branch `feature/crud-rest-api-security` dengan 6 kriteria DoD terukur (termasuk otorisasi peran Admin vs Member) dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur & keamanan API dengan passing threshold $\ge 80$.
   - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_06.md` (150 menit timetable, skrip perkuliahan, arsitektur 6 berkas, dan uji bukti eksekusi cURL).
 - **Implementasi Tab 4 & Sistem Autentikasi (Selesai 100%)**:

@@ -79,6 +79,7 @@ import { RestResponseContractAnimator } from "@/components/visualizers/rest-resp
 import { BearerAuthFlowAnimator } from "@/components/visualizers/bearer-auth-flow-animator";
 import { CorsPreflightAnimator } from "@/components/visualizers/cors-preflight-animator";
 import { RlsVsServiceRoleAnimator } from "@/components/visualizers/rls-vs-service-role-animator";
+import { MultiRoleRbacAnimator } from "@/components/visualizers/multi-role-rbac-animator";
 import { CollectionRouteAnimator } from "@/components/visualizers/collection-route-animator";
 import { ItemRouteAnimator } from "@/components/visualizers/item-route-animator";
 import { UrlStateSyncAnimator } from "@/components/visualizers/url-state-sync-animator";
@@ -551,6 +552,12 @@ const MODULE_6_VISUALIZERS: Record<string, { key: string; title: string; subtitl
     title: "Simulasi Kebocoran Data: RLS Enforcement vs Bahaya Service Role Key di REST API",
     subtitle: "Bandingkan proteksi isolasi data User Client vs kebocoran fatal akibat bypass Service Role Key",
     component: <RlsVsServiceRoleAnimator />,
+  },
+  "1-3": {
+    key: "multi-role-rbac",
+    title: "Simulasi Otorisasi Multi-Role: Evaluasi Hak Akses CRUD (Admin vs Member)",
+    subtitle: "Uji coba evaluasi hak akses mutasi Server Action dan PostgreSQL RLS antara Admin dan Member",
+    component: <MultiRoleRbacAnimator />,
   },
 
   // Pilar 3: Endpoint REST API CRUD Lengkap & Penanganan Async Params Next.js 16

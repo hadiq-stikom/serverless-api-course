@@ -3554,8 +3554,8 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
     worldTitle: "Dunia 1: Fondasi & Backend Serverless",
     weekNumber: 6,
     title: "Integrasi CRUD End-to-End: Server Actions vs REST API Route Handlers & Keamanan API",
-    subtitle: "Membangun arsitektur ganda (Web BFF via Server Actions & Universal REST API via Route Handlers), validasi Zod terbagi, proteksi Bearer Token JWT, CORS, dan URL as State.",
-    cpmk: "Mahasiswa mampu merancang arsitektur data ganda (Server Actions untuk Web dan REST API Route Handlers untuk Mobile/Universal Clients), mengamankan endpoint publik dengan Bearer Token JWT Supabase, CORS headers, mitigasi abuse, validasi skema Zod, serta mengelola URL search params untuk filter dan pagination.",
+    subtitle: "Membangun arsitektur ganda (Web BFF via Server Actions & Universal REST API via Route Handlers), validasi Zod terbagi, proteksi Bearer Token JWT, CORS, otorisasi multi-role (Admin vs Member), dan URL as State.",
+    cpmk: "Mahasiswa mampu merancang arsitektur data ganda (Server Actions untuk Web dan REST API Route Handlers untuk Mobile/Universal Clients), mengamankan endpoint publik dengan Bearer Token JWT Supabase, CORS headers, mitigasi abuse, validasi skema Zod, menegakkan otorisasi multi-role (Admin vs Member) pada Server Actions dan PostgreSQL RLS, serta mengelola URL search params untuk filter dan pagination.",
     cpmkPoints: [
       {
         code: "CPMK 6.1",
@@ -3573,10 +3573,10 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
       },
       {
         code: "CPMK 6.3",
-        badge: "Bearer JWT & CORS",
-        title: "Pengamanan Endpoint Publik (Bearer Token JWT & Kebijakan CORS)",
-        desc: "Mengamankan endpoint publik menggunakan autentikasi stateless `Authorization: Bearer <jwt>`, penanganan `OPTIONS Preflight CORS`, isolasi `Row Level Security (RLS)`, dan pencegahan kebocoran `SERVICE_ROLE_KEY`.",
-        keywords: ["Bearer Token JWT", "CORS Preflight (OPTIONS)", "PostgreSQL RLS", "Anti-ServiceRole Leak", "Stateless Auth"]
+        badge: "Bearer JWT, CORS & RBAC",
+        title: "Pengamanan Endpoint & Otorisasi Berbasis Peran (Bearer JWT, CORS & Pragmatic RBAC)",
+        desc: "Mengamankan endpoint publik menggunakan autentikasi stateless `Authorization: Bearer <jwt>`, penanganan `OPTIONS Preflight CORS`, isolasi `Row Level Security (RLS)`, pencegahan kebocoran `SERVICE_ROLE_KEY`, serta menegakkan otorisasi multi-role (`admin` dengan super-access dan `member` dengan batas kepemilikan baris).",
+        keywords: ["Bearer Token JWT", "CORS Preflight (OPTIONS)", "PostgreSQL RLS", "Pragmatic RBAC", "Admin vs Member", "Anti-ServiceRole Leak"]
       },
       {
         code: "CPMK 6.4",
@@ -3589,14 +3589,14 @@ BERKAS 3: src/app/page.tsx (ROOT NAVIGATION RULE)
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 400,
     concepts: {
-      summary: "Membangun aplikasi modern menuntut fleksibilitas arsitektur ganda: Web Dashboard yang cepat dan reaktif menggunakan React Server Components & Server Actions (BFF Pattern), serta RESTful API Route Handlers berbasis standar HTTP untuk melayani Klien Mobile (Flutter/React Native) dan integrasi publik. Seluruh endpoint publik diamankan dengan verifikasi Bearer Token JWT, kebijakan CORS lintas-domain, penegakan Row Level Security (RLS) PostgreSQL, serta sinkronisasi state pencarian dan pagination melalui URL search parameters.",
+      summary: "Membangun aplikasi modern menuntut fleksibilitas arsitektur ganda: Web Dashboard yang cepat dan reaktif menggunakan React Server Components & Server Actions (BFF Pattern), serta RESTful API Route Handlers berbasis standar HTTP untuk melayani Klien Mobile (Flutter/React Native) dan integrasi publik. Seluruh endpoint publik diamankan dengan verifikasi Bearer Token JWT, kebijakan CORS lintas-domain, otorisasi multi-role (Admin vs Member) pada Server Actions dan database Row Level Security (RLS) PostgreSQL, serta sinkronisasi state pencarian dan pagination melalui URL search parameters.",
       points: [
         { title: "Dual Architecture: BFF vs Universal REST API", desc: "Server Actions untuk internal web dengan 0-bundle dan progressive enhancement; Route Handlers (route.ts) untuk melayani aplikasi mobile Flutter/React Native dengan format JSON standar." },
         { title: "DRY Validation: Shared Zod Schemas", desc: "Satu skema Zod (taskSchema) memvalidasi form web via Server Action dan memvalidasi payload request.json() di REST Route Handler secara konsisten." },
-        { title: "Optimal REST API Security (Bearer JWT & CORS)", desc: "Autentikasi stateless via header Authorization: Bearer <jwt>, penanganan CORS Preflight OPTIONS, dan pencegahan mutlak kebocoran SERVICE_ROLE_KEY." },
+        { title: "Optimal REST API Security & Multi-Role RBAC", desc: "Autentikasi stateless via header Authorization: Bearer <jwt>, penanganan CORS Preflight OPTIONS, isolasi RLS, dan penegakan peran Admin vs Member." },
         { title: "URL as State & Server-Side Filtering", desc: "Sinkronisasi kata kunci pencarian dan pagination di URL search params (?search=...&page=...) dengan input debounced 300ms dan Supabase range queries." }
       ],
-      diagramNote: "Mobile Client (Bearer JWT) ➔ OPTIONS Preflight (CORS) ➔ Route Handler (Zod safeParse) ➔ Supabase Auth (getUser) ➔ PostgreSQL RLS (auth.uid) ➔ JSON RFC 7807 Response",
+      diagramNote: "Mobile Client (Bearer JWT) ➔ OPTIONS Preflight (CORS) ➔ Route Handler (Zod safeParse) ➔ Supabase Auth (getUser) ➔ Pragmatic RBAC (Admin vs Member) ➔ PostgreSQL RLS (auth.uid) ➔ JSON RFC 7807 Response",
       deepDiveSections: [
         {
           title: "1. Arsitektur Komputasi Ganda: Paradigma Monolith Modern Next.js vs Decoupled REST API",
@@ -3790,12 +3790,13 @@ export function apiError(detail: string, code = 'BAD_REQUEST', status = 400, err
           }
         },
         {
-          title: "2. Standar Keamanan Optimal Serverless REST API (Bearer JWT, CORS & RLS)",
-          badge: "Pilar 2: Benteng Keamanan REST API",
-          content: "Membuka endpoint REST API ke publik berarti mengekspos sistem ke risiko **serangan brute-force**, kebocoran data lintas akun (*privilege escalation*), dan manipulasi domain origin peramban. Kita menerapkan **tiga pilar pertahanan keamanan serverless**:\n\n" +
+          title: "2. Standar Keamanan Optimal Serverless REST API & Pragmatic RBAC (Bearer JWT, CORS & RLS)",
+          badge: "Pilar 2: Benteng Keamanan & Otorisasi",
+          content: "Membuka endpoint REST API dan operasi mutasi data ke publik menuntut pemisahan tegas antara **Autentikasi (Siapa Anda)** dan **Otorisasi (Apa yang boleh Anda lakukan)**. Kita menerapkan **empat pilar pertahanan keamanan serverless**:\n\n" +
                    "1. **Autentikasi Stateless Bearer JWT**: Verifikasi kriptografis token pada header `Authorization: Bearer <jwt>` tanpa ketergantungan pada session store peramban.\n\n" +
                    "2. **CORS & Preflight Handling**: Pengendalian hak akses origin domain luar serta penanganan method pra-uji HTTP `OPTIONS` dengan status `204 No Content`.\n\n" +
-                   "3. **Penegakan Mutlak RLS PostgreSQL**: Isolasi data baris per baris via `auth.uid() = user_id`, serta **MENOLAK MUTLAK** penggunaan `SERVICE_ROLE_KEY` di rute publik.",
+                   "3. **Penegakan Mutlak RLS PostgreSQL**: Isolasi data baris per baris via `auth.uid() = user_id`, serta **MENOLAK MUTLAK** penggunaan `SERVICE_ROLE_KEY` di rute publik.\n\n" +
+                   "4. **Pragmatic RBAC (Admin vs Member)**: Penegakan kontrol akses berbasis peran di mana peran `admin` memiliki hak mengelola seluruh proyek/tugas, sedangkan peran `member` dibatasi hanya pada data miliknya sendiri.",
           subpoints: [
             {
               label: "Autentikasi Stateless Bearer Token JWT & Validasi Supabase Auth",
@@ -3883,12 +3884,46 @@ const supabaseUser = createClient(url, anonKey, {
 const { data, error } = await supabaseUser.from('tasks').select('*');`,
               language: "typescript",
               caption: "Perbandingan Fatal: Bahaya Service Role Key vs Penegakan User Client RLS"
+            },
+            {
+              label: "Pragmatic RBAC: Otorisasi Multi-Role (Admin vs Member) pada CRUD & PostgreSQL RLS",
+              text: "1. Mengapa Aplikasi Manajemen Tugas Membutuhkan Role:\n" +
+                    "Setelah pengguna berhasil login (Autentikasi), sistem harus menentukan batas wewenang mereka (Otorisasi). Dalam domain aplikasi proyek dan tugas, peran **`admin`** bertindak sebagai koordinator proyek yang berhak mengawasi dan mengelola seluruh tugas tim, sedangkan peran **`member`** hanya berhak memanipulasi tugas yang ia miliki.\n\n" +
+                    "2. Migrasi Database Sederhana (Pragmatic Column Pattern):\n" +
+                    "Alih-alih membuat tabel izin yang rumit, kita menambahkan kolom enum `role` pada tabel `public.profiles` dengan aturan integritas `CHECK (role IN ('admin', 'member'))` dan default `'member'`.\n\n" +
+                    "3. Penerapan Otorisasi Berlapis (Defense-in-Depth):\n" +
+                    "- **Lapisan 1 (Server Actions)**: Sebelum menjalankan mutasi hapus (`deleteTaskAction`), server memeriksa apakah pengguna adalah `admin`. Jika ya, filter kepemilikan di-bypass; jika bukan, klausa `.eq('user_id', user.id)` wajib disematkan.\n" +
+                    "- **Lapisan 2 (PostgreSQL RLS Policy)**: Di level database, policy `tasks` dievaluasi menggunakan subkueri `EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')` sehingga jika klien memanggil REST API langsung, database tetap menolak akses ilegal.",
+              code: `-- 1. Migrasi Penambahan Kolom Role di public.profiles:
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'member' 
+CHECK (role IN ('admin', 'member'));
+
+-- 2. Kebijakan PostgreSQL RLS Multi-Role (Admin vs Member):
+CREATE POLICY "Admin atau Pemilik Tugas" ON public.tasks
+FOR ALL TO authenticated
+USING (
+  auth.uid() = user_id 
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+  )
+)
+WITH CHECK (
+  auth.uid() = user_id 
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+  )
+);`,
+              language: "sql",
+              caption: "Penerapan Pragmatic RBAC (Admin vs Member) pada PostgreSQL DDL & RLS Policy"
             }
           ],
           callout: {
             type: "warning",
-            title: "Zona Bahaya Privilege Escalation",
-            text: "Jangan pernah menggunakan SUPABASE_SERVICE_ROLE_KEY di Route Handler publik! Kunci ini membypass seluruh kebijakan Row Level Security (RLS) sehingga penyerang dapat membaca, mengubah, dan menghapus data milik pengguna lain."
+            title: "Zona Bahaya Privilege Escalation & Kebocoran Role",
+            text: "Jangan pernah mengizinkan pengguna memperbarui kolom 'role' mereka sendiri via form profil biasa! Kolom 'role' hanya boleh diubah melalui Supabase SQL Editor atau dashboard admin terproteksi agar pengguna biasa tidak dapat menaikkan hak aksesnya sendiri menjadi admin."
           }
         },
         {
@@ -4129,6 +4164,7 @@ export default async function TasksPage({
       prerequisites: [
         "Proyek Next.js 16 dari Pertemuan 5 telah aktif dan terhubung ke Supabase Cloud",
         "Pustaka use-debounce terpasang: 'npm install use-debounce'",
+        "Tabel public.profiles memiliki kolom 'role' (default 'member') dan policy RLS multi-role di Supabase SQL Editor",
         "Tabel public.tasks dengan RLS aktif telah siap di database PostgreSQL Supabase"
       ],
       steps: [
@@ -4234,12 +4270,30 @@ export async function createTaskAction(prevState: unknown, formData: FormData) {
 
 export async function deleteTaskAction(id: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from('tasks').delete().eq('id', id);
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Sesi login telah habis');
+
+  // Otorisasi Pragmatic RBAC: Cek peran aktif pengguna
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const isAdmin = profile?.role === 'admin';
+  let query = supabase.from('tasks').delete().eq('id', id);
+
+  // Jika bukan admin, hanya diizinkan menghapus tugas miliknya sendiri
+  if (!isAdmin) {
+    query = query.eq('user_id', user.id);
+  }
+
+  const { error } = await query;
   if (error) throw new Error(error.message);
   revalidatePath('/tasks');
 }`,
           language: "typescript",
-          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 1 di bawah untuk merakit Server Actions dan form tugas web src/components/tasks/task-form.tsx dengan auto-resolusi project_id. 2) Karakteristik Monolith: Mutasi form diproses langsung di server via React Flight RPC dengan membaca sesi kuki peramban (@supabase/ssr) dan memicu pembaruan UI instan via revalidatePath()."
+          explanation: "1) Eksekusi AI Agent: Salin Prompt Tahap 1 di bawah untuk merakit Server Actions dan form tugas web src/components/tasks/task-form.tsx dengan auto-resolusi project_id serta otorisasi role Admin vs Member. 2) Karakteristik Monolith: Mutasi form diproses langsung di server via React Flight RPC dengan membaca sesi kuki peramban (@supabase/ssr) dan memicu pembaruan UI instan via revalidatePath()."
         },
         {
           stepNumber: 3,
@@ -4376,8 +4430,8 @@ curl -X GET http://localhost:3000/api/v1/tasks -i`,
       aiPromptTemplate: {
         role: "Senior Cloud Architect, Next.js 16 Specialist & API Security Engineer",
         prompt: `Bertindaklah sebagai Senior Cloud Architect & Next.js 16 Specialist.
-Tugas Anda adalah merancang dan mengimplementasikan Arsitektur Ganda (Dual Architecture) pada aplikasi "The Serverless Odyssey":
-1. Paradigma 1 (Monolith Web): Dashboard tugas internal berbasis React Server Components, Server Actions ('use server'), form feedback, dan sinkronisasi pencarian via URL as State (?search=...&page=...).
+Tugas Anda adalah merancang dan mengimplementasikan Arsitektur Ganda (Dual Architecture) serta Otorisasi Berbasis Peran (Pragmatic RBAC: Admin vs Member) pada aplikasi "The Serverless Odyssey":
+1. Paradigma 1 (Monolith Web): Dashboard tugas internal berbasis React Server Components, Server Actions ('use server'), form feedback, otorisasi peran (Admin vs Member), dan sinkronisasi pencarian via URL as State (?search=...&page=...).
 2. Paradigma 2 (Decoupled Universal REST API): REST API Route Handlers terproteksi (/api/v1/tasks) untuk kebutuhan Klien Mobile (Flutter/React Native) dan integrasi publik lengkap dengan halaman Mobile API Tester Playground di /tasks/api-tester.
 
 PRINSIP KELANJUTAN PROYEK (METODE BOLA SALJU / SNOWBALLING):
@@ -4389,6 +4443,8 @@ LANGKAH PRE-KONDISI & DEPENDENSI (JALANKAN OTOMATIS JIKA BELUM ADA):
    npm install use-debounce
 2. Periksa apakah komponen Shadcn UI yang dibutuhkan sudah ada (Button, Card, Input, Label, Badge, Separator, Table):
    npx shadcn@latest add button card input label badge separator table
+3. Migrasi Database Pragmatic RBAC (Jalankan di Supabase SQL Editor jika belum):
+   ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member'));
 
 BATASAN ARSITEKTUR KETAT:
 1. DILARANG KERAS menggunakan 'SUPABASE_SERVICE_ROLE_KEY' di Route Handler publik atau Server Actions biasa.
@@ -4397,6 +4453,7 @@ BATASAN ARSITEKTUR KETAT:
 4. Standarisasi Respons Error: Route Handler wajib mengembalikan format IETF RFC 7807 (type, title, status, detail, errors).
 5. Zero TypeScript 'any' types.
 6. Konsistensi Relasi 3-Tier (Modul 4): Sesuai DDL database, kolom tasks.project_id berstatus NOT NULL REFERENCES projects(id). Baik pada Server Action (createTaskAction) maupun REST API (POST /api/v1/tasks), buat helper auto-resolving 'resolveTargetProjectId' yang memeriksa apakah user memiliki project di tabel 'projects'. Jika ada, gunakan project.id tersebut; jika belum ada, buatkan otomatis proyek default bernama 'Proyek Utama (General)' sehingga tasks.project_id TIDAK PERNAH NULL.
+7. Pragmatic RBAC Enforcement: Pengguna dengan role 'admin' berhak mengelola seluruh tugas tim, sedangkan 'member' hanya berhak memanipulasi tugas miliknya sendiri (user_id = auth.uid()).
 
 STRUKTUR 7 BERKAS YANG WAJIB DIRAKIT / DISEMPURNAKAN (SIAP JALAN 100%, TANPA POTONGAN KODE):
 
@@ -4404,11 +4461,11 @@ BERKAS 1: src/lib/schemas.ts (Shared Single Source of Truth - Sempurnakan yang s
 - Sempurnakan skema Zod terpusat 'taskSchema' (title min 3 max 100, priority enum low/medium/high, status enum pending/in_progress/completed, project_id: z.string().uuid().optional()).
 - Tambahkan 'taskUpdateSchema = taskSchema.partial()'. Ekspor tipe 'TaskInput' dan 'TaskUpdateInput'.
 
-BERKAS 2: src/actions/tasks.ts ('use server' - Hubungkan dengan Kuki Sesi Asli)
+BERKAS 2: src/actions/tasks.ts ('use server' - Hubungkan dengan Kuki Sesi Asli & RBAC)
 - Sempurnakan fungsi mutasi agar membaca user aktif dari kuki @supabase/ssr via createClient().
 - Sertakan helper 'resolveTargetProjectId(supabase, userId, customProjectId)' agar saat insert tugas baru, 'project_id' selalu terisi UUID valid dan tidak pernah bernilai NULL.
 - 'createTaskAction(prevState, formData)': Validasi via taskSchema.safeParse(), resolve project_id, insert user_id & project_id, revalidatePath('/tasks').
-- 'deleteTaskAction(id: string)': Hapus tugas dengan .eq('id', id), revalidatePath('/tasks').
+- 'deleteTaskAction(id: string)': Cek profil user dari 'profiles'. Jika role 'admin', hapus tugas dengan .eq('id', id); jika role 'member', wajib batasi dengan .eq('id', id).eq('user_id', user.id). revalidatePath('/tasks').
 - 'toggleTaskStatusAction(id: string, currentStatus: string)': Update status ke completed/pending, revalidatePath('/tasks').
 
 BERKAS 3: src/components/tasks/task-search-input.tsx + src/components/tasks/task-form.tsx
@@ -4417,10 +4474,12 @@ BERKAS 3: src/components/tasks/task-search-input.tsx + src/components/tasks/task
 
 BERKAS 4: src/app/(dashboard)/tasks/page.tsx (Server Component - Sempurnakan Dashboard Eksisting)
 - Pertahankan struktur dashboard yang sudah ada dari modul sebelumnya.
+- Baca profil user untuk mengambil nilai 'role' ('admin' atau 'member').
+- Tampilkan Badge peran di samping sapaan header dashboard: '👑 Admin' (badge ungu/indigo) atau '👤 Member' (badge netral).
 - Tambahkan pembacaan 'const { search, page = "1" } = await searchParams;'.
 - Hitung indeks pagination Supabase: from = (currentPage - 1) * 10, to = from + 9.
 - Eksekusi kueri Supabase tasks dengan .range(from, to) dan .ilike('title', \`%\${search}%\`).
-- Render form tambah tugas, input pencarian, tabel tugas, dan tombol tautan navigasi menuju Mobile API Tester (/tasks/api-tester).
+- Render form tambah tugas, input pencarian, tabel tugas (dengan tombol hapus yang menghormati role), dan tombol navigasi menuju Mobile API Tester (/tasks/api-tester).
 
 BERKAS 5: src/lib/api-response.ts + src/lib/api-auth.ts (REST Core & Security - Baru Ditambahkan)
 - api-response.ts: Objek 'corsHeaders' (Origin: *, Methods, Headers), helper 'apiSuccess(data, meta, status = 200)', dan helper RFC 7807 'apiError(detail, code, status, errors)'.
@@ -4444,9 +4503,9 @@ BERKAS 8: src/app/page.tsx (ROOT NAVIGATION RULE)
         steppedPrompts: [
           {
             stepNumber: 1,
-            title: "Tahap 1: Paradigma Monolith Web (Server Actions, RSC & URL as State)",
+            title: "Tahap 1: Paradigma Monolith Web & Otorisasi Role (Server Actions, RSC & URL as State)",
             badge: "Paradigma 1: Monolith Web",
-            description: "Membangun dashboard tugas internal berbasis React Server Components, Server Actions ('use server'), form feedback interaktif, serta sinkronisasi kata kunci pencarian dan pagination melalui URL as State.",
+            description: "Membangun dashboard tugas internal berbasis React Server Components, Server Actions ('use server'), otorisasi multi-role (Admin vs Member), form feedback interaktif, serta sinkronisasi kata kunci pencarian dan pagination melalui URL as State.",
             targetFiles: [
               "src/lib/schemas.ts",
               "src/actions/tasks.ts",
@@ -4455,7 +4514,7 @@ BERKAS 8: src/app/page.tsx (ROOT NAVIGATION RULE)
               "src/app/(dashboard)/tasks/page.tsx"
             ],
             prompt: `Bertindaklah sebagai Senior Full-Stack Engineer & Next.js 16 Specialist.
-Tugas Anda adalah mengimplementasikan Tahap 1: Paradigma Full-Stack Monolith Web (Dashboard Tugas Internal) pada proyek "The Serverless Odyssey".
+Tugas Anda adalah mengimplementasikan Tahap 1: Paradigma Full-Stack Monolith Web & Pragmatic RBAC (Dashboard Tugas Internal) pada proyek "The Serverless Odyssey".
 
 PRINSIP KELANJUTAN PROYEK (METODE BOLA SALJU / SNOWBALLING):
 Proyek ini adalah KELANJUTAN BERTAHAP dari Modul 1–5. Layout dashboard, koneksi database Supabase (Modul 4), dan autentikasi sesi (Modul 5) SUDAH TERSEDIA di repositori.
@@ -4466,6 +4525,8 @@ LANGKAH PRE-KONDISI & DEPENDENSI:
    npm install use-debounce
 2. Pastikan komponen Shadcn UI tersedia (Button, Card, Input, Label, Badge, Table):
    npx shadcn@latest add button card input label badge table
+3. Pastikan kolom 'role' sudah ada di tabel 'profiles' di Supabase SQL Editor:
+   ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member'));
 
 BATASAN ARSITEKTUR KETAT:
 1. Server Components (RSC): Halaman tasks/page.tsx adalah Server Component. Dilarang menambahkan 'use client' di page.tsx.
@@ -4474,6 +4535,7 @@ BATASAN ARSITEKTUR KETAT:
 4. Cache Invalidation: Wajib panggil revalidatePath('/tasks') di setiap Server Action mutasi.
 5. Zero TypeScript 'any' types.
 6. Relasi 3-Tier (tasks.project_id NOT NULL): Sediakan helper 'resolveTargetProjectId(supabase, userId, customProjectId)' agar tasks.project_id selalu terisi UUID proyek aktif atau auto-create 'Proyek Utama (General)' jika kosong.
+7. Otorisasi Multi-Role (Admin vs Member): Pengguna dengan role 'admin' dapat menghapus semua tugas, sedangkan 'member' hanya diizinkan menghapus tugas miliknya sendiri.
 
 STRUKTUR 5 BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
 
@@ -4481,10 +4543,10 @@ BERKAS 1: src/lib/schemas.ts (Shared Single Source of Truth - Sempurnakan yang s
 - Deklarasikan skema Zod terpusat 'taskSchema' (title: string min 3 max 100, priority: enum ['low', 'medium', 'high'] default 'medium', status: enum ['pending', 'in_progress', 'completed'] default 'pending', project_id: z.string().uuid().optional()).
 - Ekspor 'taskUpdateSchema = taskSchema.partial()', tipe 'TaskInput' dan 'TaskUpdateInput'.
 
-BERKAS 2: src/actions/tasks.ts ('use server' - Hubungkan dengan Kuki Sesi Asli)
+BERKAS 2: src/actions/tasks.ts ('use server' - Hubungkan dengan Kuki Sesi Asli & Otorisasi)
 - Buat helper 'resolveTargetProjectId' yang memeriksa apakah user memiliki proyek di tabel 'projects'. Jika ada kembalikan project.id, jika belum ada buatkan otomatis proyek default 'Proyek Utama (General)'.
 - 'createTaskAction(prevState: unknown, formData: FormData)': Baca user via cookies @supabase/ssr, validasi input via taskSchema.safeParse(), resolve target project_id, insert { ...parsed.data, project_id, user_id: user.id } ke tabel public.tasks, revalidatePath('/tasks'). Kembalikan { success: true } atau { success: false, errors }.
-- 'deleteTaskAction(id: string)': Hapus data tugas dengan .eq('id', id), revalidatePath('/tasks').
+- 'deleteTaskAction(id: string)': Cek profil user dari 'profiles'. Jika role 'admin', eksekusi .delete().eq('id', id); jika role 'member', eksekusi .delete().eq('id', id).eq('user_id', user.id). revalidatePath('/tasks').
 - 'toggleTaskStatusAction(id: string, currentStatus: string)': Update status tugas menjadi 'completed' atau 'pending', revalidatePath('/tasks').
 
 BERKAS 3: src/components/tasks/task-search-input.tsx ('use client' - Komponen Baru)
@@ -4496,9 +4558,10 @@ BERKAS 4: src/components/tasks/task-form.tsx ('use client' - Sempurnakan yang su
 
 BERKAS 5: src/app/(dashboard)/tasks/page.tsx (Server Component - Sempurnakan Dashboard Eksisting)
 - Baca 'const { search, page = "1" } = await searchParams;'.
+- Ambil profil user untuk menampilkan Badge Peran: '👑 Admin' atau '👤 Member'.
 - Hitung from = (parseInt(page) - 1) * 10 dan to = from + 9.
 - Eksekusi kueri Supabase dengan .range(from, to) dan .ilike('title', \`%\${search}%\`).
-- Render UI dashboard elegan: Header dengan tombol CTA menuju "/tasks/api-tester", komponen TaskSearchInput, komponen TaskForm, tabel daftar tugas dengan badge prioritas, dan tombol navigasi pagination.`,
+- Render UI dashboard elegan: Header dengan Badge Peran & tombol CTA menuju "/tasks/api-tester", komponen TaskSearchInput, komponen TaskForm, tabel daftar tugas dengan badge prioritas, dan tombol navigasi pagination.`,
             checkpoint: "Jalankan 'npm run dev' dan buka http://localhost:3000/tasks di peramban. Pastikan form input tugas dapat menambahkan data baru tanpa full page reload via Server Actions, dan ketikan di kotak pencarian memperbarui URL (?search=...) secara halus dengan jeda debounce 300ms.",
             tip: "Pastikan Anda sudah login terlebih dahulu agar kuki sesi pengguna aktif dikenali oleh Server Actions dan kueri RSC."
           },
@@ -4582,6 +4645,7 @@ BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
       definitionOfDone: [
         "Skema validasi Zod terpusat (src/lib/schemas.ts) memvalidasi form web sekaligus payload REST API (Prinsip DRY)",
         "Halaman dashboard web (/tasks) memuat data via RSC, mendukung filter pencarian tersinkronisasi URL (debounce 300ms), dan menjalankan mutasi via Server Actions",
+        "Otorisasi multi-role (Admin vs Member) aktif di mana Admin dapat mengelola seluruh tugas tim sedangkan Member dibatasi pada tugas miliknya sendiri",
         "Endpoint REST API GET & POST /api/v1/tasks mendukung pagination berindeks, validasi skema Zod (201 / 422), dan format respons RFC 7807",
         "Endpoint dinamis /api/v1/tasks/[id] mendukung async params Next.js 16 (await params) untuk operasi GET, PUT, dan DELETE terproteksi Bearer JWT",
         "Header CORS (Access-Control-Allow-*) dan preflight OPTIONS 204 No Content terpasang aktif pada seluruh route handler",
@@ -4619,11 +4683,11 @@ BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
         },
         {
           id: 4,
-          question: "Mengapa penggunaan SUPABASE_SERVICE_ROLE_KEY di dalam Route Handler yang dapat diakses publik merupakan bencana keamanan fatal (Privilege Escalation)? Bagaimana cara yang benar menginisialisasi client Supabase di dalam Route Handler?",
-          rubric: "Mahasiswa wajib menjelaskan bahwa Service Role Key membypass 100% kebijakan Row Level Security (RLS) PostgreSQL sehingga penyerang dapat membaca dan memanipulasi data milik semua pengguna. Pendekatan yang benar adalah menggunakan ANON_KEY yang dikombinasikan dengan token pengguna pada header Authorization agar PostgreSQL tetap menerapkan isolasi RLS berbasis auth.uid().",
-          keyConcepts: ["Bypass Row Level Security (RLS)", "Privilege Escalation Vulnerability", "Anon Key + Bearer Header", "Isolasi Data auth.uid()"],
+          question: "Mengapa penggunaan SUPABASE_SERVICE_ROLE_KEY di dalam Route Handler publik merupakan bencana keamanan fatal (Privilege Escalation)? Serta bagaimana arsitektur otorisasi multi-role (Admin vs Member) ditegakkan secara aman menggunakan kebijakan Row Level Security (RLS) PostgreSQL?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa Service Role Key membypass 100% kebijakan Row Level Security (RLS) PostgreSQL sehingga penyerang dapat membaca dan memanipulasi data milik semua pengguna. Pendekatan yang benar adalah menggunakan ANON_KEY yang dikombinasikan dengan token pengguna pada header Authorization agar PostgreSQL tetap menerapkan isolasi RLS. Untuk otorisasi multi-role, mahasiswa harus menguraikan klausul RLS: USING (auth.uid() = user_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')), di mana Admin memiliki akses menyeluruh dan Member dibatasi pada baris miliknya sendiri.",
+          keyConcepts: ["Bypass Row Level Security (RLS)", "Privilege Escalation Vulnerability", "Anon Key + Bearer Header", "Pragmatic RBAC in RLS", "Admin vs Member Subquery"],
           weight: 15,
-          socraticHint: "Apa yang terjadi pada evaluasi klausul 'USING (auth.uid() = user_id)' di PostgreSQL jika koneksi database dilakukan menggunakan peran superuser / service_role?"
+          socraticHint: "Apa yang terjadi pada evaluasi klausul 'USING (auth.uid() = user_id)' di PostgreSQL jika koneksi memakai service_role? Dan bagaimana Anda mengizinkan Admin membaca tugas milik orang lain tanpa merusak proteksi data bagi Member biasa?"
         },
         {
           id: 5,
