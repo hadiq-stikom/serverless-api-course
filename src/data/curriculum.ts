@@ -5533,7 +5533,10 @@ export default async function TasksDashboard() {
         </div>
       </div>
 
-      {/* Grid Tugas Beranimasi */}
+      {/* Tab Filter Beranimasi layoutId */}
+      <AnimatedFilterTabs activeTab="Semua" onTabChange={() => {}} />
+
+      {/* Grid Tugas Beranimasi Stagger & FLIP */}
       <AnimatedTaskGrid tasks={tasks ?? []} onDeleteTask={async () => {}} />
     </div>
   );
@@ -5551,79 +5554,153 @@ PERIKSA & INSTALL DEPENDENCY TERLEBIH DAHULU:
 Periksa apakah paket 'framer-motion' sudah terinstal di package.json. Jika belum, jalankan perintah terminal:
 'npm install framer-motion'
 
+PERINGATAN KRUSIAL: INTEGRASI END-TO-END LANGSUNG (DILARANG MEMINTA KONFIRMASI):
+Dilarang keras hanya membuat berkas komponen di folder 'src/components/tasks/' lalu berhenti atau bertanya kepada pengguna apakah komponen tersebut ingin dipanggil di halaman!
+Anda WAJIB LANGSUNG membuat komponen DAN SEKALIGUS MENGIMPOR serta MERENDER seluruh komponen (AnimatedFilterTabs, AnimatedTaskGrid, AnimatedConfirmModal) secara terpadu di dalam 'src/app/(dashboard)/tasks/page.tsx', serta memperbarui Landing Page 'src/app/page.tsx'.
+Eksekusi seluruh pembuatan dan perakitan berkas secara mandiri (autonomous) TANPA MEMINTA KONFIRMASI. Mahasiswa harus dapat langsung membuka browser di http://localhost:3000/tasks dan melihat seluruh animasi bekerja seketika!
+
 BATASAN ARSITEKTURAL & TEKNIS:
 1. Next.js 16 App Router: Dilarang keras menambahkan 'use client' di file src/app/page.tsx atau src/app/(dashboard)/tasks/page.tsx. Pertahankan Server Components untuk fetching data langsung ke Supabase!
 2. Pushing 'use client' to the Leaves: Seluruh animasi Framer Motion (motion.*, AnimatePresence, useReducedMotion) wajib berada di dalam Client Component daun (misal di src/components/tasks/*).
 3. Hanya gunakan animasi berbasis GPU (transform & opacity) dan Spring Physics (stiffness & damping). Jangan menganimasikan properti geometry (height, width, margin).
 4. Gunakan token semantik Tailwind CSS yang konsisten mendukung Dark Mode dan Light Mode.
 
-TARGET STRUKTUR BERKAS YANG DIBANGUN:
+TARGET STRUKTUR BERKAS YANG DIBANGUN & DIINTEGRASIKAN:
 1. BERKAS 1: src/lib/animations.ts
    - Ekspor konfigurasi Variants modular: containerVariants (staggerChildren: 0.08, delayChildren: 0.1), taskCardVariants (spring physics stiffness: 350, damping: 25, exit scale 0.85 & fade-out), modalVariants, dan buttonVariants.
-2. BERKAS 2: src/components/tasks/animated-task-grid.tsx
-   - Client Component ('use client') yang merender daftar tugas menggunakan layout FLIP, AnimatePresence mode="popLayout", hover gesture elevasi halus, dan tombol hapus dengan konfirmasi animasi exit.
-3. BERKAS 3: src/components/tasks/animated-filter-tabs.tsx
+2. BERKAS 2: src/components/tasks/animated-filter-tabs.tsx
    - Client Component ('use client') yang merender tab penyaring status ('Semua', 'Berjalan', 'Selesai') dengan shared element transition pill slider magis (layoutId="activeTaskFilterPill").
+3. BERKAS 3: src/components/tasks/animated-task-grid.tsx
+   - Client Component ('use client') yang merender daftar tugas menggunakan layout FLIP, AnimatePresence mode="popLayout", hover gesture elevasi halus, dan tombol hapus dengan konfirmasi animasi exit.
 4. BERKAS 4: src/components/tasks/animated-confirm-modal.tsx
    - Client Component modal dialog konfirmasi hapus data berbasis AnimatePresence (backdrop blur fade-in & modal dialog spring scale 0.95 ➔ 1).
-5. BERKAS 5: src/app/(dashboard)/tasks/page.tsx
-   - Server Component RSC yang mengambil data tugas dari Supabase dan membungkusnya ke komponen-komponen beranimasi di atas secara terpadu.
+5. BERKAS 5: src/app/(dashboard)/tasks/page.tsx (INTEGRASI WAJIB!)
+   - Server Component RSC yang mengambil data tugas dari Supabase dan LANGSUNG MERENDER <AnimatedFilterTabs /> di atas dan <AnimatedTaskGrid /> di bawah secara terpadu tanpa konfirmasi tambahan!
 6. BERKAS 6: src/app/page.tsx (ROOT NAVIGATION RULE)
    - Perbarui Landing Page root '/' dengan Hero CTA visual beranimasi micro-interactions yang mengarahkan pengguna langsung ke Dashboard Tugas (/tasks).`,
         tip: "Pastikan selalu menyertakan prop key unik berbasis ID (misal key={task.id}) saat menggunakan AnimatePresence untuk menjamin pelacakan unmounting yang presisi.",
         steppedPrompts: [
           {
             stepNumber: 1,
-            title: "Fondasi Objek Variants & Konfigurasi Spring",
+            title: "Tahap 1: Instalasi Pustaka & Fondasi Objek Variants Terpusat",
             badge: "Tahap 1: Variants Setup",
-            description: "Menyiapkan berkas sentral konfigurasi animasi reusable (src/lib/animations.ts).",
+            description: "Memasang pustaka framer-motion dan menyiapkan berkas sentral konfigurasi animasi (src/lib/animations.ts).",
             targetFiles: ["src/lib/animations.ts"],
-            prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer. Buatkan berkas 'src/lib/animations.ts' yang mengekspor objek Variants Framer Motion:
-1. containerVariants: initial hidden (opacity 0), visible (opacity 1) dengan transition staggerChildren 0.08 dan delayChildren 0.1.
-2. taskCardVariants: hidden (opacity 0, y: 20, scale: 0.95), visible (opacity 1, y: 0, scale: 1 dengan spring stiffness 350 damping 25), exit (opacity 0, scale: 0.85, x: -30, duration 0.2).
-3. modalBackdropVariants & modalDialogVariants untuk transisi modal spring.`,
+            prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer.
+Tugas Anda adalah menyiapkan fondasi animasi untuk proyek "The Serverless Odyssey":
+1. Periksa apakah paket 'framer-motion' sudah terinstal di package.json. Jika belum, jalankan terminal:
+   npm install framer-motion
+2. Buatkan berkas sentral 'src/lib/animations.ts' yang mengekspor objek Variants Framer Motion lengkap:
+   - containerVariants: initial hidden (opacity 0), visible (opacity 1) dengan transition staggerChildren 0.08 dan delayChildren 0.1.
+   - taskCardVariants: hidden (opacity 0, y: 20, scale: 0.95), visible (opacity 1, y: 0, scale: 1 dengan spring stiffness 350 damping 25), exit (opacity 0, scale: 0.85, x: -30, duration 0.2).
+   - modalBackdropVariants (opacity 0 ➔ 1) & modalDialogVariants (scale 0.95 ➔ 1, y: 20 ➔ 0).
+Eksekusi langsung pembuatan berkas tanpa meminta konfirmasi tambahan!`,
             checkpoint: "Pastikan berkas src/lib/animations.ts bersih dari error TypeScript dan mengekspor tipe Variants secara benar."
           },
           {
             stepNumber: 2,
-            title: "Pill Slider Tab dengan layoutId",
+            title: "Tahap 2: Pill Slider Tab dengan layoutId & Integrasi Langsung ke Dashboard",
             badge: "Tahap 2: Shared Element",
-            description: "Membangun tab filter status dengan active indicator yang meluncur mulus.",
-            targetFiles: ["src/components/tasks/animated-filter-tabs.tsx"],
-            prompt: `Bertindaklah sebagai Senior UI/UX Engineer. Buatkan Client Component 'src/components/tasks/animated-filter-tabs.tsx' ('use client') untuk filter status tugas ('Semua', 'Berjalan', 'Selesai').
-Gunakan motion.div dengan layoutId="activeFilterPill" pada tab yang aktif untuk menghasilkan efek pill latar belakang yang meluncur halus di bawah teks tab.`,
-            checkpoint: "Klik tab filter di browser; perhatikan pill aktif meluncur mulus dari satu tombol ke tombol lain tanpa lag."
+            description: "Membangun tab filter status dengan active indicator yang meluncur mulus DAN langsung merendernya di tasks/page.tsx.",
+            targetFiles: [
+              "src/components/tasks/animated-filter-tabs.tsx",
+              "src/app/(dashboard)/tasks/page.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Senior UI/UX Engineer & Next.js 16 Specialist.
+Tugas Anda adalah membangun tab filter status beranimasi DAN LANGSUNG MEMASANGNYA ke dalam halaman dashboard tugas:
+
+1. BUAT KOMPONEN: 'src/components/tasks/animated-filter-tabs.tsx' ('use client')
+   - Sediakan tombol tab filter ('Semua', 'Berjalan', 'Selesai').
+   - Gunakan motion.div dengan layoutId="activeFilterPill" pada tab yang aktif untuk menghasilkan efek kapsul pill latar belakang yang meluncur halus di bawah teks tab tanpa reload.
+
+2. INTEGRASI LANGSUNG KE HALAMAN (WAJIB):
+   - Buka berkas 'src/app/(dashboard)/tasks/page.tsx'.
+   - Impor AnimatedFilterTabs dan pasang komponen ini tepat di bawah judul dashboard dan di atas daftar tugas.
+   - Tetap pertahankan tasks/page.tsx sebagai React Server Component (RSC). Dilarang menambahkan 'use client' di tasks/page.tsx!
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Dilarang keras berhenti hanya setelah membuat file komponen dan bertanya "apakah ingin dipanggil di halaman?". Anda WAJIB LANGSUNG mengimpor dan merendernya di 'src/app/(dashboard)/tasks/page.tsx' sekarang juga!`,
+            checkpoint: "Buka http://localhost:3000/tasks di browser; tab filter sudah langsung tampil di atas halaman. Klik salah satu tab dan perhatikan pill aktif meluncur mulus!"
           },
           {
             stepNumber: 3,
-            title: "Grid Tugas Stagger & AnimatePresence Exit",
+            title: "Tahap 3: Grid Tugas Stagger, FLIP Layout & Gantikan Tampilan Statis di Dashboard",
             badge: "Tahap 3: Stagger & Exit",
-            description: "Merakit kartu tugas dengan animasi kemunculan beruntun dan transisi saat dihapus.",
-            targetFiles: ["src/components/tasks/animated-task-grid.tsx"],
-            prompt: `Bertindaklah sebagai Frontend Specialist. Buatkan Client Component 'src/components/tasks/animated-task-grid.tsx' ('use client') yang membungkus list kartu tugas dalam motion.div (containerVariants) dan AnimatePresence mode="popLayout".
-Setiap kartu memiliki prop layout, whileHover elevasi ringan, dan animasi exit saat dihapus.`,
-            checkpoint: "Hapus satu kartu tugas; verifikasi kartu tersebut meluncur keluar secara halus dan kartu di bawahnya bergeser ke atas mengisi ruang kosong via prop layout."
+            description: "Merakit kartu tugas beranimasi kemunculan beruntun dan transisi exit, lalu langsung memasangnya menggantikan daftar lama di tasks/page.tsx.",
+            targetFiles: [
+              "src/components/tasks/animated-task-grid.tsx",
+              "src/app/(dashboard)/tasks/page.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Frontend Specialist & Next.js 16 Expert.
+Tugas Anda adalah merakit grid kartu tugas beranimasi dan LANGSUNG MENGGANTIKAN render daftar tugas statis di halaman dashboard:
+
+1. BUAT KOMPONEN: 'src/components/tasks/animated-task-grid.tsx' ('use client')
+   - Menerima props 'tasks' dan callback 'onDeleteTask'.
+   - Bungkus daftar kartu tugas dalam motion.div menggunakan 'containerVariants' dari '@/lib/animations'.
+   - Bungkus perulangan kartu dengan <AnimatePresence mode="popLayout">.
+   - Setiap kartu tugas memiliki prop 'layout' (teknik FLIP), 'variants={taskCardVariants}', 'exit="exit"', mikro-interaksi 'whileHover={{ y: -3 }}', serta tombol aksi Hapus.
+
+2. INTEGRASI LANGSUNG KE HALAMAN (WAJIB):
+   - Buka berkas 'src/app/(dashboard)/tasks/page.tsx'.
+   - Impor AnimatedTaskGrid dan GANTIKAN tabel atau list kartu tugas lama dengan komponen <AnimatedTaskGrid tasks={tasks ?? []} onDeleteTask={...} />.
+   - Jangan biarkan ada dua render list tugas ganda.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Dilarang berhenti untuk meminta konfirmasi pengguna. Anda WAJIB langsung menggantikan tampilan daftar lama di 'src/app/(dashboard)/tasks/page.tsx' dengan AnimatedTaskGrid sekarang!`,
+            checkpoint: "Buka http://localhost:3000/tasks di browser; kartu tugas muncul dengan animasi air terjun bertingkat (stagger cascade) 60 FPS yang memukau!"
           },
           {
             stepNumber: 4,
-            title: "Modal Konfirmasi Hapus Beranimasi",
+            title: "Tahap 4: Modal Dialog Konfirmasi Spring & Sambungkan ke Tombol Hapus Kartu",
             badge: "Tahap 4: Modal Presence",
-            description: "Membuat modal konfirmasi hapus data yang muncul dengan efek spring scale.",
-            targetFiles: ["src/components/tasks/animated-confirm-modal.tsx"],
-            prompt: `Bertindaklah sebagai Senior UI Engineer. Buatkan Client Component 'src/components/tasks/animated-confirm-modal.tsx' ('use client') menggunakan AnimatePresence.
-Saat isOpen bernilai true, backdrop muncul dengan fade-in blur dan kotak dialog muncul dengan spring scale (0.9 ➔ 1). Saat ditutup, keduanya melakukan exit animation secara elegan.`,
-            checkpoint: "Buka dan tutup modal konfirmasi; pastikan tidak ada kedipan instan saat modal menghilang dari layar."
+            description: "Membuat modal konfirmasi hapus data yang muncul dengan efek spring scale dan langsung menghubungkannya ke kartu tugas.",
+            targetFiles: [
+              "src/components/tasks/animated-confirm-modal.tsx",
+              "src/components/tasks/animated-task-grid.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Senior UI Engineer.
+Tugas Anda adalah membangun modal konfirmasi hapus data dan LANGSUNG MENGHUBUNGKANNYA ke kartu tugas:
+
+1. BUAT KOMPONEN: 'src/components/tasks/animated-confirm-modal.tsx' ('use client')
+   - Menerima props 'isOpen', 'onClose', 'onConfirm', 'title', dan 'description'.
+   - Gunakan AnimatePresence untuk membungkus modal.
+   - Backdrop muncul dengan animasi fade-in blur.
+   - Kotak dialog modal muncul dengan efek fisika pegas (spring scale: 0.95 ➔ 1, y: 15 ➔ 0).
+   - Saat tombol 'Batal' atau 'Hapus' ditekan, modal melakukan transisi exit yang elegan tanpa kedipan instan.
+
+2. HUBUNGKAN LANGSUNG KE GRID TUGAS (WAJIB):
+   - Buka 'src/components/tasks/animated-task-grid.tsx'.
+   - Pasang state modal konfirmasi sehingga ketika pengguna mengklik tombol 'Hapus' pada kartu tugas, AnimatedConfirmModal terbuka secara otomatis.
+   - Saat dikonfirmasi, jalankan callback onDeleteTask.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Lakukan seluruh pembuatan dan pengkabelan komponen ini secara otomatis tanpa meminta konfirmasi dari pengguna!`,
+            checkpoint: "Klik tombol 'Hapus' pada salah satu kartu tugas; modal konfirmasi muncul dengan animasi pembesaran pegas lembut dan latar belakang blur!"
           },
           {
             stepNumber: 5,
-            title: "Integrasi Dashboard & Root Navigation Hero",
-            badge: "Tahap 5: Dashboard Polish",
-            description: "Menghubungkan data Supabase RSC ke komponen animasi dan memperbarui Landing Page root.",
-            targetFiles: ["src/app/(dashboard)/tasks/page.tsx", "src/app/page.tsx"],
-            prompt: `Bertindaklah sebagai Full-Stack Architect. Integrasikan komponen-komponen animasi yang telah dibuat ke dalam:
-1. src/app/(dashboard)/tasks/page.tsx (tetap Server Component, fetch data dari Supabase, passing data ke AnimatedTaskGrid).
-2. src/app/page.tsx (perbarui hero landing page dengan tombol CTA elastis menuju /tasks dan badge preview visual).`,
-            checkpoint: "Buka http://localhost:3000/ di peramban. Klik tombol CTA Hero, periksa transisi ke /tasks, dan nikmati animasi stagger kartu tugas 60 FPS!"
+            title: "Tahap 5: Navigasi Root Hero CTA & Kepatuhan Aksesibilitas Reduced Motion",
+            badge: "Tahap 5: Root Hero & A11y",
+            description: "Memperbarui Landing Page root dengan Hero CTA elastis dan menambahkan useReducedMotion pada komponen animasi.",
+            targetFiles: [
+              "src/app/page.tsx",
+              "src/components/tasks/animated-task-grid.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Full-Stack Architect & Web Accessibility Specialist.
+Tugas Anda adalah menuntaskan integrasi rute utama dan standar aksesibilitas internasional (WCAG 2.1 AAA):
+
+1. PERBARUI LANDING PAGE ROOT: 'src/app/page.tsx' (ROOT NAVIGATION RULE)
+   - Buka berkas 'src/app/page.tsx'.
+   - Buat Hero Section antarmuka yang memukau dengan judul 'The Serverless Odyssey', subtitle dinamis, dan tombol Hero CTA utama: 'Masuk ke Dashboard Tugas ➔'.
+   - Berikan tombol CTA mikro-interaksi gestur elastis Framer Motion (whileHover={{ scale: 1.03, y: -2 }} dan whileTap={{ scale: 0.96 }}) yang mengarahkan pengguna langsung ke rute '/tasks'.
+
+2. DUKUNGAN AKSESIBILITAS WCAG (REDUCED MOTION):
+   - Di 'src/components/tasks/animated-task-grid.tsx', impor hook 'useReducedMotion' dari 'framer-motion'.
+   - Jika 'useReducedMotion()' bernilai true, gantikan transisi pergeseran translasi dengan transisi opacity fade lembut untuk melindungi pengguna dengan gangguan vestibular.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Selesaikan seluruh instruksi di atas secara langsung dan tuntas!`,
+            checkpoint: "Buka http://localhost:3000/ di browser. Klik tombol Hero CTA elastis yang meluncur langsung ke /tasks, dan verifikasi antarmuka 60 FPS berjalan sempurna!"
           }
         ]
       },
@@ -5651,19 +5728,19 @@ Saat isOpen bernilai true, backdrop muncul dengan fade-in blur dan kotak dialog 
       questions: [
         {
           id: 1,
-          question: "Mengapa animasi berbasis Fisika Pegas (Spring Physics) pada Framer Motion menghasilkan pengalaman antarmuka yang lebih alami dibanding transisi durasi waktu linier CSS biasa (misal: transition 300ms ease-in-out)? Jelaskan apa yang terjadi saat interaksi pengguna menginterupsi animasi yang sedang berjalan!",
-          rubric: "Mahasiswa wajib menjelaskan konsep fisika pegas (stiffness, damping, mass) yang tidak terikat waktu kaku melainkan keseimbangan gaya alamiah. Mahasiswa juga harus menguraikan fenomena interupsi: pada CSS linier, interupsi memicu patahan visual (jarring snap) atau pembalikan waktu kaku, sedangkan pada spring physics, vektor kecepatan dan momentum saat ini diintegrasikan secara mulus menuju target baru tanpa distorsi gerak.",
-          keyConcepts: ["Spring Physics (Stiffness & Damping)", "Linear CSS Transition Limits", "Momentum & Velocity Preservation", "Interruption Resilience"],
+          question: "Mengapa animasi berbasis Fisika Pegas (Spring Physics) pada Framer Motion menghasilkan pengalaman antarmuka yang lebih alami dibanding transisi durasi waktu linier CSS biasa (misal: transition 300ms ease-in-out)? Jelaskan apa yang terjadi saat mikro-interaksi gestur pengguna (seperti whileHover atau whileTap beruntun) menginterupsi animasi yang sedang berjalan!",
+          rubric: "Mahasiswa wajib menjelaskan konsep fisika pegas (stiffness, damping, mass) yang tidak terikat waktu kaku melainkan keseimbangan gaya alamiah. Mahasiswa juga harus menguraikan fenomena interupsi pada mikro-interaksi gestur: pada CSS linier, interupsi memicu patahan visual (jarring snap) atau pembalikan waktu kaku, sedangkan pada spring physics, vektor kecepatan dan momentum saat ini diintegrasikan secara mulus menuju target baru tanpa distorsi gerak.",
+          keyConcepts: ["Spring Physics (Stiffness & Damping)", "Linear CSS Transition Limits", "Momentum & Velocity Preservation", "Interruption Resilience", "Gesture Micro-Interactions (whileHover & whileTap)"],
           weight: 15,
-          socraticHint: "Bayangkan Anda melempar bola dan menangkapnya di udara vs tombol stop kontak yang ditekan. Apa perbedaan perilaku fisika ketika gerakan dihentikan atau dibalikkan di tengah jalan?"
+          socraticHint: "Bayangkan Anda melempar bola dan menangkapnya di udara vs tombol stop kontak yang ditekan. Apa perbedaan perilaku fisika ketika gerakan dihentikan atau dibalikkan di tengah jalan saat kursor bergerak cepat?"
         },
         {
           id: 2,
-          question: "Jelaskan peran arsitektural objek 'Variants' pada Framer Motion dan bagaimana mekanisme propagasi hierarkis (Parent-Child Propagation) menyederhanakan orkestrasi animasi bersarang seperti efek 'staggerChildren' pada daftar kartu tugas!",
-          rubric: "Mahasiswa wajib menjelaskan bahwa Variants memisahkan definisi state visual (hidden, visible, exit) dari JSX ke dalam objek deklaratif. Mahasiswa harus menguraikan mekanisme propagasi otomatis di mana elemen anak mewarisi nama state variant aktif dari induk tanpa prop drilling manual, serta peran staggerChildren dalam mengatur jeda waktu kemunculan elemen anak secara berurutan.",
-          keyConcepts: ["Framer Variants Object", "Decoupling State from JSX", "Parent-Child State Propagation", "staggerChildren Orchestration"],
+          question: "Jelaskan peran arsitektural objek 'Variants' pada Framer Motion dan bagaimana mekanisme propagasi hierarkis (Parent-Child Propagation) menyederhanakan orkestrasi animasi bersarang seperti efek 'staggerChildren' pada daftar kartu tugas! Bagaimana pula parameter 'custom' memungkinkan variasi animasi dinamis berbasis indeks?",
+          rubric: "Mahasiswa wajib menjelaskan bahwa Variants memisahkan definisi state visual (hidden, visible, exit) dari JSX ke dalam objek deklaratif. Mahasiswa harus menguraikan mekanisme propagasi otomatis di mana elemen anak mewarisi nama state variant aktif dari induk tanpa prop drilling manual, peran staggerChildren dalam mengatur jeda waktu kemunculan elemen anak secara berurutan, serta penggunaan fungsi variant dengan parameter custom={index} untuk kalkulasi dinamis (seperti jeda matematika atau rotasi bergantian).",
+          keyConcepts: ["Framer Variants Object", "Decoupling State from JSX", "Parent-Child State Propagation", "staggerChildren Orchestration", "Dynamic Custom Variants (custom={index})"],
           weight: 15,
-          socraticHint: "Jika Anda memiliki 20 kartu tugas di dalam satu list, bagaimana Variants mencegah Anda menuliskan 'initial' dan 'animate' berulang-ulang pada setiap kartu secara terpisah?"
+          socraticHint: "Jika Anda memiliki 20 kartu tugas di dalam satu list, bagaimana Variants mencegah Anda menuliskan 'initial' dan 'animate' berulang-ulang pada setiap kartu secara terpisah? Bagaimana jika kartu genap dan ganjil ingin diberi variasi gerakan berbeda?"
         },
         {
           id: 3,

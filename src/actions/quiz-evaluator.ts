@@ -2,6 +2,7 @@
 
 import dns from "node:dns";
 import { createClient } from "@/utils/supabase/server";
+import { getStudentSessionAction } from "@/actions/student-auth";
 import { MODULES } from "@/data/curriculum";
 
 try {
@@ -53,6 +54,16 @@ export interface StudentWritingProfile {
   baselineSnippets: string[];
 }
 
+export interface TypingTelemetry {
+  durationMs: number;
+  keystrokeCount: number;
+  backspaceCount: number;
+  pasteAttemptCount: number;
+  charsPerSecond: number;
+  averagePauseMs: number;
+  burstinessScore: number;
+}
+
 export interface EvaluateQuizParams {
   moduleId: number;
   questionNumber: number;
@@ -63,6 +74,7 @@ export interface EvaluateQuizParams {
   socraticHint: string;
   studentNim: string;
   preferredProvider?: "groq" | "openrouter" | "gemini" | "deepseek";
+  typingTelemetry?: TypingTelemetry;
 }
 
 export interface QuizProgress {
@@ -599,6 +611,25 @@ export async function evaluateEssayAction(
     preferredProvider,
   } = params;
 
+  // 1. Validasi Sesi Mahasiswa (Cegah bypass API / impersonasi NIM)
+  const sessionData = await getStudentSessionAction();
+  if (
+    !sessionData.isAuthenticated ||
+    !sessionData.student ||
+    sessionData.student.nim !== studentNim
+  ) {
+    return {
+      score: 0,
+      isPassed: false,
+      feedback: "Sesi otentikasi tidak valid atau Anda tidak memiliki izin untuk akun ini. Silakan muat ulang halaman dan login kembali.",
+      strengths: [],
+      missingPoints: ["Sesi login mahasiswa valid"],
+      authenticityScore: 0,
+      authenticityNotes: "Upaya akses tidak terotorisasi (unauthorized session).",
+      providerUsed: "security-guard",
+    };
+  }
+
   // Sanitasi & deteksi anti-prompt-injection
   const trimmedAnswer = studentAnswer.trim();
   if (
@@ -615,6 +646,44 @@ export async function evaluateEssayAction(
       authenticityNotes: "Pola jawaban tidak wajar atau terdeteksi manipulasi prompt.",
       providerUsed: "security-filter",
     };
+  }
+
+  // 2. Analisis Telemetri Pengetikan (Keystroke Cadence & Anti-Script)
+  let telemetryPenalty = 0;
+  const telemetryNotes: string[] = [];
+
+  if (params.typingTelemetry) {
+    const {
+      durationMs,
+      backspaceCount,
+      pasteAttemptCount,
+      charsPerSecond,
+      burstinessScore,
+    } = params.typingTelemetry;
+
+    // A. Percobaan Paste terdeteksi
+    if (pasteAttemptCount > 0) {
+      telemetryPenalty += Math.min(30, pasteAttemptCount * 15);
+      telemetryNotes.push(`Terdeteksi ${pasteAttemptCount}x percobaan paste`);
+    }
+
+    // B. Kecepatan pengetikan anomali / superhuman (indikasi injection script / autotyper)
+    if (charsPerSecond > 14 && trimmedAnswer.length > 50) {
+      telemetryPenalty += 40;
+      telemetryNotes.push(`Kecepatan pengetikan anomali (${charsPerSecond} char/detik)`);
+    } else if (durationMs < 4000 && trimmedAnswer.length > 80) {
+      telemetryPenalty += 45;
+      telemetryNotes.push(`Teks panjang muncul instan (${(durationMs / 1000).toFixed(1)} detik)`);
+    }
+
+    // C. Copy-Typing Monoton dari Perangkat Lain (HP)
+    if (trimmedAnswer.length > 150 && backspaceCount === 0 && durationMs < 25000) {
+      telemetryPenalty += 18;
+      telemetryNotes.push("Pola pengetikan seragam tanpa koreksi/backspace");
+    } else if (backspaceCount >= 3 && burstinessScore > 0.3) {
+      // Bonus kepercayaan: ada jeda berpikir alami dan koreksi mandiri
+      telemetryPenalty = Math.max(0, telemetryPenalty - 5);
+    }
   }
 
   // Ambil baseline stilistika mahasiswa
@@ -842,6 +911,33 @@ JAWABAN MAHASISWA:
   // Fallback Heuristik jika semua AI offline atau API Key belum disetel
   if (!evaluation) {
     evaluation = evaluateHeuristicFallback(trimmedAnswer, keyConcepts, socraticHint, writingProfile);
+  }
+
+  // Terapkan penalti telemetri pada authenticityScore
+  if (telemetryPenalty > 0) {
+    evaluation.authenticityScore = Math.max(
+      10,
+      (evaluation.authenticityScore ?? 90) - telemetryPenalty
+    );
+    if (telemetryNotes.length > 0) {
+      evaluation.authenticityNotes = `${evaluation.authenticityNotes || ""} [Telemetri: ${telemetryNotes.join(", ")}]`.trim();
+    }
+  }
+
+  // DUAL-THRESHOLD PASSING GATE (Solusi 1)
+  // WAJIB Skor Substansi >= 80 DAN Skor Otentisitas >= 75
+  const authenticityThreshold = 75;
+  const isAuthentic = (evaluation.authenticityScore ?? 100) >= authenticityThreshold;
+  const originalScore = evaluation.score;
+
+  if (originalScore >= 80 && !isAuthentic) {
+    evaluation.isPassed = false;
+    evaluation.feedback = `Substansi teknis jawaban Anda sebenarnya sudah memenuhi kriteria (Skor: ${originalScore}/100), namun terdeteksi ketidakselarasan gaya penulisan atau ritme pengetikan dengan profil pemikiran mandiri Anda (Otentisitas: ${evaluation.authenticityScore}%). Demi integritas akademik, silakan jelaskan kembali konsep ini menggunakan kalimat, pemahaman, dan analogi Anda sendiri!`;
+    if (!evaluation.missingPoints.includes("Penalaran mandiri dan otentik")) {
+      evaluation.missingPoints.push("Penalaran mandiri dan otentik (tulis ulang dengan kata-kata sendiri)");
+    }
+  } else {
+    evaluation.isPassed = originalScore >= 80 && isAuthentic;
   }
 
   // Simpan hasil ke database / state

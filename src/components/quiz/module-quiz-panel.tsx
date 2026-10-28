@@ -54,6 +54,7 @@ import {
   getStudentWarmupChatAction,
   EvaluationResult,
   QuizProgress,
+  TypingTelemetry,
 } from "@/actions/quiz-evaluator";
 import { WarmupChatModal } from "./warmup-chat-modal";
 
@@ -150,6 +151,29 @@ export function ModuleQuizPanel({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Solusi 2: Guardrail Waktu Baca (Maksimal 90s baca soal tenang, Maksimal 60s freeze feedback)
+  const [readingGraceLeft, setReadingGraceLeft] = useState<number>(90);
+  const [feedbackFreezeLeft, setFeedbackFreezeLeft] = useState<number>(60);
+  const readingGraceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const feedbackFreezeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Solusi 3: Telemetri Dinamika Ketukan & Anti-Script
+  const keystrokeTimesRef = useRef<number[]>([]);
+  const backspaceCountRef = useRef<number>(0);
+  const pasteAttemptCountRef = useRef<number>(0);
+  const firstKeystrokeTimeRef = useRef<number | null>(null);
+
+  const resetQuestionTelemetry = useCallback(() => {
+    keystrokeTimesRef.current = [];
+    backspaceCountRef.current = 0;
+    pasteAttemptCountRef.current = 0;
+    firstKeystrokeTimeRef.current = null;
+    setReadingGraceLeft(90);
+    setFeedbackFreezeLeft(60);
+    if (readingGraceTimerRef.current) clearInterval(readingGraceTimerRef.current);
+    if (feedbackFreezeTimerRef.current) clearInterval(feedbackFreezeTimerRef.current);
+  }, []);
+
   // Toggle Mode Layar Penuh (Zen Focus Mode)
   const toggleFullscreen = () => {
     if (!isFullscreen) {
@@ -212,6 +236,7 @@ export function ModuleQuizPanel({
       setIsTypingStarted(false);
       setIsReadingFeedback(false);
       setBonusTimeGranted(false);
+      resetQuestionTelemetry();
     }
   };
 
@@ -231,6 +256,7 @@ export function ModuleQuizPanel({
     setAccumulatedBank(0);
     setLastRollover(0);
     setTimeLeft(getBaseTimeForQuestion(questions[0]));
+    resetQuestionTelemetry();
     setResetAlert(
       "Pelanggaran Integritas Ujian Terdeteksi! Layar peramban kehilangan fokus atau berpindah tab/aplikasi luar saat ujian aktif. Sesi Anda di-reset kembali ke Soal 1, dan kejadian ini telah dicatat ke database dosen."
     );
@@ -259,6 +285,7 @@ export function ModuleQuizPanel({
     setIsReadingFeedback(false);
     setBonusTimeGranted(false);
     setTimeLeft(getBaseTimeForQuestion(questions[currentIndex]));
+    resetQuestionTelemetry();
     setResetAlert(
       `⏱️ WAKTU PENGERJAAN SOAL ${currentIndex + 1} HABIS! Sesuai mekanisme kelonggaran adaptif, draf jawaban soal ini di-reset untuk Anda coba kembali. Nilai dari soal-soal sebelumnya yang telah lulus tetap tersimpan aman. Manfaatkan kesempatan ini untuk memformulasikan jawaban yang lebih matang!`
     );
@@ -314,6 +341,68 @@ export function ModuleQuizPanel({
     evaluation?.isPassed,
     handleTimeout,
   ]);
+
+  // Guardrail 1: Batas Waktu Baca Awal (Maksimal 90 detik sebelum timer kuis otomatis berdetik)
+  useEffect(() => {
+    const isGraceActive =
+      !!session &&
+      isQuizStarted &&
+      !isTypingStarted &&
+      !quizProgress?.isCompleted &&
+      !isEvaluating &&
+      !evaluation?.isPassed;
+
+    if (!isGraceActive) {
+      if (readingGraceTimerRef.current) clearInterval(readingGraceTimerRef.current);
+      return;
+    }
+
+    readingGraceTimerRef.current = setInterval(() => {
+      setReadingGraceLeft((prev) => {
+        if (prev <= 1) {
+          if (readingGraceTimerRef.current) clearInterval(readingGraceTimerRef.current);
+          setIsTypingStarted(true); // Timer kuis otomatis mulai berdetik!
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (readingGraceTimerRef.current) clearInterval(readingGraceTimerRef.current);
+    };
+  }, [session, isQuizStarted, isTypingStarted, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed]);
+
+  // Guardrail 2: Batas Waktu Pembekuan Feedback (Maksimal 60 detik freeze sebelum timer lanjut berdetik)
+  useEffect(() => {
+    const isFreezeActive =
+      !!session &&
+      isQuizStarted &&
+      isReadingFeedback &&
+      !quizProgress?.isCompleted &&
+      !isEvaluating &&
+      !evaluation?.isPassed;
+
+    if (!isFreezeActive) {
+      if (feedbackFreezeTimerRef.current) clearInterval(feedbackFreezeTimerRef.current);
+      return;
+    }
+
+    feedbackFreezeTimerRef.current = setInterval(() => {
+      setFeedbackFreezeLeft((prev) => {
+        if (prev <= 1) {
+          if (feedbackFreezeTimerRef.current) clearInterval(feedbackFreezeTimerRef.current);
+          setIsReadingFeedback(false); // Timer kuis otomatis lanjut berdetik!
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (feedbackFreezeTimerRef.current) clearInterval(feedbackFreezeTimerRef.current);
+    };
+  }, [session, isQuizStarted, isReadingFeedback, quizProgress?.isCompleted, isEvaluating, evaluation?.isPassed]);
 
   // Sinkronisasi status timer kuis ke komponen induk (agar floating timer di Tab Teori/Lab aktif HANYA saat ujian sudah berjalan)
   useEffect(() => {
@@ -409,6 +498,7 @@ export function ModuleQuizPanel({
   // Handler Anti-Copy & Anti-Paste
   const handlePastePrevent = (e: React.ClipboardEvent | React.DragEvent) => {
     e.preventDefault();
+    pasteAttemptCountRef.current++;
     setPasteWarning(true);
     setTimeout(() => setPasteWarning(false), 4000);
   };
@@ -428,6 +518,38 @@ export function ModuleQuizPanel({
     setEvaluation(null);
     setNetworkError(null);
 
+    // Hitung telemetri pengetikan (Solusi 3)
+    const now = Date.now();
+    const startTime = firstKeystrokeTimeRef.current || now;
+    const durationMs = Math.max(1000, now - startTime);
+    const chars = studentAnswer.trim().length;
+    const charsPerSecond = chars / (durationMs / 1000);
+
+    const times = keystrokeTimesRef.current;
+    let averagePauseMs = 0;
+    let burstinessScore = 0.5;
+    if (times.length > 2) {
+      const diffs: number[] = [];
+      for (let i = 1; i < times.length; i++) {
+        diffs.push(times[i] - times[i - 1]);
+      }
+      const avg = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+      averagePauseMs = avg;
+      const variance = diffs.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / diffs.length;
+      const stdDev = Math.sqrt(variance);
+      burstinessScore = Math.min(1, Math.max(0, stdDev / (avg + 1)));
+    }
+
+    const typingTelemetry: TypingTelemetry = {
+      durationMs,
+      keystrokeCount: times.length,
+      backspaceCount: backspaceCountRef.current,
+      pasteAttemptCount: pasteAttemptCountRef.current,
+      charsPerSecond: Math.round(charsPerSecond * 10) / 10,
+      averagePauseMs: Math.round(averagePauseMs),
+      burstinessScore: Math.round(burstinessScore * 100) / 100,
+    };
+
     try {
       const result = await evaluateEssayAction({
         moduleId,
@@ -438,6 +560,7 @@ export function ModuleQuizPanel({
         keyConcepts: currentQ.keyConcepts,
         socraticHint: currentQ.socraticHint,
         studentNim: session.nim,
+        typingTelemetry,
       });
 
       setEvaluation(result);
@@ -472,8 +595,9 @@ export function ModuleQuizPanel({
           setQuizProgress((prev) => (prev ? { ...prev, isCompleted: true } : null));
         }
       } else {
-        // Belum lulus (< 80): Bekukan timer (Reading Freeze) selama membaca arahan Socratic
+        // Belum lulus (< 80 atau otentisitas < 75): Bekukan timer (Reading Freeze maks 60s)
         setIsReadingFeedback(true);
+        setFeedbackFreezeLeft(60);
 
         // Jika skor antara 60 dan 79, berikan bonus waktu relaksasi revisi +90 detik
         if (result.score >= 60 && result.score < 80 && !bonusTimeGranted) {
@@ -510,6 +634,7 @@ export function ModuleQuizPanel({
       setIsTypingStarted(false); // Menunggu ketikan pertama di soal berikutnya
       setIsReadingFeedback(false);
       setBonusTimeGranted(false);
+      resetQuestionTelemetry();
       if (rollover > 0) {
         setShowRolloverToast(true);
         setTimeout(() => setShowRolloverToast(false), 4500);
@@ -1454,9 +1579,23 @@ export function ModuleQuizPanel({
                 <Terminal className="w-3 h-3 text-amber-500" />
                 Uraian Jawaban Anda:
               </label>
-              <span className="text-[10px] text-muted-foreground font-mono">
-                {studentAnswer.trim().length} karakter (disarankan minimal 40 kata)
-              </span>
+              <div className="flex items-center gap-2">
+                {isQuizStarted && !isTypingStarted && !evaluation?.isPassed && (
+                  <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-medium">
+                    <Clock className="w-3 h-3 animate-pulse" />
+                    Batas Baca: {readingGraceLeft}s
+                  </span>
+                )}
+                {isReadingFeedback && (
+                  <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-medium">
+                    <Clock className="w-3 h-3 animate-pulse" />
+                    Jeda Baca Feedback: {feedbackFreezeLeft}s
+                  </span>
+                )}
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {studentAnswer.trim().length} karakter (disarankan minimal 40 kata)
+                </span>
+              </div>
             </div>
 
             <textarea
@@ -1475,6 +1614,14 @@ export function ModuleQuizPanel({
               onDrop={handlePastePrevent}
               onContextMenu={(e) => e.preventDefault()}
               onKeyDown={(e) => {
+                if (e.key === "Backspace" || e.key === "Delete") {
+                  backspaceCountRef.current++;
+                }
+                keystrokeTimesRef.current.push(Date.now());
+                if (!firstKeystrokeTimeRef.current) {
+                  firstKeystrokeTimeRef.current = Date.now();
+                }
+
                 if (!isTypingStarted) setIsTypingStarted(true);
                 if (isReadingFeedback) setIsReadingFeedback(false);
                 if (
@@ -1482,11 +1629,12 @@ export function ModuleQuizPanel({
                   (e.key === "v" || e.key === "V" || e.key === "c" || e.key === "C" || e.key === "x" || e.key === "X")
                 ) {
                   e.preventDefault();
+                  pasteAttemptCountRef.current++;
                   setPasteWarning(true);
                   setTimeout(() => setPasteWarning(false), 4000);
                 }
               }}
-              placeholder="Ketikkan uraian pemikiran arsitektur Anda di sini... Timer baru berdetik saat Anda mengetik huruf pertama. Jelaskan mekanisme, implikasi teknis, dan alasan arsitekturnya."
+              placeholder="Ketikkan uraian pemikiran arsitektur Anda di sini... Batas waktu membaca tenang 90 detik sebelum timer mulai otomatis. Jelaskan mekanisme, implikasi teknis, dan alasan arsitekturnya."
               className="w-full p-3 rounded-xl border border-input bg-background text-xs md:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all resize-y font-sans disabled:opacity-75 disabled:bg-muted/40 min-h-[95px] max-h-[160px]"
             />
           </div>
@@ -1577,6 +1725,10 @@ export function ModuleQuizPanel({
                       <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
+                    ) : evaluation.score >= 80 ? (
+                      <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                        <ShieldAlert className="w-4 h-4" />
+                      </div>
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
                         <Lightbulb className="w-4 h-4" />
@@ -1586,6 +1738,8 @@ export function ModuleQuizPanel({
                       <h4 className="font-bold text-xs md:text-sm">
                         {evaluation.isPassed
                           ? "Kriteria Tercapai: Jawaban Memenuhi Standar Arsitektur!"
+                          : evaluation.score >= 80
+                          ? "Perlu Verifikasi Orisinalitas: Skor Cukup, Namun Gaya Bahasa Belum Otentik"
                           : "Perlu Pendalaman: Nilai Belum Mencapai Ambang 80"}
                       </h4>
                       <p className="text-[10px] opacity-80">
