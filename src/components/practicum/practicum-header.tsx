@@ -132,19 +132,6 @@ export function PracticumHeader({
             </Badge>
           )}
 
-          {/* Quick link to Lecturer Portal */}
-          {(isLecturer || isInstructor) && (
-            <Link href="/dosen">
-              <Button
-                size="sm"
-                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs gap-1.5 shadow-xs rounded-xl h-8 px-3 transition-all"
-              >
-                <Award className="w-3.5 h-3.5" />
-                <span>Portal Dosen ({lecturerName?.split(" ")[0] ?? "Dosen"})</span>
-              </Button>
-            </Link>
-          )}
-
           {/* Switch Account / Logout button */}
           <Button
             variant="ghost"
@@ -252,15 +239,6 @@ export function PracticumHeader({
                 <strong>Mode Panduan Instruktur Aktif:</strong> Anda dapat menginput nilai pengujian dan men-generate analisis AI langsung di depan kelas untuk percontohan mahasiswa.
               </span>
             </span>
-            <Link href="/dosen">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-[11px] h-7 px-2.5 border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10 shrink-0"
-              >
-                Lihat Laporan Mahasiswa ➔
-              </Button>
-            </Link>
           </div>
         )}
 

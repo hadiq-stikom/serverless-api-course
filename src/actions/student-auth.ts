@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { MODULES } from "@/data/curriculum";
+import { PRACTICUM_MODULES } from "@/data/practicum";
 import { getLecturerSessionAction } from "./lecturer-auth";
 
 export interface StudentSession {
@@ -26,9 +27,46 @@ export interface ModuleSubmissionSummary {
   updatedAt?: string;
 }
 
+export interface StudentPracticumItem {
+  id: number;
+  title: string;
+  lectureModule: number;
+  capaian: string;
+  themeColor: string;
+  themeBadge: string;
+  actionHook: string;
+  techPills: string[];
+  level: "Fundamental" | "Intermediate" | "Advanced";
+  durationMinutes: number;
+  totalSteps: number;
+  submissionId?: string;
+  status: "not_started" | "draft" | "submitted" | "approved" | "revision";
+  analysisScore: number | null;
+  conclusionScore: number | null;
+  isPassed: boolean;
+  hasStudentSignature: boolean;
+  hasLecturerSignature: boolean;
+  approvedByName?: string | null;
+  pdfPath?: string | null;
+  submittedAt?: string | null;
+  approvedAt?: string | null;
+  observationsCount: number;
+}
+
+export interface StudentPracticumStats {
+  totalPracticums: number;
+  approvedCount: number;
+  submittedCount: number;
+  draftCount: number;
+  notStartedCount: number;
+  averageScore: number;
+}
+
 export interface StudentDashboardData {
   student: StudentSession;
   modules: ModuleSubmissionSummary[];
+  practicums: StudentPracticumItem[];
+  practicumStats: StudentPracticumStats;
   stats: {
     totalModules: number;
     completedCount: number;
@@ -388,6 +426,10 @@ export async function getStudentDashboardDataAction(): Promise<{
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
 
+  let dbPracticumSubs: any[] = [];
+  let dbPracticumEssays: any[] = [];
+  let dbPracticumObs: any[] = [];
+
   if (isLiveSupabase) {
     try {
       const supabase = await createClient();
@@ -437,6 +479,32 @@ export async function getStudentDashboardDataAction(): Promise<{
             updatedAt: sub.updated_at || undefined,
           };
         }
+      }
+
+      // Query Practicum Submissions
+      try {
+        const { data: pSubs } = await supabase
+          .from("practicum_submissions")
+          .select("id, practicum_id, status, student_signature, lecturer_signature, approved_by_name, pdf_path, submitted_at, approved_at, updated_at")
+          .eq("student_nim", student.nim);
+        dbPracticumSubs = pSubs || [];
+
+        if (dbPracticumSubs.length > 0) {
+          const subIds = dbPracticumSubs.map((s) => s.id);
+          const { data: essays } = await supabase
+            .from("practicum_essays")
+            .select("submission_id, essay_type, ai_score, is_passed")
+            .in("submission_id", subIds);
+          dbPracticumEssays = essays || [];
+
+          const { data: obs } = await supabase
+            .from("practicum_observations")
+            .select("submission_id, step_number, observation")
+            .in("submission_id", subIds);
+          dbPracticumObs = obs || [];
+        }
+      } catch (pErr) {
+        console.warn("Supabase practicum fetch fallback:", pErr);
       }
     } catch (err) {
       console.warn("Supabase dashboard data fetch fallback:", err);
@@ -514,11 +582,127 @@ export async function getStudentDashboardDataAction(): Promise<{
     (m) => m.status === "completed" && m.totalScore < 95
   ).length;
 
+  // Petakan 7 Modul Praktikum Terpadu
+  const pSubMap = new Map<number, any>();
+  dbPracticumSubs.forEach((s) => pSubMap.set(s.practicum_id, s));
+
+  const essaysBySub = new Map<string, any[]>();
+  dbPracticumEssays.forEach((e) => {
+    const arr = essaysBySub.get(e.submission_id) || [];
+    arr.push(e);
+    essaysBySub.set(e.submission_id, arr);
+  });
+
+  const obsCountBySub = new Map<string, number>();
+  dbPracticumObs.forEach((o) => {
+    if (o.observation && o.observation.trim().length > 0) {
+      obsCountBySub.set(o.submission_id, (obsCountBySub.get(o.submission_id) || 0) + 1);
+    }
+  });
+
+  let approvedPracticumCount = 0;
+  let submittedPracticumCount = 0;
+  let draftPracticumCount = 0;
+  let practicumScoreSum = 0;
+  let evaluatedPracticumCount = 0;
+
+  const practicumsSummary: StudentPracticumItem[] = PRACTICUM_MODULES.map((pm) => {
+    const sub = pSubMap.get(pm.id);
+    let status: "not_started" | "draft" | "submitted" | "approved" | "revision" = "not_started";
+    let analysisScore: number | null = null;
+    let conclusionScore: number | null = null;
+    let isPassed = false;
+    let hasStudentSignature = false;
+    let hasLecturerSignature = false;
+    let approvedByName: string | null = null;
+    let pdfPath: string | null = null;
+    let submittedAt: string | null = null;
+    let approvedAt: string | null = null;
+    let observationsCount = 0;
+
+    if (sub) {
+      status = sub.status || "draft";
+      hasStudentSignature = !!sub.student_signature;
+      hasLecturerSignature = !!sub.lecturer_signature;
+      approvedByName = sub.approved_by_name || null;
+      pdfPath = sub.pdf_path || null;
+      submittedAt = sub.submitted_at || null;
+      approvedAt = sub.approved_at || null;
+      observationsCount = obsCountBySub.get(sub.id) || 0;
+
+      const essays = essaysBySub.get(sub.id) || [];
+      const analysis = essays.find((e) => e.essay_type === "analysis");
+      const conclusion = essays.find((e) => e.essay_type === "conclusion");
+
+      if (analysis) analysisScore = analysis.ai_score;
+      if (conclusion) conclusionScore = conclusion.ai_score;
+
+      if (analysis && conclusion && analysis.is_passed && conclusion.is_passed) {
+        isPassed = true;
+      }
+
+      if (status === "approved") {
+        approvedPracticumCount++;
+      } else if (status === "submitted") {
+        submittedPracticumCount++;
+      } else if (status === "draft" || status === "revision") {
+        draftPracticumCount++;
+      }
+
+      if (analysisScore !== null || conclusionScore !== null) {
+        const scores = [analysisScore, conclusionScore].filter((s): s is number => s !== null);
+        if (scores.length > 0) {
+          const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+          practicumScoreSum += avg;
+          evaluatedPracticumCount++;
+        }
+      }
+    }
+
+    return {
+      id: pm.id,
+      title: pm.title,
+      lectureModule: pm.lectureModule,
+      capaian: pm.capaian,
+      themeColor: pm.theme.color,
+      themeBadge: pm.theme.badge,
+      actionHook: pm.actionHook,
+      techPills: pm.techPills,
+      level: pm.level,
+      durationMinutes: pm.durationMinutes,
+      totalSteps: pm.steps.length,
+      submissionId: sub?.id,
+      status,
+      analysisScore,
+      conclusionScore,
+      isPassed,
+      hasStudentSignature,
+      hasLecturerSignature,
+      approvedByName,
+      pdfPath,
+      submittedAt,
+      approvedAt,
+      observationsCount,
+    };
+  });
+
+  const notStartedPracticumCount = PRACTICUM_MODULES.length - (approvedPracticumCount + submittedPracticumCount + draftPracticumCount);
+  const practicumAverageScore = evaluatedPracticumCount > 0 ? Math.round((practicumScoreSum / evaluatedPracticumCount) * 10) / 10 : 0;
+
   return {
     success: true,
     data: {
       student,
       modules: modulesSummary,
+      practicums: practicumsSummary,
+      practicumStats: {
+        totalPracticums: PRACTICUM_MODULES.length,
+        approvedCount: approvedPracticumCount,
+        submittedCount: submittedPracticumCount,
+        draftCount: draftPracticumCount,
+        notStartedCount: notStartedPracticumCount,
+        averageScore: practicumAverageScore,
+      },
       stats: {
         totalModules: MODULES.length,
         completedCount,

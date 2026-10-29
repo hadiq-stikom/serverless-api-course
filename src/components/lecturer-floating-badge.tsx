@@ -136,20 +136,6 @@ export function LecturerFloatingBadge() {
                   Membimbing implementasi arsitektur cloud serverless, integrasi database Supabase PostgreSQL, keamanan RLS, dan 7 Modul Praktikum terpadu.
                 </p>
               </div>
-
-              {/* Action Link ke Portal Dosen */}
-              <div className="pt-1 flex items-center gap-2">
-                <Link href="/dosen" className="flex-1" onClick={() => setIsOpen(false)}>
-                  <Button
-                    size="sm"
-                    className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold text-xs h-8 rounded-xl shadow-xs gap-1.5"
-                  >
-                    <Award className="w-3.5 h-3.5" />
-                    <span>Masuk Portal Dosen</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </Link>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>

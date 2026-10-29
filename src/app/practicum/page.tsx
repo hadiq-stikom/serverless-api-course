@@ -160,65 +160,23 @@ export default async function PracticumCatalogPage() {
         <div className="flex flex-wrap items-center gap-3 self-stretch md:self-auto justify-between md:justify-end">
           <ThemeToggle />
 
-          {/* Lecturer Quick Access Shortcut */}
-          {lecturer ? (
-            <div className="flex items-center gap-2">
-              <Link href="/dosen">
-                <Button
-                  size="sm"
-                  className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs gap-2 rounded-xl shadow-xs h-9 px-3 transition-all"
-                >
-                  <div className="relative w-5 h-5 rounded-full overflow-hidden border border-white/60 shrink-0">
-                    <Image
-                      src="/dosen.png"
-                      alt="Dosen"
-                      fill
-                      className="object-cover object-top"
-                      sizes="20px"
-                    />
-                  </div>
-                  <span>Portal Dosen ({lecturer.fullName.split(" ")[0]})</span>
-                </Button>
-              </Link>
-
-              {/* One-click activate guide mode if not yet active */}
-              {student?.classGroup !== "Dosen Pengampu" && (
-                <form
-                  action={async () => {
-                    "use server";
-                    await loginAsLecturerGuideAction();
-                  }}
-                >
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs gap-1.5 rounded-xl shadow-xs h-9 px-3.5 transition-all"
-                  >
-                    <Presentation className="w-3.5 h-3.5" />
-                    <span>Mode Panduan Dosen</span>
-                  </Button>
-                </form>
-              )}
-            </div>
-          ) : (
-            <Link href="/dosen">
+          {/* Lecturer Guide Mode Shortcut */}
+          {lecturer && student?.classGroup !== "Dosen Pengampu" && (
+            <form
+              action={async () => {
+                "use server";
+                await loginAsLecturerGuideAction();
+              }}
+            >
               <Button
-                variant="outline"
+                type="submit"
                 size="sm"
-                className="text-xs text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 font-medium rounded-xl h-9 px-2.5 gap-2"
+                className="bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs gap-1.5 rounded-xl shadow-xs h-9 px-3.5 transition-all"
               >
-                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-amber-500/60 shrink-0">
-                  <Image
-                    src="/dosen.png"
-                    alt="Dosen Pengampu"
-                    fill
-                    className="object-cover object-top"
-                    sizes="20px"
-                  />
-                </div>
-                <span>Portal Dosen</span>
+                <Presentation className="w-3.5 h-3.5" />
+                <span>Mode Panduan Dosen</span>
               </Button>
-            </Link>
+            </form>
           )}
 
           {/* Student Status or Login */}

@@ -1095,24 +1095,6 @@ export default function ModuleDetailPage() {
           <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/5 font-semibold text-xs py-0.5">
             +{currentModule.xp} XP
           </Badge>
-          <Link
-            href="/dosen"
-            title="Dosen Pengampu: Hadiq, ST, M.Kom (STIKOM PGRI Banyuwangi)"
-            className="flex items-center gap-1.5 p-1 pr-2 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-all cursor-pointer group"
-          >
-            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-indigo-500/60 shrink-0 bg-indigo-50 dark:bg-indigo-950">
-              <Image
-                src="/dosen.png"
-                alt="Dosen Pengampu"
-                fill
-                className="object-cover object-top"
-                sizes="24px"
-              />
-            </div>
-            <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 hidden xl:inline">
-              Dosen
-            </span>
-          </Link>
           <ThemeToggle />
         </div>
       </header>

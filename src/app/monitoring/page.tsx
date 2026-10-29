@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
-export default function MonitoringRedirectPage() {
-  redirect("/dosen");
+export default function DeprecatedMonitoringPage() {
+  notFound();
 }

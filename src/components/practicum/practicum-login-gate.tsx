@@ -281,16 +281,6 @@ export function PracticumLoginGate({
                       </>
                     )}
                   </Button>
-
-                  <div className="pt-2 text-center">
-                    <Link
-                      href="/dosen"
-                      className="text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 inline-flex items-center gap-1 font-medium"
-                    >
-                      <span>Buka Portal Monitoring Dosen</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
                 </div>
               ) : (
                 /* Jika belum login sesi Dosen */

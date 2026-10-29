@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -187,9 +188,49 @@ const SECTIONS = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [studentSession, setStudentSession] = useState<StudentSession | null>(null);
   const [lecturerSession, setLecturerSession] = useState<LecturerSession | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Secret Knock State (Double click foto dosen -> klik nama dosen -> Fullscreen ke /dosen-serverless)
+  const [photoDoubleClicked, setPhotoDoubleClicked] = useState(false);
+  const secretKnockTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handlePhotoDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (secretKnockTimeoutRef.current) clearTimeout(secretKnockTimeoutRef.current);
+    setPhotoDoubleClicked(true);
+    // Masa jendela rahasia 6 detik sebelum reset
+    secretKnockTimeoutRef.current = setTimeout(() => {
+      setPhotoDoubleClicked(false);
+    }, 6000);
+  };
+
+  const handleNameClick = (e: React.MouseEvent) => {
+    if (photoDoubleClicked) {
+      e.preventDefault();
+      e.stopPropagation();
+      setPhotoDoubleClicked(false);
+      if (secretKnockTimeoutRef.current) clearTimeout(secretKnockTimeoutRef.current);
+
+      // Aktifkan mode Fullscreen peramban agar address bar & URL tersembunyi
+      if (typeof document !== "undefined") {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        } else if ((elem as any).webkitRequestFullscreen) {
+          (elem as any).webkitRequestFullscreen();
+        } else if ((elem as any).msRequestFullscreen) {
+          (elem as any).msRequestFullscreen();
+        }
+      }
+
+      // Navigasi ke rute portal dosen rahasia
+      router.push("/dosen-serverless");
+    }
+  };
 
   const refreshSessions = async () => {
     try {
@@ -284,21 +325,8 @@ export default function Home() {
               </div>
             </Link>
 
-            {/* Mobile Auth & Lecturer Button */}
+            {/* Mobile Auth Button */}
             <div className="lg:hidden flex items-center gap-2">
-              <Link
-                href="/dosen"
-                title="Dosen Pengampu: Hadiq, ST, M.Kom"
-                className="relative w-7 h-7 rounded-full overflow-hidden border-2 border-indigo-500/60 shadow-xs shrink-0 bg-indigo-50 dark:bg-indigo-950"
-              >
-                <Image
-                  src="/dosen.png"
-                  alt="Dosen Pengampu: Hadiq, ST, M.Kom"
-                  fill
-                  className="object-cover object-top"
-                  sizes="28px"
-                />
-              </Link>
               {studentSession ? (
                 <Link href="/dashboard">
                   <Button size="sm" className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-2.5">
@@ -306,11 +334,15 @@ export default function Home() {
                   </Button>
                 </Link>
               ) : lecturerSession ? (
-                <Link href="/dosen">
-                  <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-2.5">
-                    Portal Dosen
-                  </Button>
-                </Link>
+                <Button
+                  size="sm"
+                  onClick={handleLecturerLogout}
+                  variant="outline"
+                  className="h-7 text-xs text-rose-600 dark:text-rose-400 border-rose-500/30 rounded-lg px-2.5 gap-1"
+                >
+                  <LogOut className="w-3 h-3" />
+                  Keluar
+                </Button>
               ) : (
                 <Button
                   size="sm"
@@ -355,8 +387,12 @@ export default function Home() {
             className="group relative p-3.5 sm:p-4 rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-indigo-200/80 dark:border-indigo-900/60 shadow-sm hover:shadow-lg hover:border-indigo-400 dark:hover:border-indigo-500/70 transition-all duration-300 max-w-2xl mt-2"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 sm:gap-4">
-              {/* Foto Dosen Portrait Proporsional (Anti-Gepeng) */}
-              <div className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-2xl overflow-hidden border-2 border-indigo-500/50 shadow-md shrink-0 bg-indigo-50 dark:bg-indigo-950">
+              {/* Foto Dosen Portrait Proporsional (Anti-Gepeng) dengan Secret Double-Click */}
+              <div
+                onDoubleClick={handlePhotoDoubleClick}
+                title="Dosen Pengampu"
+                className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-2xl overflow-hidden border-2 border-indigo-500/50 shadow-md shrink-0 bg-indigo-50 dark:bg-indigo-950 cursor-pointer select-none"
+              >
                 <Image
                   src="/dosen.png"
                   alt="Foto Resmi Dosen Pengampu: Hadiq, ST, M.Kom"
@@ -391,7 +427,10 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-snug">
+                  <h2
+                    onClick={handleNameClick}
+                    className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-snug cursor-pointer select-none"
+                  >
                     Hadiq, ST, M.Kom
                   </h2>
                   <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
@@ -404,23 +443,11 @@ export default function Home() {
                 </p>
 
                 <div className="pt-1 flex flex-wrap items-center gap-2">
-                  <Link href="/dosen">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs px-2.5 rounded-lg border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 font-semibold gap-1.5"
-                    >
-                      <Award className="w-3.5 h-3.5 text-indigo-500" />
-                      <span>Masuk Portal Dosen</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </Button>
-                  </Link>
-
                   <Link href="/practicum">
                     <Button
                       size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs px-2.5 rounded-lg text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-semibold gap-1.5"
+                      variant="outline"
+                      className="h-7 text-xs px-2.5 rounded-lg border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-semibold gap-1.5"
                     >
                       <FlaskConical className="w-3.5 h-3.5 text-emerald-500" />
                       <span>7 Modul Praktikum</span>
@@ -481,12 +508,6 @@ export default function Home() {
                   </div>
                   <span className="font-semibold max-w-[140px] truncate">{lecturerSession.fullName}</span>
                 </div>
-                <Link href="/dosen">
-                  <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg px-2.5 gap-1 shadow-xs">
-                    <span>Portal Dosen</span>
-                    <ChevronRight className="w-3 h-3" />
-                  </Button>
-                </Link>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -499,24 +520,6 @@ export default function Home() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  href="/dosen"
-                  className="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500/60 shadow-xs transition-all text-xs"
-                  title="Portal Dosen Pengampu: Hadiq, ST, M.Kom"
-                >
-                  <div className="relative w-5 h-5 rounded-full overflow-hidden border border-indigo-500/50 shrink-0">
-                    <Image
-                      src="/dosen.png"
-                      alt="Dosen Pengampu"
-                      fill
-                      className="object-cover object-top"
-                      sizes="20px"
-                    />
-                  </div>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300 text-[11px] hidden xl:inline">
-                    Dosen Pengampu
-                  </span>
-                </Link>
 
                 <Button
                   size="sm"

@@ -66,7 +66,7 @@ export async function unifiedLoginAction(
         success: true,
         message: `Selamat datang, ${lecRes.lecturer.fullName}!`,
         role: "lecturer",
-        redirectUrl: "/dosen",
+        redirectUrl: "/dosen-serverless",
         user: {
           identifier: lecRes.lecturer.nidn,
           fullName: lecRes.lecturer.fullName,

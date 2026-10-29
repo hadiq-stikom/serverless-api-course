@@ -39,12 +39,14 @@ import {
   Crown,
   Eye,
   EyeOff,
+  FlaskConical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { StudentPracticumSection } from "@/components/dashboard/student-practicum-section";
 
 const GRADE_TIERS = [
   { grade: "A", range: "90..100", dot: "bg-amber-400", border: "border-amber-400/40", text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10" },
@@ -72,6 +74,7 @@ export default function StudentDashboardPage() {
   const [data, setData] = useState<StudentDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<"all" | "completed" | "needs_improvement" | "not_started">("all");
+  const [activeTrack, setActiveTrack] = useState<"theory" | "practicum">("theory");
   
   // Modal Ganti Password
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -105,6 +108,12 @@ export default function StudentDashboardPage() {
 
   useEffect(() => {
     loadDashboard();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "practicum") {
+        setActiveTrack("practicum");
+      }
+    }
   }, []);
 
   const handleLogout = async () => {
@@ -280,23 +289,15 @@ export default function StudentDashboardPage() {
             <span>Ganti Sandi</span>
           </Button>
 
-          <Link
-            href="/dosen"
-            title="Dosen Pengampu: Hadiq, ST, M.Kom (STIKOM PGRI Banyuwangi)"
-            className="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500/60 shadow-xs transition-all text-xs"
-          >
-            <div className="relative w-5 h-5 rounded-full overflow-hidden border border-indigo-500/50 shrink-0 bg-indigo-50 dark:bg-indigo-950">
-              <Image
-                src="/dosen.png"
-                alt="Dosen Pengampu"
-                fill
-                className="object-cover object-top"
-                sizes="20px"
-              />
-            </div>
-            <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-[11px] hidden sm:inline">
-              Dosen
-            </span>
+          <Link href="/practicum">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1.5 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:border-teal-500/50 hover:text-teal-600 dark:hover:text-teal-400"
+            >
+              <FlaskConical className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>Studio Praktikum</span>
+            </Button>
           </Link>
 
           <Link href="/">
@@ -325,8 +326,103 @@ export default function StudentDashboardPage() {
         </div>
       </header>
 
-      {/* Motivational Hero Banner with 3 Action Pillars (Sintesis Dashboard) */}
-      <section className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-cyan-500/5 border border-indigo-500/20 dark:border-indigo-500/30 relative overflow-hidden space-y-6">
+      {/* Dual-Track Main Navigation: 1. Teori & Kuis vs 2. Studio Praktikum */}
+      <section className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/90 dark:border-zinc-800 shadow-xs relative z-10">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setActiveTrack("theory")}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              activeTrack === "theory"
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>1. Teori &amp; Kuis Mingguan</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                activeTrack === "theory"
+                  ? "bg-white/20 text-white"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700"
+              }`}
+            >
+              16 Modul
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTrack("practicum")}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              activeTrack === "practicum"
+                ? "bg-teal-600 text-white shadow-md shadow-teal-500/20"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            }`}
+          >
+            <FlaskConical className="w-4 h-4" />
+            <span>2. Studio Praktikum Terpadu</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                activeTrack === "practicum"
+                  ? "bg-white/20 text-white"
+                  : "bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/25"
+              }`}
+            >
+              7 Modul • {data.practicumStats?.approvedCount ?? 0} Disetujui
+            </span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {activeTrack === "practicum" ? (
+            <Link href="/practicum">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-9 px-3.5 border-teal-500/30 text-teal-700 dark:text-teal-300 hover:bg-teal-500/10 rounded-xl gap-1.5 font-semibold cursor-pointer"
+              >
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span>Katalog Laboratorium ➔</span>
+              </Button>
+            </Link>
+          ) : (
+            <Link href={`/modules/${activeModuleNum}?tab=quiz`}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-9 px-3.5 border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 rounded-xl gap-1.5 font-semibold cursor-pointer"
+              >
+                <Rocket className="w-3.5 h-3.5" />
+                <span>
+                  {activeModule?.status === "in_progress"
+                    ? `Lanjut Kuis Modul ${activeModuleNum} ➔`
+                    : `Mulai Kuis Modul ${activeModuleNum} ➔`}
+                </span>
+              </Button>
+            </Link>
+          )}
+        </div>
+      </section>
+
+      {activeTrack === "practicum" ? (
+        <StudentPracticumSection
+          practicums={data.practicums || []}
+          practicumStats={
+            data.practicumStats || {
+              totalPracticums: 7,
+              approvedCount: 0,
+              submittedCount: 0,
+              draftCount: 0,
+              notStartedCount: 7,
+              averageScore: 0,
+            }
+          }
+          student={data.student}
+          onRefresh={loadDashboard}
+        />
+      ) : (
+        <>
+          {/* Motivational Hero Banner with 3 Action Pillars (Sintesis Dashboard) */}
+          <section className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-cyan-500/5 border border-indigo-500/20 dark:border-indigo-500/30 relative overflow-hidden space-y-6">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold tracking-wide uppercase">
@@ -983,6 +1079,29 @@ export default function StudentDashboardPage() {
           </div>
         </Card>
       </section>
+
+      {/* Sinergi Latihan & Praktikum Banner */}
+      <section className="p-4 rounded-2xl bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-transparent border border-teal-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-teal-500/15 text-teal-700 dark:text-teal-300">
+            <FlaskConical className="w-4 h-4" />
+          </div>
+          <span className="text-zinc-700 dark:text-zinc-300">
+            Selain kuis mingguan, Anda memiliki <strong>7 Modul Praktikum Terpadu (KK112113)</strong> untuk observasi empiris, pengesahan tanda tangan dosen, dan berita acara PDF.
+          </span>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => setActiveTrack("practicum")}
+          className="bg-teal-600 hover:bg-teal-700 text-white text-xs h-8 px-3 rounded-lg shrink-0 gap-1.5 font-semibold cursor-pointer"
+        >
+          <FlaskConical className="w-3.5 h-3.5" />
+          <span>Lihat Studio Praktikum ({data.practicumStats?.approvedCount ?? 0}/7 Lulus)</span>
+          <ArrowRight className="w-3 h-3" />
+        </Button>
+      </section>
+    </>
+  )}
 
       {/* Modal Ubah Kata Sandi */}
       <AnimatePresence>
