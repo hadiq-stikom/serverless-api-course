@@ -35,7 +35,8 @@ import {
   Fingerprint,
   Eye,
   EyeOff,
-  Maximize2
+  Maximize2,
+  Target
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ import {
 import { MODULES } from "@/data/curriculum";
 import { LecturerPracticumTab } from "@/components/practicum/lecturer-practicum-tab";
 import { StudentManagementTab } from "@/components/dosen/student-management-tab";
+import { UtsEvaluationTab } from "@/components/dosen/uts-evaluation-tab";
 
 interface StudentRow {
   nim: string;
@@ -130,7 +132,7 @@ export default function DosenPortalPage() {
   const [authError, setAuthError] = useState("");
 
   // State Monitoring Data
-  const [activePortalTab, setActivePortalTab] = useState<"quiz" | "practicum" | "students">("quiz");
+  const [activePortalTab, setActivePortalTab] = useState<"quiz" | "practicum" | "uts" | "students">("quiz");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
@@ -554,6 +556,21 @@ export default function DosenPortalPage() {
           </button>
           <button
             type="button"
+            onClick={() => setActivePortalTab("uts")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+              activePortalTab === "uts"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs border border-zinc-200/80 dark:border-zinc-700"
+                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            }`}
+          >
+            <Target className="w-4 h-4 text-rose-500" />
+            <span>Evaluasi Proyek UTS</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono font-bold">
+              Milestone 1
+            </span>
+          </button>
+          <button
+            type="button"
             onClick={() => setActivePortalTab("students")}
             className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               activePortalTab === "students"
@@ -571,6 +588,8 @@ export default function DosenPortalPage() {
 
         {activePortalTab === "practicum" ? (
           <LecturerPracticumTab selectedClass={selectedClass} />
+        ) : activePortalTab === "uts" ? (
+          <UtsEvaluationTab selectedClass={selectedClass} />
         ) : activePortalTab === "students" ? (
           <StudentManagementTab
             onOpenImportModal={() => setShowImportModal(true)}
