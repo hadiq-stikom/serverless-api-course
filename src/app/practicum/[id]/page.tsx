@@ -5,6 +5,7 @@ import { getPracticumById } from "@/data/practicum";
 import { getOrCreatePracticumSubmissionAction } from "@/actions/practicum";
 import { PracticumWorkspace } from "@/components/practicum/practicum-workspace";
 import { PracticumLoginGate } from "@/components/practicum/practicum-login-gate";
+import { getLecturerSessionAction } from "@/actions/lecturer-auth";
 
 interface PracticumPageProps {
   params: Promise<{ id: string }>;
@@ -43,19 +44,9 @@ export default async function PracticumDetailPage({ params }: PracticumPageProps
   // Check student & lecturer session
   const cookieStore = await cookies();
   const studentCookie = cookieStore.get("student_session")?.value;
-  const lecturerCookie = cookieStore.get("lecturer_session")?.value;
-
-  let isLecturer = false;
-  let lecturerName: string | undefined = undefined;
-  if (lecturerCookie) {
-    try {
-      const lec = JSON.parse(lecturerCookie);
-      isLecturer = true;
-      lecturerName = lec.fullName;
-    } catch {
-      isLecturer = false;
-    }
-  }
+  const lecturerAuth = await getLecturerSessionAction();
+  const isLecturer = lecturerAuth.isAuthenticated && !!lecturerAuth.lecturer;
+  const lecturerName = lecturerAuth.lecturer?.fullName;
 
   let student: { nim: string; fullName: string; classGroup: string } | null = null;
   if (studentCookie) {

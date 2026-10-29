@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import crypto from "node:crypto";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -27,7 +28,21 @@ const DEFAULT_LECTURER = {
 };
 
 /**
- * Membaca sesi aktif Dosen dari HTTP-only cookie
+ * Helper: Menghasilkan token tanda tangan HMAC kriptografis untuk sesi Dosen
+ */
+function generateLecturerSessionToken(nidn: string, secretHash: string): string {
+  const secretKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.CRON_SECRET ||
+    "fallback-lecturer-crypto-salt-2026";
+  return crypto
+    .createHmac("sha256", secretKey)
+    .update(`${nidn}:${secretHash}`)
+    .digest("hex");
+}
+
+/**
+ * Membaca sesi aktif Dosen dari HTTP-only cookie dengan verifikasi tanda tangan kriptografis & DB Supabase
  */
 export async function getLecturerSessionAction(): Promise<{
   isAuthenticated: boolean;
@@ -41,8 +56,70 @@ export async function getLecturerSessionAction(): Promise<{
       return { isAuthenticated: false, lecturer: null };
     }
 
-    const lecturer: LecturerSession = JSON.parse(sessionCookie);
-    return { isAuthenticated: true, lecturer };
+    let parsedCookie: any = null;
+    try {
+      parsedCookie = JSON.parse(sessionCookie);
+    } catch {
+      return { isAuthenticated: false, lecturer: null };
+    }
+
+    // 1. Cek token kriptografis: Jika tidak memiliki token sah (format lama/palsu), batalkan sesi seketika!
+    if (!parsedCookie || !parsedCookie.nidn || !parsedCookie.token) {
+      try {
+        cookieStore.delete("lecturer_session");
+      } catch {}
+      return { isAuthenticated: false, lecturer: null };
+    }
+
+    // 2. Verifikasi aktif ke database Supabase apakah NIDN masih sah terdaftar di tabel lecturers
+    const isLiveSupabase =
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+    let currentPasswordHash = parsedCookie.nidn;
+    let lecturerData: LecturerSession | null = null;
+
+    if (isLiveSupabase) {
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from("lecturers")
+        .select("nidn, full_name, email, role, password_hash")
+        .eq("nidn", parsedCookie.nidn)
+        .maybeSingle();
+
+      if (error || !data) {
+        // NIDN sudah tidak ada di database (akun siluman/dihapus) -> tolak & buang sesi!
+        try {
+          cookieStore.delete("lecturer_session");
+        } catch {}
+        return { isAuthenticated: false, lecturer: null };
+      }
+
+      lecturerData = {
+        nidn: data.nidn,
+        fullName: data.full_name,
+        email: data.email || undefined,
+        role: data.role || "lecturer",
+      };
+      currentPasswordHash = data.password_hash || data.nidn;
+    } else {
+      if (parsedCookie.nidn !== DEFAULT_LECTURER.nidn) {
+        return { isAuthenticated: false, lecturer: null };
+      }
+      lecturerData = DEFAULT_LECTURER;
+      currentPasswordHash = customLecturerPasswords[parsedCookie.nidn] || DEFAULT_LECTURER.nidn;
+    }
+
+    // 3. Verifikasi signature HMAC token (mencegah cookie dimodifikasi atau password yang sudah diganti)
+    const expectedToken = generateLecturerSessionToken(parsedCookie.nidn, currentPasswordHash);
+    if (parsedCookie.token !== expectedToken) {
+      try {
+        cookieStore.delete("lecturer_session");
+      } catch {}
+      return { isAuthenticated: false, lecturer: null };
+    }
+
+    return { isAuthenticated: true, lecturer: lecturerData };
   } catch {
     return { isAuthenticated: false, lecturer: null };
   }
@@ -101,16 +178,14 @@ export async function loginLecturerAction(
       }
     }
 
-    // Jika belum tersimpan di Supabase, gunakan default pengampu atau daftarkan username ini
+    // Jika belum tersimpan di Supabase, hanya izinkan default pengampu saat offline
     if (!lecturerData) {
       if (username === DEFAULT_LECTURER.nidn) {
         lecturerData = DEFAULT_LECTURER;
       } else {
-        // Izinkan Dosen dengan username baru login sebagai pengampu
-        lecturerData = {
-          nidn: username,
-          fullName: `Dosen Pengampu (${username})`,
-          role: "lecturer",
+        return {
+          success: false,
+          message: "Username atau NIDN tidak terdaftar sebagai Dosen Pengampu.",
         };
       }
     }
@@ -123,33 +198,25 @@ export async function loginLecturerAction(
       };
     }
 
+    // Buat cryptographic session token untuk menjamin otentisitas sesi
+    const sessionToken = generateLecturerSessionToken(lecturerData.nidn, expectedPassword);
+    const cookiePayload = {
+      nidn: lecturerData.nidn,
+      fullName: lecturerData.fullName,
+      email: lecturerData.email,
+      role: lecturerData.role,
+      token: sessionToken,
+    };
+
     // Simpan sesi ke cookie aman (7 hari)
     const cookieStore = await cookies();
-    cookieStore.set("lecturer_session", JSON.stringify(lecturerData), {
+    cookieStore.set("lecturer_session", JSON.stringify(cookiePayload), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
-
-    // Simpan data dosen ke Supabase jika aktif dan belum tercatat
-    if (isLiveSupabase && lecturerData) {
-      try {
-        const supabase = createAdminClient();
-        await supabase.from("lecturers").upsert(
-          {
-            nidn: lecturerData.nidn,
-            full_name: lecturerData.fullName,
-            role: "lecturer",
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "nidn" }
-        );
-      } catch (err) {
-        console.warn("Supabase upsert lecturer fallback:", err);
-      }
-    }
 
     return {
       success: true,
@@ -244,6 +311,27 @@ export async function changeLecturerPasswordAction(
       console.warn("Supabase persist lecturer password fallback:", err);
     }
   }
+
+  // Perbarui cookie sesi aktif dengan token tanda tangan baru
+  const newToken = generateLecturerSessionToken(nidn, newPassword);
+  const cookieStore = await cookies();
+  cookieStore.set(
+    "lecturer_session",
+    JSON.stringify({
+      nidn,
+      fullName: session.lecturer.fullName,
+      email: session.lecturer.email,
+      role: session.lecturer.role || "lecturer",
+      token: newToken,
+    }),
+    {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    }
+  );
 
   return {
     success: true,

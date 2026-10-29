@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { PRACTICUM_MODULES, getPracticumById } from "@/data/practicum";
 import { getStudentWritingBaselineAction } from "@/actions/quiz-evaluator";
+import { getLecturerSessionAction } from "@/actions/lecturer-auth";
 
 try {
   dns.setDefaultResultOrder("ipv4first");
@@ -101,10 +102,11 @@ async function requireStudentSession(): Promise<{ nim: string; fullName: string;
 }
 
 async function requireLecturerSession(): Promise<{ nidn: string; fullName: string }> {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("lecturer_session")?.value;
-  if (!sessionCookie) throw new Error("Sesi dosen tidak ditemukan. Silakan login kembali.");
-  return JSON.parse(sessionCookie);
+  const session = await getLecturerSessionAction();
+  if (!session.isAuthenticated || !session.lecturer) {
+    throw new Error("Sesi dosen tidak valid atau telah kedaluwarsa. Silakan login kembali ke Portal Dosen.");
+  }
+  return { nidn: session.lecturer.nidn, fullName: session.lecturer.fullName };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

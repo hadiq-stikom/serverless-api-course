@@ -3,6 +3,7 @@
 import dns from "node:dns";
 import { createClient } from "@/utils/supabase/server";
 import { getStudentSessionAction } from "@/actions/student-auth";
+import { getLecturerSessionAction } from "@/actions/lecturer-auth";
 import { MODULES } from "@/data/curriculum";
 
 try {
@@ -1405,6 +1406,17 @@ export async function markQuizCompletedAction(
  * Server Action: Ambil data seluruh mahasiswa untuk Dashboard Monitoring Dosen
  */
 export async function getLecturerMonitoringDataAction(classGroup = "all") {
+  // Proteksi Otorisasi: Hanya Dosen yang berhak mengambil data monitoring
+  const lecturerAuth = await getLecturerSessionAction();
+  if (!lecturerAuth.isAuthenticated || !lecturerAuth.lecturer) {
+    return {
+      students: [],
+      submissions: [],
+      answers: [],
+      warmups: [],
+    };
+  }
+
   // Roster mahasiswa default jika DB kosong
   const defaultStudents = [
     { nim: "202401001", fullName: "Budi Santoso", classGroup: "Kelas A" },

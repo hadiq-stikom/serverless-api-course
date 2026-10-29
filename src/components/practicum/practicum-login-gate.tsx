@@ -51,8 +51,8 @@ export function PracticumLoginGate({
   const [showStudentPassword, setShowStudentPassword] = useState(false);
 
   // Lecturer form state
-  const [nidn, setNidn] = useState("0012345678");
-  const [lecturerPassword, setLecturerPassword] = useState("0012345678");
+  const [nidn, setNidn] = useState("");
+  const [lecturerPassword, setLecturerPassword] = useState("");
   const [showLecturerPassword, setShowLecturerPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -372,20 +372,6 @@ export function PracticumLoginGate({
                       </>
                     )}
                   </Button>
-
-                  {/* Quick One-Click Default Lecturer Login */}
-                  <div className="pt-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleLecturerFormLogin("0012345678", "0012345678")}
-                      disabled={isLoading}
-                      className="w-full h-10 border-amber-500/30 hover:bg-amber-500/10 text-amber-800 dark:text-amber-300 font-medium rounded-xl text-xs gap-2 transition-all"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Masuk Instan: Dosen Pengampu Default (NIDN: 0012345678)</span>
-                    </Button>
-                  </div>
                 </form>
               )}
             </div>

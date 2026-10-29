@@ -33,6 +33,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { PRACTICUM_MODULES, getPracticumTheme } from "@/data/practicum";
 import { createClient } from "@/utils/supabase/server";
 import { loginAsLecturerGuideAction } from "@/actions/student-auth";
+import { getLecturerSessionAction } from "@/actions/lecturer-auth";
 
 export const metadata = {
   title: "Modul Praktikum | The Serverless Odyssey",
@@ -86,13 +87,8 @@ export default async function PracticumCatalogPage() {
     }
   }
 
-  if (lecturerCookie) {
-    try {
-      lecturer = JSON.parse(lecturerCookie);
-    } catch {
-      lecturer = null;
-    }
-  }
+  const lecturerAuth = await getLecturerSessionAction();
+  lecturer = lecturerAuth.lecturer;
 
   // Fetch status if student is logged in
   const statusMap: Record<number, { status: string; approvedAt: string | null; submittedAt: string | null }> = {};

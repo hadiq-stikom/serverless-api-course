@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { MODULES } from "@/data/curriculum";
+import { getLecturerSessionAction } from "./lecturer-auth";
 
 export interface StudentSession {
   nim: string;
@@ -126,7 +127,7 @@ export async function loginStudentAction(
       }
     }
 
-    // Jika belum ada di Supabase, gunakan seed bawaan atau buat data profil mahasiswa baru secara otomatis
+    // Jika belum ada di Supabase atau seed lokal, tolak login
     if (!studentData) {
       if (DEFAULT_SEED_STUDENTS[nim]) {
         studentData = {
@@ -135,31 +136,10 @@ export async function loginStudentAction(
           classGroup: DEFAULT_SEED_STUDENTS[nim].classGroup,
         };
       } else {
-        // Izinkan mahasiswa baru mendaftar langsung dengan NIM mereka
-        studentData = {
-          nim,
-          fullName: `Mahasiswa (${nim})`,
-          classGroup: "Kelas A",
+        return {
+          success: false,
+          message: "NIM tidak terdaftar di daftar mahasiswa. Silakan hubungi Dosen Pengampu untuk dimasukkan ke roster kelas.",
         };
-      }
-
-      // Pastikan akun mahasiswa ter-record permanen di database Supabase
-      if (isLiveSupabase && studentData) {
-        try {
-          const supabase = createAdminClient();
-          await supabase.from("students").upsert(
-            {
-              nim: studentData.nim,
-              full_name: studentData.fullName,
-              class_group: studentData.classGroup,
-              password_hash: null,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "nim" }
-          );
-        } catch (err) {
-          console.warn("Supabase upsert student on login fallback:", err);
-        }
       }
     }
 
@@ -213,15 +193,14 @@ export async function loginAsLecturerGuideAction(): Promise<{
   message: string;
 }> {
   try {
-    const cookieStore = await cookies();
-    const lecturerCookie = cookieStore.get("lecturer_session")?.value;
-    if (!lecturerCookie) {
+    const lecRes = await getLecturerSessionAction();
+    if (!lecRes.isAuthenticated || !lecRes.lecturer) {
       return {
         success: false,
-        message: "Sesi dosen tidak ditemukan. Silakan login ke Portal Dosen terlebih dahulu.",
+        message: "Sesi dosen tidak valid. Silakan login ke Portal Dosen terlebih dahulu.",
       };
     }
-    const lecturer = JSON.parse(lecturerCookie);
+    const lecturer = lecRes.lecturer;
     const instructorStudent: StudentSession = {
       nim: lecturer.nidn || "0012345678",
       fullName: lecturer.fullName || "Dosen Pengampu",
@@ -250,6 +229,7 @@ export async function loginAsLecturerGuideAction(): Promise<{
       }
     }
 
+    const cookieStore = await cookies();
     cookieStore.set("student_session", JSON.stringify(instructorStudent), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
