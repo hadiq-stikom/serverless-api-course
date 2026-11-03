@@ -221,9 +221,10 @@ Setiap implementasi autentikasi dan manajemen data pada proyek perkuliahan (*The
 
 Setiap materi modul perkuliahan wajib menyertakan media visual interaktif dan animasi untuk menjembatani pemahaman mahasiswa terhadap konsep-konsep komputasi abstrak:
 
-- **Cakupan Wajib 100% Konsep**:
-  - Setiap konsep inti dan subpoin teori pada setiap modul perkuliahan **WAJIB** memiliki visualisasi/simulasi interaktif mandiri (1:1 mapping).
-  - Dilarang menyajikan materi teknis mendalam secara teks murni tanpa simulator pendukung.
+- **Cakupan Wajib 100% Konsep (Zero Missing Simulator Rule)**:
+  - Setiap konsep inti dan seluruh 12 subpoin teori (4 pilar × 3 subpoin) pada setiap modul perkuliahan **WAJIB** memiliki visualisasi/simulasi interaktif mandiri (1:1 mapping).
+  - **DILARANG KERAS** membiarkan modul perkuliahan tanpa simulator atau hanya menyajikan materi teks/kode statis murni.
+  - Setiap kali merancang atau memperbarui materi modul (misal: Modul 7, Modul 9, dst.), pengembang **WAJIB** merakit berkas visualizer di `src/components/visualizers/` dan mendaftarkannya pada kamus `MODULE_X_VISUALIZERS` serta percabangan `activeVizMap` di `src/app/modules/[id]/page.tsx`.
 - **Pola Interaksi Baku: Smooth Accordion Unfold (Opsi 2)**:
   - Dilarang menempatkan simulator statis di bagian paling atas halaman yang memisahkan mahasiswa dari konteks bacaannya.
   - Simulator diletakkan tepat di bawah cuplikan kode (`VsCodeSnippet`) atau penjelasan dari masing-masing subpoin materi.
@@ -242,6 +243,10 @@ Setiap materi modul perkuliahan wajib menyertakan media visual interaktif dan an
   - Direktif `'use client'` wajib disematkan pada komponen visualizer sebagai *leaf component*.
   - Wajib mendukung Dark Mode dan Light Mode secara konsisten menggunakan token semantik Tailwind/Shadcn (`bg-card`, `border-border`, `text-card-foreground`, `text-muted-foreground`).
   - Dilengkapi kontrol interaktif langsung: stepper alur eksekusi bertahap (*Step 1 ➔ Step 2 ➔ Step 3*), toggle switcher perbandingan arsitektur (*Best Practice vs Anti-Pattern*), simulasi latency peramban, dan inspektur state/DOM/ARIA/token HSL.
+- **Standar Manipulasi Gestur Fisik Langsung (Direct Drag & Drop Rule)**:
+  - Khusus materi berbasis interaksi gestur dan perpindahan posisi (seperti Modul 7 Gestur & Modul 9 Drag & Drop Kanban), simulator **DILARANG HANYA MENGGUNAKAN TOMBOL KLIK SIMULASI STATIS**.
+  - **WAJIB MENDUKUNG MANIPULASI FISIK LANGSUNG**: Elemen kartu wajib memiliki atribut `drag`, `whileHover`, `whileDrag`, `onDrag`, dan `onDragEnd` sehingga mahasiswa dapat memegang (*grab*), menyeret (*drag*), dan menjatuhkan (*drop*) kartu secara langsung menggunakan kursor mouse di desktop maupun sentuhan jari di layar sentuh ponsel.
+  - Perhitungan tabrakan (*collision detection*), penandaan kolom aktif (*dragOver*), dan pemindahan state wajib bereaksi secara real-time terhadap koordinat kursor `(info.point.x, info.point.y)`.
 - **Pola Integrasi Terpusat (`MODULE_X_VISUALIZERS`)**:
   - Komponen visualizer dihubungkan ke halaman modul melalui objek konfigurasi terpusat `MODULE_X_VISUALIZERS` berdasarkan kombinasi indeks bagian dan subpoin (`${sIdx}-${subIdx}`).
   - Menjaga kode halaman modul tetap bersih (*clean code*), *DRY* (Don't Repeat Yourself), dan seragam.
@@ -266,9 +271,11 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - **Bonus Waktu Perbaikan Skor 60–79 (+90 Detik)**: Mahasiswa yang memperoleh skor 60 s.d. 79 (kategori hampir lulus) secara otomatis memperoleh tambahan bonus waktu **+01:30 (90 detik)** untuk menyempurnakan jawaban.
   - **Kompensasi Latensi AI (*AI Latency Freeze*)**: Timer otomatis dijeda/dibekukan seketika saat tombol kirim ditekan (`isEvaluating = true`) sehingga detik waktu mahasiswa tidak terpotong oleh proses inferensi AI atau kepadatan jaringan.
   - **Akumulasi Waktu (*Time Rollover*)**: Sisa detik pada soal yang berhasil lulus ($\ge 80$) otomatis ditabung dan ditambahkan ke alokasi waktu dasar soal berikutnya, memberi insentif positif bagi mahasiswa yang tangkas.
-  - **Pembedaan Tegas: Soft Reset (Timeout) vs Hard Reset (Pelanggaran Integritas)**:
+  - **Pembedaan Tegas: Soft Reset (Timeout) vs Sistem 2-Strike (Pelanggaran Integritas Layar)**:
     - **Soft Reset saat Waktu Habis (*Timeout Soft Reset*)**: Jika waktu pengerjaan soal habis (`00:00`), sistem **TIDAK** melempar mahasiswa kembali ke Soal 1. Hanya draf soal aktif saat ini yang dikosongkan dan waktu di-reset ke waktu basis soal tersebut. Seluruh soal sebelumnya yang telah lulus ($\ge 80$) **TETAP TERSIMPAN AMAN**.
-    - **Hard Reset saat Pelanggaran Fokus Layar (*Integrity Violation Hard Reset*)**: Jika peramban kehilangan fokus, berpindah tab, meminimalkan jendela, atau membuka aplikasi lain (`window.onblur`, `document.visibilitychange`), **sesi kuis langsung di-reset secara instan kembali ke Soal 1** dan dicatat ke database dosen (`reset_count`) demi menjaga integritas akademik.
+    - **Sistem 2-Strike saat Berpindah Tab / Jendela (*Two-Strike Screen Focus Defense*)**:
+      - **Strike 1 (Toleransi Pertama / Insiden Tak Sengaja — Soft Reset)**: Jika peramban kehilangan fokus, berpindah tab, meminimalkan jendela, atau membuka aplikasi lain (`window.onblur`, `document.visibilitychange`) untuk pertama kalinya, sistem memberikan toleransi. Seluruh jawaban soal-soal sebelumnya yang telah lulus ($\ge 80$) **TETAP AMAN & UTUH**. Mahasiswa tetap berada di nomor soal yang sedang dikerjakan. Hanya draf jawaban soal aktif yang di-reset, timer diulang ke waktu basis soal tersebut, dan banner peringatan keras muncul (`⚠️ Strike 1/2 Terpakai`). Insiden dicatat ke database dosen (`reset_count`).
+      - **Strike 2 (Pelanggaran Kedua / Kesengajaan — Hard Reset)**: Jika terdeteksi berpindah tab/jendela untuk kedua kalinya dalam sesi kuis modul, kuota toleransi dinyatakan habis. Sesi ujian langsung **di-HARD RESET secara penuh kembali ke Soal 1** (`currentQuestionIndex = 0`, seluruh jawaban sesi dihapus), dan insiden Strike 2 dicatat secara permanen ke log pemantauan dosen.
 - **Sistem Pemanasan Santai (Warm-up Check-in) & Baseline Orisinalitas Dinamis**:
   - **Prasyarat Wajib Kuis (*Mandatory Warm-up Prerequisite*)**: Sesi dialog santai 1–2 menit (*Warm-up Check-in*) bersama AI Companion bersifat **WAJIB dikerjakan terlebih dahulu** sebelum lembar kuis esai terbuka. Lembar soal kuis esai terkunci (*locked*) hingga sesi pemanasan selesai, menjamin seluruh mahasiswa memiliki rekaman baseline stilistika sebelum menjawab kuis maupun menulis laporan praktikum.
   - **Rotasi 5 Format Obrolan Tematik (*Rotating Conversational Archetypes*)**: Alih-alih pola pertanyaan statis yang membosankan, obrolan berotasi setiap modul dengan 5 format segar:
@@ -369,15 +376,22 @@ Tab ke-4 perkuliahan (`/modules/[id]?tab=quiz`) adalah platform evaluasi kogniti
   - Misi Snowballing: Branch `feature/crud-rest-api-security` dengan 6 kriteria DoD terukur (termasuk otorisasi peran Admin vs Member) dan progress bar interaktif.
   - 7 Soal Esai Uji Pemahaman konsep arsitektur & keamanan API dengan passing threshold $\ge 80$.
   - Dokumen resmi: `panduan/PANDUAN_PENGAJARAN_MODUL_06.md` (150 menit timetable, skrip perkuliahan, arsitektur 6 berkas, dan uji bukti eksekusi cURL).
+- **Modul 7 (Selesai 100%)**: Advanced UI/UX 1: Animasi & Framer Motion (Deklaratif Motion Primitives, Spring Physics vs Linier CSS, Boundary RSC 'use client' at the Leaves, Variants Orchestration, Stagger Cascade, Dynamic Variants, AnimatePresence Unmount Lifecycle, FLIP Transitions, layoutId Shared Elements, Gesture Micro-Interactions, GPU Compositing 60 FPS, dan WCAG Reduced Motion).
+  - 12 Simulator Interaktif lengkap: Motion Primitives (`MotionPrimitivesAnimator`), Spring vs Linear (`SpringVsLinearAnimator`), RSC Animation Boundary (`RscAnimationBoundaryAnimator`), Variants Orchestrator (`VariantsOrchestratorAnimator`), Stagger Children (`StaggerChildrenAnimator`), Dynamic Variants (`DynamicVariantsAnimator`), AnimatePresence (`AnimatePresenceAnimator`), FLIP Layout (`FlipLayoutAnimator`), layoutId Shared Elements (`LayoutIdAnimator`), Gesture Micro-Interactions (`GestureMicroInteractionsAnimator`), GPU Compositing (`GpuCompositingAnimator`), serta Reduced Motion (`ReducedMotionAnimator`).
+- **Modul 8 (Selesai 100%)**: BOSS FIGHT 1: UTS – Prototype Pitching & Code Review (Demonstrasi MVP, Audit Git Milestone Tagging v0.5.0-uts, Evaluasi 3 Tabel Relasional & Supabase Auth).
+- **Modul 9 (Selesai 100%)**: Advanced UI/UX 2: Drag and Drop Kanban Board (@dnd-kit, Optimistic Reordering & Database Position Sync).
+  - 12 Simulator Interaktif lengkap (1:1 mapping seluruh 12 subpoin konsep pilar):
+    - **Pilar 1 (Arsitektur Headless & Sensor)**: `DndContextLifecycleAnimator` (closestCorners vs rectIntersection, 4 event lifecycle), `DndSensorsAnimator` (activationConstraint Pointer distance: 8px, Touch delay: 250ms, Keyboard WAI-ARIA), `DragOverlayPortalAnimator` (Pencegahan overflow clipping & DOM layout shift via React Portal document.body).
+    - **Pilar 2 (Multi-Container Kanban)**: `CssTranslateVsTransformAnimator` (CSS.Translate vs CSS.Transform font blur & nested input distortion), `SortableArrayMoveAnimator` (SortableContext, verticalListSortingStrategy, & arrayMove immutable transition), `MultiContainerKanbanAnimator` (Orkestrasi multi-kolom Kanban: onDragOver hopping vs onDragEnd commit, useDroppable target kosong).
+    - **Pilar 3 (Optimistic UI 0ms)**: `UseOptimisticKanbanAnimator` (React 19 useOptimistic 0ms speculative feedback vs server latency), `SpeculativeCacheHarmonyAnimator` (Harmonisasi startTransition + revalidatePath tanpa visual flicker/snap), `DndRollbackRecoveryAnimator` (Rollback pemulihan otomatis saat error 500 / jaringan terputus & toast notification).
+    - **Pilar 4 (Persistensi DB & Supabase RPC)**: `IntegerVsLexorankAnimator` (Komparasi Integer O(N) vs Fractional Lexorank O(1) midpoint calculation), `BatchRpcReorderAnimator` (Supabase RPC Stored Procedure jsonb_to_recordset 1 transaksi atomik vs bahaya loop N+1), `DndServerActionSyncAnimator` (Pipeline Server Action: Zod SafeParse ➔ Async Cookies Auth ➔ Supabase RPC ➔ revalidatePath).
+  - Terhubung penuh ke `MODULE_9_VISUALIZERS` dan `activeVizMap` di `src/app/modules/[id]/page.tsx`.
 - **Implementasi Tab 4 & Sistem Autentikasi (Selesai 100%)**:
   - Tab 4 "Uji Pemahaman" (Mastery Learning $\ge 80$, Anti-Cheat Reset Instan, Triad Multi-Provider AI Groq/Gemini/DeepSeek/Heuristic).
   - Autentikasi Mahasiswa berbasis NIM & Dosen berbasis NIDN dengan cookie HTTP-only Next.js 16.
   - Database PostgreSQL Supabase aktif terhubung via `.env.local` (`setup_supabase.sql`).
   - Dashboard Monitoring Dosen (`/monitoring`) dengan kontrol import roster mahasiswa massal dan reset password mahasiswa.
 - **Target Prioritas Pengerjaan Berikutnya**:
-  - **Modul 7**: Advanced UI/UX 1: Animasi & Framer Motion (Transisi layout, micro-interactions, exit animations).
-  - **Modul 8**: BOSS FIGHT 1: UTS – Prototype Pitching & Code Review.
-  - **Modul 9**: Advanced UI/UX 2: Drag & Drop Kanban Board (`@dnd-kit`).
   - **Modul 10**: Manajemen Media & Aset dengan Cloudinary.
   - **Modul 11**: Supabase Real-time (WebSocket Collaboration, Presence & Postgres Changes).
   - **Modul 12**: Keamanan Database: Row Level Security (RLS) PostgreSQL & RBAC.

@@ -81,6 +81,7 @@ export interface EvaluateQuizParams {
 export interface QuizProgress {
   currentQuestionIndex: number;
   resetCount: number;
+  strikeCount?: number;
   isCompleted: boolean;
   totalScore: number;
   answers: Record<number, {
@@ -1095,20 +1096,22 @@ async function recordAnswerProgress(
 }
 
 /**
- * Server Action: Reset Instan akibat Timeout atau Pelanggaran Integritas (Anti-Cheat)
+ * Server Action: Reset Instan akibat Timeout atau Pelanggaran Integritas (Anti-Cheat 2-Strike System)
  * - reason = "timeout": SOFT RESET (Hanya nomor soal aktif yang di-reset, jawaban soal-soal sebelumnya tetap aman!)
- * - reason = "tab_violation": HARD RESET (Layar kehilangan fokus / berpindah tab me-reset ke Soal 1 demi integritas)
+ * - reason = "tab_violation_strike_1": SOFT RESET (Strike 1: Jawaban soal aktif di-reset, soal sebelumnya tetap aman, toleransi pertama)
+ * - reason = "tab_violation_strike_2" | "tab_violation": HARD RESET (Strike 2: Kuota toleransi habis, seluruh kuis di-reset ke Soal 1)
  */
 export async function recordTabViolationAction(
   studentNim: string,
   moduleId: number,
-  reason: "tab_violation" | "timeout" = "tab_violation"
-): Promise<{ success: boolean; newResetCount: number }> {
+  reason: "tab_violation" | "tab_violation_strike_1" | "tab_violation_strike_2" | "timeout" = "tab_violation"
+): Promise<{ success: boolean; newResetCount: number; strike: number }> {
   const key = getSubmissionKey(studentNim, moduleId);
   if (!inMemorySubmissions[key]) {
     inMemorySubmissions[key] = {
       currentQuestionIndex: 0,
       resetCount: 0,
+      strikeCount: 0,
       isCompleted: false,
       totalScore: 0,
       answers: {},
@@ -1123,6 +1126,8 @@ export async function recordTabViolationAction(
 
   if (!sub.activityLogs) sub.activityLogs = [];
 
+  let currentStrike = sub.strikeCount || 0;
+
   if (reason === "timeout") {
     // SOFT RESET: Hapus draf soal yang aktif saja, soal-soal sebelumnya yang sudah lolos TETAP UTUH!
     delete sub.answers[sub.currentQuestionIndex + 1];
@@ -1131,14 +1136,26 @@ export async function recordTabViolationAction(
       type: "timeout_soft_reset",
       message: `⏱️ Batas waktu pengerjaan Soal #${sub.currentQuestionIndex + 1} berakhir. Draf soal aktif di-reset untuk kesempatan mencoba kembali (jawaban soal sebelumnya tetap aman).`,
     });
+  } else if (reason === "tab_violation_strike_1") {
+    // STRIKE 1 (SOFT RESET): Toleransi insiden pertama. Hapus draf soal aktif, pertahankan soal-soal sebelumnya yang sudah lulus!
+    sub.strikeCount = 1;
+    currentStrike = 1;
+    delete sub.answers[sub.currentQuestionIndex + 1];
+    sub.activityLogs.push({
+      timestamp: new Date().toISOString(),
+      type: "tab_violation_strike_1",
+      message: `⚠️ Peringatan Integritas Ujian (Strike 1/2): Layar peramban kehilangan fokus atau berpindah tab saat pengerjaan Soal #${sub.currentQuestionIndex + 1}. Diberikan toleransi insiden (jawaban soal sebelumnya tetap aman, draf soal aktif di-reset). Peringatan: Strike ke-2 akan melakukan Hard Reset penuh ke Soal 1.`,
+    });
   } else {
-    // HARD RESET: Pelanggaran integritas (pindah tab atau window blur)
+    // STRIKE 2 / HARD RESET: Pelanggaran integritas kedua (atau legacy tab_violation)
+    sub.strikeCount = 0; // Reset counter strike untuk percobaan baru dari awal
+    currentStrike = 2;
     sub.currentQuestionIndex = 0; // Reset instan kembali ke Soal 1
     sub.answers = {}; // Hapus jawaban sesi ini
     sub.activityLogs.push({
       timestamp: new Date().toISOString(),
-      type: "tab_violation_hard_reset",
-      message: "⚠️ Pelanggaran Integritas Ujian: Layar peramban kehilangan fokus atau berpindah tab/jendela. Sesi kuis di-reset kembali ke Soal 1.",
+      type: "tab_violation_strike_2",
+      message: "🚨 Pelanggaran Integritas Ujian (Strike 2/2): Layar peramban kehilangan fokus atau berpindah tab/jendela untuk kedua kalinya! Kuota toleransi habis. Seluruh sesi kuis di-HARD RESET kembali ke Soal 1.",
     });
   }
 
@@ -1154,7 +1171,7 @@ export async function recordTabViolationAction(
         reset_count: sub.resetCount,
         updated_at: new Date().toISOString(),
       };
-      if (reason === "tab_violation") {
+      if (reason === "tab_violation" || reason === "tab_violation_strike_2") {
         updateData.current_question_index = 0;
       }
       await supabase
@@ -1166,7 +1183,7 @@ export async function recordTabViolationAction(
     console.warn("Supabase violation record fallback:", err);
   }
 
-  return { success: true, newResetCount: sub.resetCount };
+  return { success: true, newResetCount: sub.resetCount, strike: currentStrike };
 }
 
 /**
@@ -1252,6 +1269,7 @@ export async function getQuizProgressAction(
         return {
           currentQuestionIndex: subData.current_question_index || 0,
           resetCount: subData.reset_count || 0,
+          strikeCount: inMemorySubmissions[key]?.strikeCount || 0,
           isCompleted: subData.status === "completed",
           totalScore: calculatedAvg,
           answers,
@@ -1265,6 +1283,7 @@ export async function getQuizProgressAction(
   return inMemorySubmissions[key] || {
     currentQuestionIndex: 0,
     resetCount: 0,
+    strikeCount: 0,
     isCompleted: false,
     totalScore: 0,
     answers: {},
@@ -1283,11 +1302,13 @@ export async function restartQuizForImprovementAction(
   if (inMemorySubmissions[key]) {
     inMemorySubmissions[key].isCompleted = false;
     inMemorySubmissions[key].currentQuestionIndex = 0;
+    inMemorySubmissions[key].strikeCount = 0;
     // Nilai terbaik tiap soal dipertahankan agar dapat dibandingkan dengan percobaan baru
   } else {
     inMemorySubmissions[key] = {
       currentQuestionIndex: 0,
       resetCount: 0,
+      strikeCount: 0,
       isCompleted: false,
       totalScore: 0,
       answers: {},
@@ -1389,6 +1410,7 @@ export async function markQuizCompletedAction(
 
   if (inMemorySubmissions[key]) {
     inMemorySubmissions[key].isCompleted = true;
+    inMemorySubmissions[key].strikeCount = 0;
     inMemorySubmissions[key].completedAt = new Date().toISOString();
     inMemorySubmissions[key].updatedAt = new Date().toISOString();
     if (!inMemorySubmissions[key].activityLogs) inMemorySubmissions[key].activityLogs = [];

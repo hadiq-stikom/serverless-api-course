@@ -96,6 +96,30 @@ import { LayoutIdAnimator } from "@/components/visualizers/layout-id-animator";
 import { GestureMicroInteractionsAnimator } from "@/components/visualizers/gesture-micro-interactions-animator";
 import { GpuCompositingAnimator } from "@/components/visualizers/gpu-compositing-animator";
 import { ReducedMotionAnimator } from "@/components/visualizers/reduced-motion-animator";
+import { DndContextLifecycleAnimator } from "@/components/visualizers/dnd-context-lifecycle-animator";
+import { DndSensorsAnimator } from "@/components/visualizers/dnd-sensors-animator";
+import { DragOverlayPortalAnimator } from "@/components/visualizers/drag-overlay-portal-animator";
+import { CssTranslateVsTransformAnimator } from "@/components/visualizers/css-translate-vs-transform-animator";
+import { SortableArrayMoveAnimator } from "@/components/visualizers/sortable-array-move-animator";
+import { MultiContainerKanbanAnimator } from "@/components/visualizers/multi-container-kanban-animator";
+import { UseOptimisticKanbanAnimator } from "@/components/visualizers/use-optimistic-kanban-animator";
+import { SpeculativeCacheHarmonyAnimator } from "@/components/visualizers/speculative-cache-harmony-animator";
+import { DndRollbackRecoveryAnimator } from "@/components/visualizers/dnd-rollback-recovery-animator";
+import { IntegerVsLexorankAnimator } from "@/components/visualizers/integer-vs-lexorank-animator";
+import { BatchRpcReorderAnimator } from "@/components/visualizers/batch-rpc-reorder-animator";
+import { DndServerActionSyncAnimator } from "@/components/visualizers/dnd-server-action-sync-animator";
+import { BlobVsCdnAnimator } from "@/components/visualizers/blob-vs-cdn-animator";
+import { MultiTierCdnAnimator } from "@/components/visualizers/multi-tier-cdn-animator";
+import { AutoFormatQualityAnimator } from "@/components/visualizers/auto-format-quality-animator";
+import { DirectUploadPipelineAnimator } from "@/components/visualizers/direct-upload-pipeline-animator";
+import { SignedVsUnsignedPresetAnimator } from "@/components/visualizers/signed-vs-unsigned-preset-animator";
+import { PublicIdSchemaAnimator } from "@/components/visualizers/public-id-schema-animator";
+import { SmartCropFaceAnimator } from "@/components/visualizers/smart-crop-face-animator";
+import { GenerativeAiTransformAnimator } from "@/components/visualizers/generative-ai-transform-animator";
+import { CldImageSrcsetAnimator } from "@/components/visualizers/cld-image-srcset-animator";
+import { SignedUrlAccessAnimator } from "@/components/visualizers/signed-url-access-animator";
+import { MediaCleanupCascadeAnimator } from "@/components/visualizers/media-cleanup-cascade-animator";
+import { CloudinaryWebhookAuditAnimator } from "@/components/visualizers/cloudinary-webhook-audit-animator";
 import { ModuleQuizPanel } from "@/components/quiz/module-quiz-panel";
 import { VsCodeSnippet } from "@/components/vscode-snippet";
 import { VsCodePrompt } from "@/components/vscode-prompt";
@@ -672,6 +696,171 @@ const MODULE_7_VISUALIZERS: Record<string, { key: string; title: string; subtitl
   },
 };
 
+// Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 12 Subpoin Konsep Pertemuan 9
+const MODULE_9_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur Inti @dnd-kit, Sensor Primitives, & Algoritma Collision Detection
+  "0-0": {
+    key: "dnd-context-lifecycle",
+    title: "Simulasi DndContext Lifecycle: Collision Detection (closestCorners vs rectIntersection)",
+    subtitle: "Eksperimen perbandingan algoritma tabrakan dan amati 4 siklus event (onDragStart, onDragOver, onDragEnd, onDragCancel)",
+    component: <DndContextLifecycleAnimator />,
+  },
+  "0-1": {
+    key: "dnd-sensors",
+    title: "Simulasi Rekayasa Sensor: activationConstraint (Pointer, Touch, & Keyboard WAI-ARIA)",
+    subtitle: "Uji coba toleransi geser (distance: 8px vs delay: 250ms), sentuhan seluler, dan navigasi aksesibel via tombol Spasi & Panah",
+    component: <DndSensorsAnimator />,
+  },
+  "0-2": {
+    key: "drag-overlay-portal",
+    title: "Simulasi DragOverlay & Portal: Pencegahan Z-Index Clipping & DOM Layout Shift",
+    subtitle: "Bandingkan bahaya rendering kartu di dalam kontainer ber-overflow:hidden vs rendering melayang di React Portal (document.body)",
+    component: <DragOverlayPortalAnimator />,
+  },
+
+  // Pilar 2: Primitif Sortable, Transform Matrix, & Arsitektur Multi-Column Kanban
+  "1-0": {
+    key: "css-translate-vs-transform",
+    title: "Simulasi Geometri CSS: CSS.Translate.toString vs CSS.Transform.toString",
+    subtitle: "Bandingkan distorsi visual skala/blur font akibat Transform Matrix vs translasi koordinat murni tanpa distorsi",
+    component: <CssTranslateVsTransformAnimator />,
+  },
+  "1-1": {
+    key: "sortable-array-move",
+    title: "Simulasi SortableContext & arrayMove: Transisi Urutan Imutabel O(N)",
+    subtitle: "Pelajari algoritma penggeseran indeks arrayMove(items, oldIndex, newIndex) secara visual step-by-step",
+    component: <SortableArrayMoveAnimator />,
+  },
+  "1-2": {
+    key: "multi-container-kanban",
+    title: "Simulasi Orkestrasi Multi-Kolom Kanban: onDragOver (Hopping) vs onDragEnd (Commit)",
+    subtitle: "Saksikan bagaimana perpindahan sementara kartu antar-kolom di-handle di onDragOver sebelum finalisasi posisi di onDragEnd",
+    component: <MultiContainerKanbanAnimator />,
+  },
+
+  // Pilar 3: Optimistic UI Updates & Manajemen State Reaktif React 19
+  "2-0": {
+    key: "use-optimistic-kanban",
+    title: "Simulasi React 19 useOptimistic: Latensi 0ms Spekulatif pada Kolom Kanban",
+    subtitle: "Eksperimen pemindahan kartu instan tanpa jeda jaringan (0ms) sambil menunggu respons server asinkron",
+    component: <UseOptimisticKanbanAnimator />,
+  },
+  "2-1": {
+    key: "speculative-cache-harmony",
+    title: "Simulasi Harmonisasi Cache: Mencegah Visual Glitch / Flickering Pascamutasi",
+    subtitle: "Amati bagaimana transisi state yang keliru memicu efek jentikan (flicker) vs transisi mulus berbasis startTransition",
+    component: <SpeculativeCacheHarmonyAnimator />,
+  },
+  "2-2": {
+    key: "dnd-rollback-recovery",
+    title: "Simulasi Rollback Otomatis: Pemulihan State Kartu saat Mutasi Jaringan Gagal",
+    subtitle: "Simulasikan skenario error 500 / Network Timeout dan amati kartu kembali memantul ke kolom asal secara anggun",
+    component: <DndRollbackRecoveryAnimator />,
+  },
+
+  // Pilar 4: Persistensi Urutan Database PostgreSQL & Integrasi Supabase RPC
+  "3-0": {
+    key: "integer-vs-lexorank",
+    title: "Simulasi Skema Urutan: Integer Sequence O(N) vs Fractional Indexing (Lexorank O(1))",
+    subtitle: "Bandingkan pergeseran baris database integer batch vs kalkulasi titik tengah (midpoint) leksikografis",
+    component: <IntegerVsLexorankAnimator />,
+  },
+  "3-1": {
+    key: "batch-rpc-reorder",
+    title: "Simulasi PostgreSQL RPC: Atomic Batch Reorder via jsonb_to_recordset",
+    subtitle: "Bandingkan bahaya N+1 Client Update Loop vs 1 Transaksi Atomik Terisolasi auth.uid()",
+    component: <BatchRpcReorderAnimator />,
+  },
+  "3-2": {
+    key: "dnd-server-action-sync",
+    title: "Simulasi Pipeline Server Action: Zod SafeParse ➔ Async Cookies Supabase RPC ➔ revalidatePath",
+    subtitle: "Lacak perjalanan payload [{ id, status, position }] dari peramban, validasi skema, eksekusi RPC, hingga revalidasi cache",
+    component: <DndServerActionSyncAnimator />,
+  },
+};
+
+const MODULE_10_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur Media Serverless & CDN Edge Delivery
+  "0-0": {
+    key: "blob-vs-cdn",
+    title: "Simulasi Arsitektur: Database BLOB vs Dedicated Media CDN",
+    subtitle: "Analisis dampak performa OOM, pembengkakan database PostgreSQL, dan latensi FaaS serverless",
+    component: <BlobVsCdnAnimator />,
+  },
+  "0-1": {
+    key: "multi-tier-cdn",
+    title: "Simulasi Multi-Tier Global Edge Caching & Origin Shield",
+    subtitle: "Bandingkan alur Cache MISS (transformasi pertama di Origin) vs Cache HIT (distribusi Edge 18ms)",
+    component: <MultiTierCdnAnimator />,
+  },
+  "0-2": {
+    key: "auto-format-quality",
+    title: "Simulasi AI Optimization: f_auto (Format AVIF/WebP) & q_auto (Kualitas)",
+    subtitle: "Uji coba kompresi cerdas tanpa degradasi mata manusia (SSIM) dan reduksi bobot hingga 85%",
+    component: <AutoFormatQualityAnimator />,
+  },
+
+  // Pilar 2: Pipeline Unggah Aset: Client-Side Direct Upload vs Signed Server Actions
+  "1-0": {
+    key: "direct-upload-pipeline",
+    title: "Simulasi Direct Client Upload vs Serverless Function Proxy",
+    subtitle: "Uji batasan payload 4.5MB Vercel Serverless dan efisiensi zero-compute <CldUploadWidget>",
+    component: <DirectUploadPipelineAnimator />,
+  },
+  "1-1": {
+    key: "signed-vs-unsigned-preset",
+    title: "Simulasi Keamanan: Unsigned vs HMAC SHA-1 Signed Upload Preset",
+    subtitle: "Bandingkan kemudahan unsigned preset publik dengan proteksi kriptografis signed preset di Server Action",
+    component: <SignedVsUnsignedPresetAnimator />,
+  },
+  "1-2": {
+    key: "public-id-schema",
+    title: "Arsitektur Schema Supabase: Menyimpan public_id vs Hardcoded URL",
+    subtitle: "Analisis fleksibilitas pemeliharaan jangka panjang dan portabilitas aset di tabel PostgreSQL",
+    component: <PublicIdSchemaAnimator />,
+  },
+
+  // Pilar 3: Transformasi Gambar Dinamis Berbasis AI & Smart Cropping
+  "2-0": {
+    key: "smart-crop-face",
+    title: "Simulasi AI Smart Cropping & Gravity Detection (g_face vs g_center)",
+    subtitle: "Cegah tragedi kepala terpotong (headless avatar) pada foto profil dan thumbnail dinamis",
+    component: <SmartCropFaceAnimator />,
+  },
+  "2-1": {
+    key: "generative-ai-transform",
+    title: "Cloudinary Generative AI Playground: Generative Fill & Background Removal",
+    subtitle: "Eksplorasi kemampuan Generative AI langsung melalui parameter URL tanpa software pengolah grafis eksternal",
+    component: <GenerativeAiTransformAnimator />,
+  },
+  "2-2": {
+    key: "cld-image-srcset",
+    title: "Simulasi Responsive <CldImage>: Otomasi srcset & Blur-Up Placeholder",
+    subtitle: "Mencegah Cumulative Layout Shift (CLS = 0.00) dan memuat resolusi yang tepat sesuai viewport perangkat",
+    component: <CldImageSrcsetAnimator />,
+  },
+
+  // Pilar 4: Keamanan Aset Media, Manajemen Siklus Hidup, & Webhook Notification
+  "3-0": {
+    key: "signed-url-access",
+    title: "Access Control: Public Assets vs Authenticated Expiring Signed URLs",
+    subtitle: "Lindungi dokumen rahasia, bukti transfer, dan slip nilai dengan URL bertanda tangan berbatas waktu",
+    component: <SignedUrlAccessAnimator />,
+  },
+  "3-1": {
+    key: "media-cleanup-cascade",
+    title: "Siklus Hidup Aset: Pencegahan File Zombie (Orphan Assets) saat Hapus Data",
+    subtitle: "Menghapus baris data di PostgreSQL wajib diiringi pembersihan aset fisik di Cloudinary CDN",
+    component: <MediaCleanupCascadeAnimator />,
+  },
+  "3-2": {
+    key: "cloudinary-webhook-audit",
+    title: "Simulasi Webhook Asinkron & Audit Penggunaan Kuota Kredit",
+    subtitle: "Menerima notifikasi transformasi asinkron dan memvalidasi keaslian signature webhook HMAC",
+    component: <CloudinaryWebhookAuditAnimator />,
+  },
+};
+
 
 // Helper to format inline markdown like `code`, **bold**, and *italic*
 function formatInlineText(str: string) {
@@ -986,6 +1175,30 @@ const AI_AGENT_WORKFLOW: Record<
     step1: "Salin formula prompt di bawah, lalu tempelkan langsung ke panel AI Agent Anda di IDE.",
     step2: "AI Agent otomatis menginstal use-debounce di terminal, lalu merakit 6 berkas REST API terproteksi Bearer JWT, penanganan CORS, dan sinkronisasi URL as State.",
     step3: "Tinjau diff di editor, lalu uji query pencarian di browser dan verifikasi proteksi rute API menggunakan cURL / Postman.",
+  },
+  9: {
+    theme: {
+      border: "border-violet-200 dark:border-violet-900/60",
+      bg: "bg-gradient-to-br from-violet-50/70 via-white to-indigo-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-violet-950/40",
+      badge: "bg-violet-100/60 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border-violet-300 dark:border-violet-800",
+      stepBorder: "border-violet-100 dark:border-zinc-800",
+      stepBadge: "bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300",
+    },
+    step1: "Pilih metode eksekusi di bawah (Jalur Bertahap 6 Tahap atau Jalur All-in-One), lalu salin formula prompt ke panel AI Agent IDE Anda (Antigravity / Cursor / Copilot).",
+    step2: "AI Agent otomatis memeriksa & menginstal pustaka @dnd-kit di terminal, menyusun migrasi SQL RPC atomik Supabase, serta merakit komponen Kanban berarsitektur headless.",
+    step3: "Jalankan migrasi SQL di Supabase SQL Editor, tinjau diff di editor, lalu uji drag and drop antar-kolom di browser http://localhost:3000/tasks/kanban untuk memverifikasi respon 0ms dan sinkronisasi urutan ke database.",
+  },
+  10: {
+    theme: {
+      border: "border-amber-200 dark:border-amber-900/60",
+      bg: "bg-gradient-to-br from-amber-50/70 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-amber-950/40",
+      badge: "bg-amber-100/60 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800",
+      stepBorder: "border-amber-100 dark:border-zinc-800",
+      stepBadge: "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300",
+    },
+    step1: "Pilih metode eksekusi di bawah (Jalur Bertahap 6 Tahap atau Jalur All-in-One), lalu salin formula prompt ke panel AI Agent IDE Anda (Antigravity / Cursor / Copilot).",
+    step2: "AI Agent otomatis memeriksa & menginstal next-cloudinary di terminal, mengonfigurasi remotePatterns di next.config.ts, menyusun skema database image_public_id di Supabase, dan merakit komponen CldUploadWidget serta CldImage.",
+    step3: "Tinjau diff di editor, jalankan migrasi SQL di Supabase, lalu uji coba upload gambar langsung di browser http://localhost:3000/tasks untuk memverifikasi f_auto, q_auto, dan responsivitas tanpa CLS.",
   },
 };
 
@@ -1583,7 +1796,7 @@ export default function ModuleDetailPage() {
 
                                 {/* Interactive Simulation Accordions for Module Concepts (Option 2: Smooth Accordion Unfold) */}
                                 {(() => {
-                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : currentModule.id === 7 ? MODULE_7_VISUALIZERS : null;
+                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : currentModule.id === 7 ? MODULE_7_VISUALIZERS : currentModule.id === 9 ? MODULE_9_VISUALIZERS : currentModule.id === 10 ? MODULE_10_VISUALIZERS : null;
                                   const viz = activeVizMap ? activeVizMap[`${sIdx}-${subIdx}`] : null;
                                   if (!viz) return null;
                                   const isExpanded = !!expandedVisualizers[viz.key];

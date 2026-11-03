@@ -5841,46 +5841,1532 @@ Selesaikan seluruh instruksi di atas secara langsung dan tuntas!`,
     worldId: "world-2",
     worldTitle: "Dunia 2: Rich UI, Media & Real-time",
     weekNumber: 9,
-    title: "Advanced UI/UX 2: Drag and Drop (Kanban Board)",
-    subtitle: "Membangun papan interaktif drag and drop dengan @dnd-kit dan sinkronisasi urutan state ke Supabase.",
-    cpmk: "Mahasiswa mampu mengimplementasikan pustaka @dnd-kit untuk interaksi reordering (Drag and Drop) dengan Optimistic UI.",
+    title: "Advanced UI/UX 2: Drag and Drop Kanban Board (@dnd-kit, Optimistic Reordering & Database Position Sync)",
+    subtitle: "Membangun papan interaktif drag and drop modern dengan arsitektur headless @dnd-kit, orkestrasi kartu multi-kolom Kanban, pembaruan antarmuka spekulatif 0ms via React 19 useOptimistic, serta strategi persistensi urutan ke PostgreSQL Supabase.",
+    cpmk: "Mahasiswa mampu merancang dan mengimplementasikan papan Kanban interaktif multi-kolom menggunakan pustaka @dnd-kit pada Next.js 16, menguasai arsitektur sensor interaksi dan algoritma collision detection, orkestrasi sortable primitives (useSortable & SortableContext) lintas kontainer, pembaruan antarmuka spekulatif tanpa jeda (Optimistic UI 0ms) via React 19 useOptimistic disertai mekanisme rollback otomatis, serta merekayasa strategi persistensi urutan data atomik ke PostgreSQL Supabase menggunakan Stored Procedure (RPC) dan Server Actions.",
+    cpmkPoints: [
+      {
+        code: "CPMK 9.1",
+        badge: "Core Architecture & Sensors",
+        title: "Arsitektur Modular @dnd-kit & Rekayasa Sensor Aksesibel",
+        desc: "Menganalisis arsitektur headless `@dnd-kit/core` berbasis `DndContext`, merancang deteksi tabrakan presisi (`closestCorners`, `rectIntersection`), mengonfigurasi batasan aktivasi sensor (`PointerSensor`, `TouchSensor`, `KeyboardSensor`), serta membedakan keunggulannya dibanding HTML5 Drag and Drop API standar industri.",
+        keywords: ["@dnd-kit/core", "DndContext", "Collision Detection", "activationConstraint", "Accessible Sensors (WAI-ARIA)"]
+      },
+      {
+        code: "CPMK 9.2",
+        badge: "Sortable & Multi-Container",
+        title: "Sortable Primitives & Orkestrasi Multi-Container Kanban",
+        desc: "Mengimplementasikan primitif pengurutan `@dnd-kit/sortable` menggunakan hook `useSortable`, teknik transformasi koordinat tanpa distorsi geometri (`CSS.Translate.toString`), strategi pengurutan imutabel `arrayMove`, serta mengorkestrasi perpindahan kartu lintas kolom (`onDragOver` vs `onDragEnd`) pada arsitektur Kanban multi-kolom.",
+        keywords: ["useSortable", "SortableContext", "CSS.Translate vs CSS.Transform", "Multi-Container Kanban", "arrayMove Immutability"]
+      },
+      {
+        code: "CPMK 9.3",
+        badge: "Optimistic UI 0ms",
+        title: "State Spekulatif React 19 useOptimistic & Rollback Otomatis",
+        desc: "Mengembangkan antarmuka responsif tanpa jeda jaringan (0ms latency) memanfaatkan hook React 19 `useOptimistic`, merancang transisi state spekulatif multi-kolom, mencegah distorsi visual (*flicker*) saat sinkronisasi server, serta membangun mekanisme rollback pemulihan otomatis saat terjadi kegagalan transmisi mutasi jaringan.",
+        keywords: ["useOptimistic (React 19)", "Zero-Latency UI", "Speculative State Transitions", "Automatic Rollback", "Debounced Network Dispatcher"]
+      },
+      {
+        code: "CPMK 9.4",
+        badge: "DB Persistence & Batch RPC",
+        title: "Strategi Persistensi Urutan Database PostgreSQL & Integrasi Supabase RPC",
+        desc: "Membandingkan efisiensi algoritma persistensi urutan data (Integer Sequence Reindexing O(N) vs Fractional Indexing / Lexorank O(1)), merancang fungsi tersimpan atomik PostgreSQL (RPC `reorder_kanban_tasks`) berbasis `jsonb_to_recordset`, serta mengintegrasikannya secara aman melalui Next.js 16 Server Actions terproteksi Row Level Security (RLS).",
+        keywords: ["Integer Reordering vs Lexorank", "PostgreSQL Stored Procedure (RPC)", "jsonb_to_recordset", "Atomic Batch Mutation", "Next.js 16 Server Actions"]
+      }
+    ],
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 450,
     concepts: {
-      summary: "Interaksi Drag & Drop (DnD) menuntut pembaruan UI secara instan (Optimistic Updates) sebelum server selesai memproses perubahan urutan di database.",
+      summary: "Interaksi Drag & Drop (DnD) pada papan Kanban merupakan puncak rekayasa antarmuka web modern yang menggabungkan tiga disiplin komputasi: manipulasi koordinat pointer berkecepatan 60 FPS di sisi klien, manajemen state optimistik tanpa jeda (0ms latency), dan sinkronisasi urutan persisten ke database relasional. Pada modul ini, kita menguasai pustaka modern @dnd-kit di Next.js 16 yang memisahkan logika matematika drag dari elemen DOM (headless architecture). Kita merekayasa sensor interaksi aksesibel (Pointer, Touch, dan Keyboard WAI-ARIA), algoritma deteksi tabrakan (Collision Detection), serta primitif Sortable lintas kontainer. Lebih jauh lagi, kita mengintegrasikan hook resmi React 19 useOptimistic untuk menghadirkan umpan balik instan sebelum server merespons, serta menyusun fungsi tersimpan PostgreSQL (Stored Procedure RPC) untuk memperbarui urutan kartu secara atomik (ACID) dalam satu kueri efisien tanpa membebani serverless backend.",
       points: [
-        { title: "@dnd-kit Architecture", desc: "Library modular berbasis sensor sentuh/mouse yang ringan dan mudah diakses (accessible)." },
-        { title: "Optimistic State Updates", desc: "Mengubah urutan kartu di layar secara instan (useOptimistic) sembari mengirim request perubahan posisi ke Postgres di latar belakang." }
+        { title: "Headless @dnd-kit Architecture & Sensors", desc: "Pustaka drag and drop modular berbasis React Context yang ringan, zero-dependency, mendukung layar sentuh seluler, dan ramah aksesibilitas keyboard WAI-ARIA." },
+        { title: "Sortable Primitives & Multi-Container", desc: "Orkestrasi kartu lintas kolom status (Todo, In Progress, Done) dengan transform CSS anti-distorsi dan utilitas imutabel arrayMove." },
+        { title: "Optimistic UI 0ms via React 19 useOptimistic", desc: "Pembaruan visual instan di layar sebelum permintaan mutasi server selesai, dilengkapi mekanisme pemulihan rollback otomatis jika transmisi jaringan terputus." },
+        { title: "Atomic Database Reordering (PostgreSQL RPC)", desc: "Strategi persistensi urutan data di Supabase menggunakan Stored Procedure reorder_kanban_tasks berbasis jsonb_to_recordset yang mengeksekusi update batch dalam satu transaksi aman." }
+      ],
+      diagramNote: "Pointer/Touch/Keyboard Sensor (activationConstraint) ➔ DndContext Lifecycle ➔ Collision Detection (closestCorners) ➔ useSortable (CSS.Translate) ➔ Multi-Container onDragOver Reorder ➔ React 19 useOptimistic (0ms Feedback) ➔ Debounced Server Action ➔ PostgreSQL Atomic RPC (jsonb_to_recordset) ➔ ACID Persistence",
+      deepDiveSections: [
+        {
+          title: "1. Arsitektur Inti @dnd-kit, Sensor Primitives, & Algoritma Collision Detection",
+          badge: "Pilar 1: Arsitektur Headless & Sensor",
+          content: "Interaksi Drag & Drop adalah salah satu tantangan rekayasa frontend paling kompleks karena menuntut sinkronisasi antara pergerakan pointer perangkat keras (mouse/touch/stylus) pada frekuensi 60–120 FPS dengan rekonsiliasi pohon Virtual DOM React.\n\n" +
+                   "HTML5 Drag and Drop API standar (`draggable=\"true\"`) telah lama ditinggalkan pada aplikasi modern karena keterbatasan fundamental: tidak mendukung layar sentuh seluler (*touch devices*), sangat kaku dalam kustomisasi tampilan drag image, dan memiliki aksesibilitas keyboard yang sangat buruk bagi pengguna disabilitas.\n\n" +
+                   "Pustaka `@dnd-kit` merevolusi paradigma ini dengan menghadirkan arsitektur **Headless & Modular**: library ini tidak memaksakan struktur CSS atau elemen DOM tertentu, melainkan hanya menyediakan logika matematika murni (vektor koordinat, matriks transformasi, dan collision detection). Pada arsitektur **Next.js 16 App Router**, seluruh komputasi interaksi ini diisolasi secara elegan pada komponen daun terluar (*leaf Client Component*) ber-`'use client'`, menjaga komponen halaman server tetap murni 0 kB JavaScript bundle.",
+          subpoints: [
+            {
+              label: "Anatomi DndContext, Collision Detection Algorithms (closestCorners vs rectIntersection), & Event Lifecycle",
+              text: "1. Anatomi dan Tanggung Jawab `DndContext`:\n" +
+                    "`DndContext` bertindak sebagai penyedia konteks tunggal (*context provider*) yang membungkus seluruh area interaksi drag and drop. Komponen ini mendengarkan event sensor, menghitung posisi kursor relatif terhadap viewport, dan mempublikasikan data koordinat ke seluruh elemen anak yang terdaftar.\n\n" +
+                    "2. Matriks Algoritma Collision Detection:\n" +
+                    "Dalam arsitektur Kanban multi-kolom, kita wajib memilih algoritma deteksi tabrakan yang tepat:\n" +
+                    "- **`rectIntersection`**: Mendeteksi tabrakan hanya jika kotak pembatas (*bounding box*) elemen yang ditarik secara fisik berpotongan dengan kontainer target. Algoritma ini kurang optimal untuk kartu Kanban yang ditarik cepat ke kolom kosong.\n" +
+                    "- **`closestCorners` (Sangat Direkomendasikan)**: Menghitung jarak Euclidean terkecil antara keempat sudut kartu yang ditarik dengan sudut-sudut kontainer di sekitarnya. Algoritma ini memberikan rasa navigasi yang sangat alami dan presisi tinggi saat kartu melayang di antara dua kolom berdekatan.\n" +
+                    "- **`pointerWithin`**: Menentukan target berdasarkan koordinat tepat ujung kursor mouse/titik sentuh pengguna.\n\n" +
+                    "3. Empat Siklus Event Dragging Utama:\n" +
+                    "- **`onDragStart`**: Dipicu saat elemen mulai diangkat; digunakan untuk merekam ID elemen aktif (`activeId`) dan menampilkan kartu pratinjau.\n" +
+                    "- **`onDragOver`**: Dipicu berulang kali saat elemen melayang di atas target lain; krusial untuk memindahkan kartu sementara ke kolom baru saat melintasi batas kolom.\n" +
+                    "- **`onDragEnd`**: Dipicu saat elemen dilepaskan pengguna; tempat kita memfinalisasi urutan data dan memicu persistensi database.\n" +
+                    "- **`onDragCancel`**: Dipicu jika interaksi dibatalkan (misal tombol Escape ditekan atau koneksi sentuh terputus), mengembalikan kartu ke koordinat asal secara aman.",
+              code: `// src/components/kanban/dnd-kanban-provider.tsx
+'use client';
+
+import React, { useState } from 'react';
+import {
+  DndContext,
+  closestCorners,
+  DragStartEvent,
+  DragEndEvent,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+
+interface DndKanbanProviderProps {
+  children: React.ReactNode;
+}
+
+export function DndKanbanProvider({ children }: DndKanbanProviderProps) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // 1. Inisialisasi sensor dengan toleransi pergerakan pointer dan navigasi keyboard
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Mengabaikan klik biasa; drag hanya aktif setelah geser 8px
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners} // Presisi jarak Euclidean 4 sudut kartu
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      {children}
+    </DndContext>
+  );
+}`,
+              language: "tsx",
+              caption: "Inisialisasi DndContext dengan algoritma closestCorners dan pelacakan activeId pada Next.js 16."
+            },
+            {
+              label: "Rekayasa Sensor Interaksi: Pointer, Touch, & Navigasi Keyboard WAI-ARIA Aksesibel",
+              text: "1. Masalah Konflik Klik vs Drag pada Elemen UI:\n" +
+                    "Jika sebuah kartu tugas memiliki tombol aksi (seperti tombol edit, hapus, atau link ke halaman detail), browser seringkali bingung membedakan antara aksi 'klik biasa' dengan 'tarikan kartu'. Tanpa batasan yang presisi, pengguna yang hanya ingin mengklik judul tugas akan secara tidak sengaja memicu status drag.\n\n" +
+                    "2. Konfigurasi `activationConstraint` pada Sensor:\n" +
+                    "- **Jarak Gerak Piksel (`distance: 8`)**: Mengharuskan kursor mouse bergerak minimal 8 piksel sebelum interaksi drag dianggap sah. Ini memungkinkan klik biasa tetap dieksekusi dengan normal tanpa lag.\n" +
+                    "- **Penundaan Waktu Sentuh (`delay: 250, tolerance: 5`)**: Pada layar sentuh seluler (Touch), penundaan 250 milidetik memberi kesempatan browser membedakan antara gestur scroll halaman vertikal dengan gestur mengangkat kartu tugas.\n\n" +
+                    "3. Aksesibilitas Universal dengan `KeyboardSensor` (WAI-ARIA):\n" +
+                    "`@dnd-kit` menyertakan `KeyboardSensor` yang telah memenuhi standar WAI-ARIA Authoring Practices Guide: pengguna disabilitas motorik dapat menekan tombol `Space` atau `Enter` untuk mengangkat kartu, tombol panah (`Up`/`Down`/`Left`/`Right`) untuk memindahkan posisi, dan `Space`/`Enter` kembali untuk menjatuhkan kartu, dengan pengumuman pembaca layar (*screen reader live region announcements*) otomatis.",
+              code: `// src/components/kanban/kanban-sensors.ts
+import {
+  useSensors,
+  useSensor,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+
+/**
+ * Hook khusus konfigurasi sensor multi-perangkat terkalibrasi:
+ * - Desktop Mouse: Respon instan dengan constraint jarak 8px (mencegah klik palsu)
+ * - Layar Sentuh Mobile: Jeda 250ms dengan toleransi 5px (membedakan scroll vs drag)
+ * - Keyboard: Navigasi tombol panah WAI-ARIA ramah pembaca layar (screen reader)
+ */
+export function useKanbanSensors() {
+  return useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Membutuhkan pergeseran 8px sebelum drag terpicu
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,   // Tahan 250ms untuk mengangkat kartu di mobile
+        tolerance: 5, // Toleransi goyangan jari 5px selama jeda
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+}`,
+              language: "typescript",
+              caption: "Konfigurasi presisi sensors dengan batasan aktivasi jarak (8px) dan koordinat navigasi keyboard WAI-ARIA."
+            },
+            {
+              label: "Primitif DragOverlay & Portal Rendering: Menghindari Z-Index Clipping & DOM Layout Shift",
+              text: "1. Dilema Reflow & Z-Index saat Dragging Berlangsung:\n" +
+                    "Saat sebuah elemen HTML ditarik keluar dari posisinya, elemen tersebut seringkali terpotong (*clipped*) oleh kontainer induk yang memiliki properti CSS `overflow: hidden` atau `overflow: auto`. Selain itu, konflik `z-index` dan *stacking context* sering menyebabkan kartu tenggelam di balik kolom tetangga.\n\n" +
+                    "2. Keunggulan `DragOverlay` vs Kloning DOM Konvensional:\n" +
+                    "Komponen `<DragOverlay>` dari `@dnd-kit/core` merender salinan visual elemen langsung ke luar hierarki DOM reguler (menggunakan React Portal ke `document.body`). Kartu asli di dalam kolom dapat dirender dengan efek transparan samar (`opacity: 0.4`), sementara kartu di dalam `DragOverlay` melayang bebas di atas seluruh lapisan antarmuka tanpa terikat batasan overflow kontainer mana pun.\n\n" +
+                    "3. Pengayaan Visual Taktil dengan Rotasi & Elevasi Bayangan:\n" +
+                    "Karena `DragOverlay` sepenuhnya dapat dikustomisasi, kita dapat menambahkan efek fisika sentuhan halus: kartu yang melayang diberi sedikit rotasi miring (`rotate-2` atau `rotate-[3deg]`), skala membesar lembut (`scale-105`), dan bayangan tebal (`shadow-2xl`) untuk memberikan sensasi fisik bahwa kartu benar-benar sedang diangkat dari permukaan layar.",
+              code: `// src/components/kanban/kanban-drag-overlay.tsx
+'use client';
+
+import { DragOverlay } from '@dnd-kit/core';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+}
+
+interface KanbanDragOverlayProps {
+  activeTask: Task | null;
+}
+
+export function KanbanDragOverlay({ activeTask }: KanbanDragOverlayProps) {
+  // Hanya render overlay jika ada task yang sedang ditarik aktif
+  return (
+    <DragOverlay dropAnimation={{
+      duration: 250,
+      easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+    }}>
+      {activeTask ? (
+        <div className="rotate-2 scale-105 cursor-grabbing shadow-2xl ring-2 ring-indigo-500/50 rounded-xl transition-transform">
+          <Card className="border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-zinc-900">
+            <CardContent className="p-4">
+              <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                {activeTask.title}
+              </h4>
+              {activeTask.description && (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                  {activeTask.description}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+    </DragOverlay>
+  );
+}`,
+              language: "tsx",
+              caption: "Implementasi DragOverlay dengan dropAnimation kubik bezier, efek kemiringan rotasi 2 derajat, dan elevasi bayangan tebal."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Fitur & Karakteristik", "HTML5 Drag and Drop API Native", "@dnd-kit Modern Architecture"],
+            rows: [
+              ["Dukungan Mobile & Touch", "❌ Tidak Mendukung (hanya mouse desktop)", "✅ Mendukung Penuh (TouchSensor dengan delay/toleransi)"],
+              ["Aksesibilitas (WAI-ARIA)", "❌ Sangat Buruk (tanpa keyboard navigation)", "✅ Kelas Dunia (KeyboardSensor & Live Announcements)"],
+              ["Kustomisasi Drag Image", "❌ Sangat Terbatas (gambar hantu bitmap kaku)", "✅ Tak Terbatas via <DragOverlay> & React Portal"],
+              ["Keterikatan Gaya (Styling)", "❌ Terikat gaya peramban internal", "✅ Headless Murni (Tailwind CSS, Shadcn UI, Framer Motion)"],
+              ["Performa Rendering", "⚠️ Sering memicu CPU Layout Thrashing", "✅ Terakselerasi GPU via CSS.Translate (60 FPS)"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Optimasi Layar Sentuh Mobile (Touch Action)",
+            text: "Selalu tambahkan kelas utilitas Tailwind 'touch-none' pada elemen pegangan drag (drag handle) kartu tugas. Properti CSS 'touch-action: none' mencegah peramban seluler (seperti Safari iOS dan Chrome Android) menginterupsi proses dragging dengan gestur bawaan seperti pinch-to-zoom atau pull-to-refresh."
+          }
+        },
+        {
+          title: "2. Primitif Sortable, Transform Matrix, & Arsitektur Multi-Column Kanban",
+          badge: "Pilar 2: Multi-Container Kanban",
+          content: "Dalam arsitektur papan Kanban modern, elemen kartu tugas tidak hanya diurutkan dalam satu kolom vertikal tunggal (*intra-column sorting*), melainkan harus dapat dipindahkan melintasi kolom-kolom status yang berbeda (*inter-column transfer* seperti Todo ➔ In Progress ➔ Done).\n\n" +
+                   "Paket `@dnd-kit/sortable` menyediakan fondasi komputasi untuk skenario ini melalui hook `useSortable` dan pembungkus `SortableContext`. Kunci keberhasilan implementasi ini terletak pada pemisahan yang jelas antara state visual sementara saat dragging berlangsung dengan state data terurut (*ordered data truth*), serta penanganan matriks transformasi geometri yang presisi agar kartu tidak mengalami distorsi skala.",
+          subpoints: [
+            {
+              label: "Hook useSortable, Matriks Geometri CSS, & Perbedaan Kritis CSS.Translate vs CSS.Transform",
+              text: "1. Anatomi Nilai Kembalian `useSortable`:\n" +
+                    "Hook `useSortable({ id })` mengembalikan sekumpulan properti esensial:\n" +
+                    "- **`setNodeRef`**: Callback ref untuk merekatkan elemen DOM fisik ke sistem pemantau posisi `@dnd-kit`.\n" +
+                    "- **`attributes` & `listeners`**: Kumpulan atribut ARIA dan event handler (`onPointerDown`, `onKeyDown`) yang diikatkan ke elemen kartu atau gagang drag.\n" +
+                    "- **`transform`**: Objek koordinat `{ x, y, scaleX, scaleY }` yang menunjukkan pergeseran kartu relatif terhadap posisi aslinya.\n" +
+                    "- **`transition`**: String transisi CSS dinamis yang disediakan oleh dnd-kit untuk menganimasikan pergeseran kartu di sekitarnya secara otomatis.\n\n" +
+                    "2. Perbedaan Kritis: `CSS.Translate.toString` vs `CSS.Transform.toString`:\n" +
+                    "Ini adalah salah satu kesalahan paling umum (*pitfall*) developer saat menggunakan `@dnd-kit/sortable`:\n" +
+                    "- **`CSS.Transform.toString(transform)` (Anti-Pattern pada Kartu Teks)**: Mengaplikasikan matriks transformasi lengkap termasuk `scaleX` dan `scaleY`. Jika ukuran kartu target sedikit berbeda, kartu yang ditarik akan tampak terdistorsi, teks memanjang, atau gambar buram (*stretched visual*).\n" +
+                    "- **`CSS.Translate.toString(transform)` (Best Practice Standar Industri)**: Hanya mengaplikasikan pergeseran translasi koordinat horizontal dan vertikal (`translate3d(x, y, 0)`), menjaga dimensi lebar, tinggi, dan rasio teks kartu 100% konsisten tanpa distorsi skala.\n\n" +
+                    "3. Pemisahan Drag Handle vs Area Konten Interaktif:\n" +
+                    "Daripada mengikatkan `listeners` ke seluruh bodi kartu, praktik terbaik adalah menyematkannya pada tombol khusus drag handle (misal: ikon titik enam `GripVertical`). Hal ini memungkinkan pengguna tetap dapat menyeleksi teks, mengklik checkbox, atau membuka menu dropdown di dalam kartu tanpa takut memicu dragging yang tidak disengaja.",
+              code: `// src/components/kanban/sortable-task-card.tsx
+'use client';
+
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+}
+
+interface SortableTaskCardProps {
+  task: Task;
+}
+
+export function SortableTaskCard({ task }: SortableTaskCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, data: { task } });
+
+  // PENTING: Gunakan CSS.Translate untuk mencegah teks terdistorsi / melar
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={\`group relative flex items-start gap-3 p-4 rounded-xl border bg-card text-card-foreground shadow-sm transition-all \${
+        isDragging ? 'opacity-30 border-dashed border-indigo-500' : 'hover:border-zinc-300 dark:hover:border-zinc-700'
+      }\`}
+    >
+      {/* Tombol Gagang Drag Khusus (Dedicated Drag Handle) */}
+      <button
+        {...attributes}
+        {...listeners}
+        type="button"
+        aria-label="Geser Kartu Tugas"
+        className="mt-0.5 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-grab active:cursor-grabbing touch-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+
+      {/* Konten Kartu Tugas Bebas Diklik Tanpa Memicu Drag */}
+      <div className="flex-1 min-w-0">
+        <h4 className="font-semibold text-sm truncate text-zinc-900 dark:text-zinc-100">
+          {task.title}
+        </h4>
+        {task.description && (
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+            {task.description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}`,
+              language: "tsx",
+              caption: "Implementasi SortableTaskCard dengan pemisahan drag handle titik enam dan penggunaan CSS.Translate.toString."
+            },
+            {
+              label: "SortableContext, Strategi verticalListSortingStrategy, & Utilitas Imutabel arrayMove",
+              text: "1. Peran `SortableContext` sebagai Boundary ID Koleksi:\n" +
+                    "Setiap kolom Kanban wajib dibungkus oleh komponen `<SortableContext items={itemIds} strategy={...}>`. Prop `items` menerima array string atau angka ID unik dari kartu-kartu yang berada di dalam kolom tersebut. `SortableContext` menggunakan array ini untuk menentukan indeks relatif elemen dan mengarahkan ke mana elemen lain harus bergeser saat sebuah kartu melayang di atasnya.\n\n" +
+                    "2. Pilihan Strategi Pengurutan (`SortingStrategy`):\n" +
+                    "- **`verticalListSortingStrategy`**: Dioptimalkan khusus untuk daftar kartu yang tersusun vertikal satu dimensi dari atas ke bawah (seperti kolom Kanban standar). Strategi ini mengabaikan pergeseran sumbu X dan hanya menganimasikan sumbu Y, menghemat siklus komputasi peramban.\n" +
+                    "- **`horizontalListSortingStrategy`**: Digunakan untuk daftar horizontal (misal tab atau carousel).\n" +
+                    "- **`rectSortingStrategy`**: Digunakan untuk grid dua dimensi (misal galeri foto multi-baris).\n\n" +
+                    "3. Kalkulasi Indeks Baru Imutabel via `arrayMove`:\n" +
+                    "Ketika kartu digeser dari indeks 3 ke indeks 1, kita tidak boleh memutasi array asli secara langsung (`Array.prototype.splice` in-place). `@dnd-kit/sortable` menyediakan fungsi utilitas murni `arrayMove(array, fromIndex, toIndex)` yang mengembalikan salinan array baru secara imutabel tanpa merusak referensi state React.",
+              code: `// src/components/kanban/kanban-column.tsx
+'use client';
+
+import { useDroppable } from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableTaskCard } from './sortable-task-card';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+}
+
+interface KanbanColumnProps {
+  columnId: string;
+  title: string;
+  tasks: Task[];
+}
+
+export function KanbanColumn({ columnId, title, tasks }: KanbanColumnProps) {
+  // Jadikan kolom sebagai droppable target mandiri (berguna jika kolom kosong)
+  const { setNodeRef, isOver } = useDroppable({
+    id: columnId,
+    data: { type: 'column', columnId },
+  });
+
+  const taskIds = tasks.map((t) => t.id);
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={\`flex flex-col w-80 min-w-[20rem] rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 p-4 transition-colors \${
+        isOver ? 'ring-2 ring-indigo-500/50 bg-indigo-50/20 dark:bg-indigo-950/20' : ''
+      }\`}
+    >
+      <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3">
+        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          {title}
+          <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 font-mono">
+            {tasks.length}
+          </span>
+        </h3>
+      </div>
+
+      {/* SortableContext mengelola array ID kartu secara vertikal */}
+      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+        <div className="flex-1 flex flex-col gap-2.5 min-h-[10rem]">
+          {tasks.map((task) => (
+            <SortableTaskCard key={task.id} task={task} />
+          ))}
+        </div>
+      </SortableContext>
+    </div>
+  );
+}`,
+              language: "tsx",
+              caption: "Komponen KanbanColumn membungkus kartu dalam SortableContext dan verticalListSortingStrategy."
+            },
+            {
+              label: "Orkestrasi Multi-Container: Pembagian Peran onDragOver vs onDragEnd & Transfer Antar-Kolom",
+              text: "1. Tantangan Pemindahan Antar-Wadah (Inter-Container Transfer):\n" +
+                    "Ketika kartu ditarik dari kolom 'Todo' ke kolom 'In Progress', terdapat dua kebutuhan yang saling bertentangan: antarmuka harus segera memperlihatkan kartu berpindah kolom agar pengguna tahu di mana kartu akan mendarat (*real-time feedback*), namun database hanya boleh diperbarui satu kali setelah pengguna benar-benar melepas klik mouse (*commit phase*).\n\n" +
+                    "2. Pembagian Peran Baku: `onDragOver` vs `onDragEnd`:\n" +
+                    "- **`onDragOver` (Visual Staging)**: Dipanggil secara kontinu saat kartu aktif melintasi perbatasan kolom yang berbeda. Di sinilah kita mendeteksi bahwa kartu milik Kolom A sedang berada di atas Kolom B, lalu secara dinamis memindahkan kartu tersebut ke array Kolom B di state visual sementara. Ini menciptakan celah kosong yang rapi di kolom tujuan sebelum kartu dijatuhkan.\n" +
+                    "- **`onDragEnd` (Commit & Persistence)**: Dipanggil tepat satu kali saat tombol mouse/jari dilepaskan. Di sinilah kita memeriksa apakah kolom atau urutan kartu final benar-benar berubah, memperbarui state permanen, dan mengirim payload mutasi ke Server Action.\n\n" +
+                    "3. Menangani Skenario Khusus Kolom Kosong (*Empty Column Droppable Area*):\n" +
+                    "Jika sebuah kolom Kanban belum memiliki kartu sama sekali, `SortableContext` tidak memiliki item untuk dideteksi tabrakannya. Solusinya: jadikan kontainer kolom itu sendiri sebagai target droppable mandiri menggunakan `useDroppable({ id: columnId })` sehingga kartu dapat dijatuhkan ke kolom kosong dengan mulus.",
+              code: `// src/components/kanban/kanban-board.tsx
+'use client';
+
+import React, { useState } from 'react';
+import { DragOverEvent, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'done';
+}
+
+export function useMultiContainerKanban(initialTasks: Task[]) {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+
+  // Helper mencari status kolom dari ID tugas atau ID kolom
+  const findContainer = (id: string): 'todo' | 'in_progress' | 'done' | null => {
+    const task = tasks.find((t) => t.id === id);
+    if (task) return task.status;
+    if (['todo', 'in_progress', 'done'].includes(id)) return id as any;
+    return null;
+  };
+
+  // 1. onDragOver: Mengatur perpindahan kartu visual sementara saat melintasi kolom
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeContainer = findContainer(String(active.id));
+    const overContainer = findContainer(String(over.id));
+
+    if (!activeContainer || !overContainer || activeContainer === overContainer) {
+      return;
+    }
+
+    // Pindahkan kartu ke kolom baru secara visual di state sementara
+    setTasks((prev) => {
+      return prev.map((t) => {
+        if (t.id === String(active.id)) {
+          return { ...t, status: overContainer };
+        }
+        return t;
+      });
+    });
+  };
+
+  // 2. onDragEnd: Finalisasi urutan indeks baru dan memicu Server Action
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeContainer = findContainer(String(active.id));
+    const overContainer = findContainer(String(over.id));
+
+    if (activeContainer && overContainer) {
+      const activeIndex = tasks.findIndex((t) => t.id === String(active.id));
+      const overIndex = tasks.findIndex((t) => t.id === String(over.id));
+
+      if (activeIndex !== overIndex) {
+        const reordered = arrayMove(tasks, activeIndex, overIndex);
+        setTasks(reordered);
+      }
+    }
+  };
+
+  return { tasks, handleDragOver, handleDragEnd };
+}`,
+              language: "tsx",
+              caption: "Orkestrasi multi-kolom Kanban: helper findContainer, mutasi visual onDragOver, dan commit onDragEnd."
+            }
+          ],
+          callout: {
+            type: "warning",
+            title: "Bahaya Penggunaan CSS.Transform pada Komponen dengan Teks Bersarang",
+            text: "Menggunakan CSS.Transform.toString(transform) akan meregangkan skala (scaleX/scaleY) elemen anak saat ditarik jika ukuran target tidak identik, menyebabkan teks kartu terlihat buram atau terdistorsi. Selalu gunakan CSS.Translate.toString(transform) untuk translasi koordinat posisi murni."
+          }
+        },
+        {
+          title: "3. Optimistic UI Updates & Manajemen State Reaktif React 19",
+          badge: "Pilar 3: Latensi 0ms & Rollback",
+          content: "Pengalaman pengguna (*UX*) pada aplikasi produktivitas modern menuntut interaksi fisik yang terasa instan. Menunggu respons round-trip jaringan server selama 300–800ms hanya untuk melihat kartu berpindah posisi akan merusak persepsi kelancaran aplikasi (*perceived performance*).\n\n" +
+                   "Paradigma **Optimistic UI** memecahkan masalah ini dengan memperbarui antarmuka pengguna di layar secara spekulatif (latensi 0ms) seolah-olah operasi server telah berhasil 100%, sembari mengirimkan mutasi asinkron di latar belakang. React 19 menghadirkan hook resmi `useOptimistic` yang mengubah cara kita mengelola state spekulatif: tidak ada lagi kebutuhan untuk menulis puluhan baris kode rollback manual yang rawan bug dan membingungkan.",
+          subpoints: [
+            {
+              label: "Anatomi React 19 useOptimistic untuk Struktur State Multi-Kolom Kanban",
+              text: "1. Perbedaan Paradigma State Tradisional vs React 19 `useOptimistic`:\n" +
+                    "Pada React terdahulu, implementasi optimistic updates menuntut developer menyimpan salinan state lama (`previousTasks`), melakukan `setTasks(newTasks)` secara optimistik, lalu di dalam blok `catch` mengembalikan `setTasks(previousTasks)`. Pendekatan ini sangat rawan bug sinkronisasi jika ada beberapa aksi dragging berturut-turut.\n" +
+                    "Hook `useOptimistic(passthroughState, updateFn)` dari React 19 merevolusi pola ini: ia menerima data acuan asli dari server (*server truth*), dan menyediakan fungsi dispatcher untuk memproyeksikan state sementara (*optimistic projection*). Begitu operasi server selesai dan halaman direvalidasi, React secara otomatis beralih kembali ke data server tanpa kedipan (*zero-flash*).\n\n" +
+                    "2. Desain Action Reducer Spekulatif:\n" +
+                    "Fungsi pembaruan optimistik (`updateFn`) bertindak sebagai reducer yang menerima state saat ini dan payload aksi, misalnya:\n" +
+                    "- Aksi `REORDER`: Memperbarui urutan kartu di dalam satu kolom yang sama via `arrayMove`.\n" +
+                    "- Aksi `MOVE_COLUMN`: Memperbarui `status` dan `position` kartu yang berpindah kolom.\n\n" +
+                    "3. Integrasi Wajib dengan React 19 `startTransition`:\n" +
+                    "Pembaruan state optimistik `setOptimisticTasks()` **WAJIB** dibungkus di dalam `startTransition(() => { ... })`. Ini memberitahu React runtime bahwa pembaruan antarmuka ini bersifat transisi spekulatif yang dapat disela jika pengguna melakukan interaksi baru.",
+              code: `// src/hooks/use-optimistic-kanban.ts
+'use client';
+
+import { useOptimistic, startTransition } from 'react';
+import { arrayMove } from '@dnd-kit/sortable';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'done';
+  position: number;
+}
+
+type OptimisticAction =
+  | { type: 'REORDER'; columnId: 'todo' | 'in_progress' | 'done'; activeIndex: number; overIndex: number }
+  | { type: 'MOVE_COLUMN'; taskId: string; targetStatus: 'todo' | 'in_progress' | 'done'; newIndex: number };
+
+export function useOptimisticKanban(serverTasks: Task[]) {
+  // Hook useOptimistic React 19 mengelola proyeksi state spekulatif 0ms
+  const [optimisticTasks, setOptimisticTasks] = useOptimistic(
+    serverTasks,
+    (currentTasks, action: OptimisticAction) => {
+      switch (action.type) {
+        case 'REORDER': {
+          const colTasks = currentTasks.filter((t) => t.status === action.columnId);
+          const otherTasks = currentTasks.filter((t) => t.status !== action.columnId);
+          const reordered = arrayMove(colTasks, action.activeIndex, action.overIndex).map(
+            (task, idx) => ({ ...task, position: idx + 1 })
+          );
+          return [...otherTasks, ...reordered];
+        }
+        case 'MOVE_COLUMN': {
+          return currentTasks.map((t) => {
+            if (t.id === action.taskId) {
+              return { ...t, status: action.targetStatus, position: action.newIndex };
+            }
+            return t;
+          });
+        }
+        default:
+          return currentTasks;
+      }
+    }
+  );
+
+  const applyOptimisticReorder = (columnId: 'todo' | 'in_progress' | 'done', activeIndex: number, overIndex: number) => {
+    startTransition(() => {
+      setOptimisticTasks({ type: 'REORDER', columnId, activeIndex, overIndex });
+    });
+  };
+
+  return { optimisticTasks, applyOptimisticReorder };
+}`,
+              language: "typescript",
+              caption: "Custom hook useOptimisticKanban berbasis React 19 useOptimistic dan startTransition."
+            },
+            {
+              label: "Pencegahan Glitch Visual: Harmonisasi State Spekulatif Klien vs Revalidasi Cache Server",
+              text: "1. Fenomena *Layout Stutter* dan *Flicker* saat Server Selesai Memproses:\n" +
+                    "Ketika Server Action selesai mengeksekusi mutasi dan memanggil `revalidatePath('/tasks')`, Next.js 16 akan merender ulang Server Component dan mengirimkan payload RSC baru ke peramban. Jika urutan data yang dikembalikan server berbeda beberapa milidetik dari state optimistik di memori klien, pengguna akan melihat kartu melompat (*flicker*) secara kasar.\n\n" +
+                    "2. Harmonisasi State Ganda (Dual-State Harmony):\n" +
+                    "Untuk mencegah kedipan visual tersebut, komponen Kanban klien harus mengikatkan daftar kartu ke state optimistik (`optimisticTasks`), bukan ke prop `initialTasks` mentah. Ketika server selesai memperbarui database dan mengirimkan data segar, React 19 secara cerdas menyelaraskan perbedaan Virtual DOM tanpa memicu unmount kartu.\n\n" +
+                    "3. Debouncing Mutasi Jaringan untuk Rapid Consecutive Dragging:\n" +
+                    "Jika pengguna menggeser 3 kartu dalam rentang waktu 2 detik, kita tidak boleh mengirimkan 3 mutasi jaringan terpisah yang saling bertumpuk (*race condition*). Kita menerapkan teknik debouncing singkat (misal: 300ms): state visual langsung bergerak seketika di layar, namun pengiriman Server Action ke database ditahan hingga gerakan drag pengguna benar-benar berhenti.",
+              code: `// src/components/kanban/debounced-sync.ts
+interface TaskPayload {
+  id: string;
+  status: 'todo' | 'in_progress' | 'done';
+  position: number;
+}
+
+type SyncCallback = (payload: TaskPayload[]) => Promise<void>;
+
+/**
+ * Utilitas Debounce Network Dispatcher:
+ * Menahan pengiriman mutasi jaringan ke server hingga 300ms setelah gestur drag terakhir,
+ * mencegah N request bertumpuk (race conditions) saat pengguna memindahkan kartu cepat.
+ */
+export function createDebouncedSync(syncFn: SyncCallback, waitMs = 300) {
+  let timer: NodeJS.Timeout | null = null;
+
+  return (tasks: TaskPayload[]) => {
+    if (timer) clearTimeout(timer);
+
+    timer = setTimeout(async () => {
+      try {
+        await syncFn(tasks);
+      } catch (error) {
+        console.error('Debounced sync failed:', error);
+      }
+    }, waitMs);
+  };
+}`,
+              language: "typescript",
+              caption: "Utilitas debounced network dispatcher untuk mencegah race condition pada mutasi beruntun."
+            },
+            {
+              label: "Pola Penanganan Error, Rollback Otomatis, & Notifikasi Toast Pemulihan",
+              text: "1. Skenario Kegagalan Transaksi Nyata:\n" +
+                    "Di dunia nyata, mutasi jaringan dapat gagal karena berbagai alasan tak terduga: koneksi internet pengguna terputus saat di perjalanan, token autentikasi sesi JWT kedaluwarsa, atau terjadi konflik hak akses (RLS error 403 Forbidden).\n\n" +
+                    "2. Mekanisme Rollback Otomatis `useOptimistic`:\n" +
+                    "Keunggulan magis dari React 19 `useOptimistic` adalah: jika Server Action yang dibungkus di dalam `startTransition` melempar *error* atau mengembalikan status gagal, React secara otomatis membatalkan proyeksi spekulatif dan merender kembali kartu ke posisi semula sebelum di-drag, **tanpa perlu menulis 1 baris pun kode pembalikan array manual**!\n\n" +
+                    "3. Standar Umpan Balik UX Berbasis Notifikasi Toast:\n" +
+                    "Meskipun rollback terjadi secara otomatis, pengguna tidak boleh dibiarkan bingung mengapa kartu mereka tiba-tiba kembali ke kolom lama. Kita wajib memunculkan notifikasi peringatan (menggunakan pustaka Toast seperti Sonner atau Shadcn Toast) yang menginformasikan kegagalan jaringan secara ramah dan menyediakan tombol aksi 'Coba Lagi' (*Retry*).",
+              code: `// src/components/kanban/kanban-error-recovery.tsx
+'use client';
+
+interface ReorderResult {
+  success: boolean;
+  error?: string;
+}
+
+export async function handlePersistReorder(
+  payload: { id: string; status: 'todo' | 'in_progress' | 'done'; position: number }[],
+  reorderAction: (data: typeof payload) => Promise<ReorderResult>,
+  notifyError: (msg: string) => void
+) {
+  try {
+    const result = await reorderAction(payload);
+    if (!result.success) {
+      // Notifikasi toast jika validasi server atau database menolak mutasi
+      notifyError(result.error || 'Gagal menyinkronkan urutan kartu ke database');
+    }
+  } catch (err) {
+    // Tangani kegagalan jaringan fatal (koneksi terputus total)
+    notifyError('Koneksi internet terputus. Urutan kartu dikembalikan ke posisi semula.');
+  }
+}`,
+              language: "tsx",
+              caption: "Penanganan kegagalan mutasi dengan rollback otomatis useOptimistic dan notifikasi toast sonner."
+            }
+          ],
+          callout: {
+            type: "info",
+            title: "Prasyarat React 19 startTransition",
+            text: "Setiap pemanggilan fungsi pembaruan optimistik setOptimisticTasks() wajib dibungkus di dalam startTransition(() => { ... }). Ini mengaktifkan penjadwalan concurrent React 19 dan memungkinkan sistem melakukan rollback otomatis jika Server Action asinkron di dalamnya mengalami kegagalan."
+          }
+        },
+        {
+          title: "4. Persistensi Urutan Database PostgreSQL & Integrasi Supabase RPC",
+          badge: "Pilar 4: Arsitektur Basis Data & Persistensi",
+          content: "Tantangan terbesar dalam rekayasa Drag & Drop bukan terletak pada animasi pergeseran kartu di browser, melainkan bagaimana data urutan tersebut disimpan ke dalam database relasional secara efisien, konsisten, dan tahan banting.\n\n" +
+                   "Jika sebuah kolom Todo memiliki ratusan tugas, menggeser satu kartu dari posisi paling bawah ke posisi paling atas tidak boleh memicu ratusan perintah `UPDATE` individual (anti-pattern N+1 query yang membebani koneksi database). Kita membedah dua pendekatan arsitektur data: **Integer Sequence Reindexing** berbasis Stored Procedure (RPC) PostgreSQL dan **Fractional Indexing (Lexorank)**, serta mengintegrasikannya secara aman dengan Next.js 16 Server Actions.",
+          subpoints: [
+            {
+              label: "Komparasi Skema Urutan: Integer Indexing O(N) vs Fractional Indexing / Lexorank O(1)",
+              text: "1. Model Konvensional Integer Reordering (`position INT` atau `sort_order INT`):\n" +
+                    "- Setiap kartu memiliki nomor urut bulat rapat (misal: 1, 2, 3, 4, 5).\n" +
+                    "- Saat kartu nomor 5 dipindahkan ke posisi 2, maka kartu posisi 2, 3, dan 4 harus digeser bertambah 1 (+1). Ini menuntut operasi pembaruan beberapa baris (*batch update* O(N)).\n" +
+                    "- Kelebihan: Sangat mudah dipahami, kueri pengurutan SQL murni `ORDER BY position ASC` berjalan sangat cepat dengan indeks B-Tree standar.\n\n" +
+                    "2. Model Modern Fractional Indexing / Lexorank (Midpoint Calculation):\n" +
+                    "- Alih-alih bilangan bulat rapat, posisi disimpan sebagai bilangan pecahan mengambang (*floating point*) atau string alfanumerik leksikografis (seperti algoritma Jira Lexorank).\n" +
+                    "- Saat kartu disisipkan di antara posisi `10.0` dan `20.0`, posisinya dihitung dari titik tengah: `(10.0 + 20.0) / 2 = 15.0`. Hanya **1 baris** yang perlu di-update di database (kompleksitas O(1) tunggal)!\n" +
+                    "- Kelemahan: Memerlukan penanganan presisi floating point (risiko batas pecahan mikroskopis setelah ratusan kali penyisipan di titik yang sama) yang menuntut proses *rebalancing* berkala.\n\n" +
+                    "3. Matriks Keputusan Rekayasa Proyek:\n" +
+                    "Untuk aplikasi skala tugas perkuliahan dan tim kerja hingga ribuan item per kolom, **Integer Reindexing dengan Stored Procedure PostgreSQL** adalah solusi paling pragmatis, kokoh, dan bebas dari kerumitan floating precision limit.",
+              code: `-- supabase/migrations/04_kanban_tasks_schema.sql
+-- 1. Tambahkan kolom status dan position jika belum ada
+ALTER TABLE public.tasks
+ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'todo'
+  CHECK (status IN ('todo', 'in_progress', 'done')),
+ADD COLUMN IF NOT EXISTS position INT NOT NULL DEFAULT 1;
+
+-- 2. Buat composite index untuk pengurutan super cepat O(log N)
+CREATE INDEX IF NOT EXISTS idx_tasks_user_status_position
+ON public.tasks (user_id, status, position ASC);
+
+-- 3. Verifikasi proteksi RLS
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;`,
+              language: "sql",
+              caption: "Skema tabel tasks dengan kolom status, position, dan composite index (user_id, status, position)."
+            },
+            {
+              label: "Stored Procedure PostgreSQL (RPC) untuk Atomic Batch Reordering via jsonb_to_recordset",
+              text: "1. Mengapa Single Loop Update di Browser adalah Anti-Pattern Fatal:\n" +
+                    "Mengeksekusi perulangan `for (const item of reordered) await supabase.from('tasks').update(...)` langsung dari browser menimbulkan 3 bahaya besar: memicu puluhan HTTP request terpisah (N+1 query), menghabiskan kuota koneksi serverless Supabase, dan jika koneksi internet terputus di tengah perulangan, urutan data di database akan korup dan berantakan (*inconsistent state*).\n\n" +
+                    "2. Prinsip Transaksi Atomik (ACID Transaction):\n" +
+                    "Seluruh pembaruan urutan kartu harus dieksekusi dengan prinsip 'semua berhasil atau semua gagal sama sekali' (*all-or-nothing*). Ini diwujudkan dengan membuat Stored Procedure (fungsi database) di PostgreSQL bernama `reorder_kanban_tasks`.\n\n" +
+                    "3. Mengurai Array JSON Menggunakan `jsonb_to_recordset`:\n" +
+                    "Fungsi PostgreSQL menerima parameter tunggal bertipe `JSONB` yang memuat array objek `[{ id, status, position }]`. Di dalam fungsi, fungsi bawaan `jsonb_to_recordset` mengubah array JSON tersebut menjadi tabel sementara (*virtual recordset*) secara instan dalam memori RAM PostgreSQL, lalu melakukan `UPDATE ... FROM` dalam **1 perintah SQL tunggal** berkecepatan mikrodetik.",
+              code: `-- supabase/migrations/05_reorder_kanban_tasks_rpc.sql
+CREATE OR REPLACE FUNCTION public.reorder_kanban_tasks(payload JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Lakukan batch update atomik dari array JSON payload
+  UPDATE public.tasks AS t
+  SET
+    status = v.status,
+    position = v.position,
+    updated_at = NOW()
+  FROM jsonb_to_recordset(payload) AS v(id UUID, status TEXT, position INT)
+  WHERE t.id = v.id
+    AND t.user_id = auth.uid(); -- Proteksi kepemilikan data (Multi-Tenant Isolation)
+
+  -- Jika bukan pemilik baris, mutasi tidak akan mempengaruhi data orang lain
+END;
+$$;`,
+              language: "sql",
+              caption: "Stored procedure PostgreSQL reorder_kanban_tasks dengan jsonb_to_recordset dan validasi kepemilikan auth.uid()."
+            },
+            {
+              label: "Integrasi Next.js 16 Server Actions dengan Supabase RPC, Zod Validation, & revalidatePath",
+              text: "1. Arsitektur Pemanggilan `supabase.rpc()` di Sisi Server:\n" +
+                    "Server Action `reorderTasksAction` bertindak sebagai gerbang aman (*secure gateway*) yang menghubungkan peramban klien dengan Stored Procedure database. Menggunakan `@supabase/ssr` berbasis `async cookies()`, Server Action menjamin identitas pengguna diautentikasi secara sah sebelum RPC dipanggil.\n\n" +
+                    "2. Validasi Skema Payload Ketat Menggunakan Zod:\n" +
+                    "Sebelum data dikirim ke PostgreSQL, payload array divalidasi secara ketat: memastikan setiap elemen memiliki format UUID v4 yang valid, status kolom yang diizinkan (`todo`, `in_progress`, `done`), dan nilai posisi bertipe angka non-negatif (`z.number().int().min(0)`).\n\n" +
+                    "3. Revalidasi Cache Terkendali (`revalidatePath`):\n" +
+                    "Setelah RPC berhasil dieksekusi, Server Action memanggil `revalidatePath('/tasks')`. Next.js 16 menandai cache rute tersebut sebagai usang dan menyegarkan data server di latar belakang tanpa mengganggu jalannya animasi drag and drop yang sedang dinikmati pengguna.",
+              code: `// src/actions/kanban.ts
+'use server';
+
+import { createClient } from '@/utils/supabase/server';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const ReorderItemSchema = z.object({
+  id: z.string().uuid({ message: 'ID Tugas wajib berformat UUID v4 valid' }),
+  status: z.enum(['todo', 'in_progress', 'done']),
+  position: z.number().int().min(1, { message: 'Posisi wajib bernilai minimal 1' }),
+});
+
+const ReorderPayloadSchema = z.array(ReorderItemSchema);
+
+export async function reorderTasksAction(payload: unknown) {
+  // 1. Validasi skema runtime Zod
+  const parsed = ReorderPayloadSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  // 2. Inisialisasi Supabase Server Client berbasis Async Cookies Next.js 16
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: 'Sesi autentikasi tidak valid atau telah berakhir' };
+  }
+
+  // 3. Eksekusi Stored Procedure Atomik (RPC)
+  const { error: rpcError } = await supabase.rpc('reorder_kanban_tasks', {
+    payload: parsed.data,
+  });
+
+  if (rpcError) {
+    console.error('RPC Error reordering tasks:', rpcError);
+    return { success: false, error: 'Gagal memperbarui urutan kartu di database' };
+  }
+
+  // 4. Revalidasi cache halaman tanpa merusak animasi klien
+  revalidatePath('/tasks');
+  return { success: true };
+}`,
+              language: "typescript",
+              caption: "Server Action reorderTasksAction dengan validasi Zod array, pemanggilan RPC Supabase, dan revalidasi cache."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Parameter Arsitektur", "Integer Sequence Reindexing (Batch RPC)", "Fractional Indexing / Lexorank"],
+            rows: [
+              ["Kompleksitas Update DB", "O(N) baris dalam satu kolom", "O(1) baris tunggal (hanya kartu yang dipindah)"],
+              ["Kueri SQL Pengurutan", "Sangat Cepat (`ORDER BY position ASC`)", "Sangat Cepat (`ORDER BY lexorank ASC`)"],
+              ["Kebutuhan Rebalancing", "❌ Tidak Perlu (urutan selalu rapat)", "⚠️ Wajib (saat floating precision mendekati batas CPU)"],
+              ["Kompleksitas Kode Klien", "Rendah (cukup arrayMove indeks)", "Tinggi (algoritma string midpoint calculation)"],
+              ["Rekomendasi Penggunaan", "Aplikasi tim/proyek hingga ribuan item", "Aplikasi skala raksasa (Jira/Trello dengan jutaan kartu)"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Anti-Pattern: Menjalankan Loop Update Individual dari Klien",
+            text: "DILARANG KERAS mengeksekusi loop update (misal: for (const task of tasks) await supabase.from('tasks').update(...)) langsung dari browser. Ini memicu N+1 network requests, menghabiskan batas koneksi database, dan tidak memiliki garansi atomisitas jika koneksi terputus di tengah jalan."
+          }
+        }
       ]
     },
     references: [
-      { title: "@dnd-kit Core Documentation", url: "https://docs.dndkit.com/", source: "DND Kit" },
-      { title: "React useOptimistic Hook", url: "https://react.dev/reference/react/useOptimistic", source: "React Official" }
+      { title: "@dnd-kit Core & Sortable Official Documentation", url: "https://docs.dndkit.com/", source: "DND Kit" },
+      { title: "React 19 useOptimistic Hook Reference", url: "https://react.dev/reference/react/useOptimistic", source: "React Official" },
+      { title: "PostgreSQL JSON Functions: jsonb_to_recordset", url: "https://www.postgresql.org/docs/current/functions-json.html", source: "PostgreSQL Docs" },
+      { title: "Atlassian Jira Lexorank Architecture Guide", url: "https://www.atlassian.com/engineering/lexorank", source: "Atlassian Engineering" }
     ],
     lab: {
-      prerequisites: ["Proyek pasca-UTS aktif"],
+      prerequisites: [
+        "Repositori Proyek Akhir aktif pasca-UTS Milestone 1 (Modul 1 s.d. 8) dengan Next.js 16 App Router dan Supabase Auth/CRUD",
+        "Tabel tasks di PostgreSQL Supabase dengan kolom id, user_id, title, description, status ('todo', 'in_progress', 'done'), dan created_at",
+        "Komponen Shadcn UI (button, badge, card, dialog, skeleton) dan pustaka lucide-react telah terkonfigurasi di proyek",
+        "Node.js v20+ dan peramban web modern yang mendukung W3C Pointer Events API & CSS touch-action: none"
+      ],
+      warningZone: {
+        title: "Peringatan Arsitektur: Cegah Layout Shifting & Scale Distortion pada Drag and Drop",
+        desc: "Saat mengimplementasikan @dnd-kit/sortable, WAJIB menggunakan CSS.Translate.toString(transform) BUKAN CSS.Transform.toString(transform)! Menggunakan CSS.Transform akan menyebabkan distorsi skala (scale distortion) yang merusak dimensi dan font kartu saat di-drag. Selain itu, pastikan elemen kartu drag yang melayang dibungkus di dalam <DragOverlay> dengan React Portal (createPortal) agar posisinya tidak terpotong oleh overflow kontainer kolom (overflow-hidden / overflow-y-auto)."
+      },
       steps: [
         {
           stepNumber: 1,
-          instruction: "Instal modul @dnd-kit yang dibutuhkan",
+          badge: "Instalasi Dependensi @dnd-kit",
+          instruction: "Pemasangan Paket Inti @dnd-kit dan Utilitas Koordinat di Next.js 16",
           code: "npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities",
-          language: "bash"
+          language: "bash",
+          explanation: "@dnd-kit/core mengelola DndContext, deteksi tabrakan (collision detection), dan sensor pointer/touch/keyboard. @dnd-kit/sortable menyediakan hook useSortable dan fungsi arrayMove. @dnd-kit/utilities menyediakan helper transformasi CSS (CSS.Translate).",
+          actionType: "manual",
+          targetPromptStep: 1
+        },
+        {
+          stepNumber: 2,
+          badge: "Migrasi Database Supabase (SQL RPC)",
+          instruction: "Migrasi Kolom Posisi, Indeks Komposit, dan Stored Procedure Batch Reorder Atomik",
+          code: `-- 1. Tambah kolom position & pastikan status kanban valid
+ALTER TABLE public.tasks 
+ADD COLUMN IF NOT EXISTS position INTEGER NOT NULL DEFAULT 0;
+
+-- 2. Buat composite index untuk akselerasi query pemilahan kolom
+CREATE INDEX IF NOT EXISTS idx_tasks_user_status_pos 
+ON public.tasks(user_id, status, position ASC);
+
+-- 3. Stored Procedure RPC untuk Batch Reorder Atomik
+CREATE OR REPLACE FUNCTION public.reorder_kanban_tasks(payload JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Update status dan posisi seluruh kartu dalam 1 transaksi atomik
+  UPDATE public.tasks AS t
+  SET 
+    status = (item->>'status')::TEXT,
+    position = (item->>'position')::INTEGER,
+    updated_at = NOW()
+  FROM jsonb_array_elements(payload) AS item
+  WHERE t.id = (item->>'id')::UUID
+    AND t.user_id = auth.uid();
+END;
+$$;`,
+          language: "sql",
+          explanation: "Penggunaan jsonb_array_elements dalam 1 query UPDATE ... FROM memperbarui puluhan urutan kartu secara atomik (semua sukses atau semua dibatalkan) dalam 1 round-trip database, dilindungi filter kepemilikan auth.uid() = user_id.",
+          actionType: "manual",
+          targetPromptStep: 1
+        },
+        {
+          stepNumber: 3,
+          badge: "Kontrak Validasi & Server Action",
+          instruction: "Membuat Skema Zod dan Server Action Batch Reorder (src/actions/kanban.ts)",
+          code: `'use server';
+
+import { createClient } from '@/utils/supabase/server';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const ReorderItemSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(['todo', 'in_progress', 'done']),
+  position: z.number().int().min(0),
+});
+
+const ReorderPayloadSchema = z.array(ReorderItemSchema);
+
+export async function reorderTasksAction(rawPayload: z.infer<typeof ReorderPayloadSchema>) {
+  const parseResult = ReorderPayloadSchema.safeParse(rawPayload);
+  if (!parseResult.success) {
+    return { success: false, error: 'Payload mutasi urutan tidak valid' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('reorder_kanban_tasks', {
+    payload: parseResult.data,
+  });
+
+  if (error) {
+    console.error('Gagal sinkronisasi urutan Kanban:', error.message);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/tasks/kanban');
+  return { success: true };
+}`,
+          language: "typescript",
+          explanation: "Server Action mengamankan mutasi urutan di sisi server dengan validasi Zod ketat sebelum meneruskan payload JSONB ke fungsi RPC Supabase, lalu memanggil revalidatePath untuk sinkronisasi cache Next.js.",
+          actionType: "manual",
+          targetPromptStep: 3
+        },
+        {
+          stepNumber: 4,
+          badge: "Primitif Sortable Item",
+          instruction: "Merakit Primitif Kartu Kanban dengan CSS.Translate (src/components/kanban/kanban-card.tsx)",
+          code: `'use client';
+
+import React from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
+import { KanbanTask } from '@/types/kanban';
+
+export function KanbanCard({ task }: { task: KanbanTask }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, data: { task } });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={\`p-3.5 rounded-xl border bg-card text-card-foreground shadow-xs transition-shadow flex items-start gap-2.5 \${
+        isDragging ? 'opacity-30 border-dashed border-indigo-400' : 'hover:shadow-md'
+      }\`}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        type="button"
+        className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing p-1 rounded-md touch-none"
+        aria-label="Pindahkan tugas"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-semibold truncate">{task.title}</h4>
+        {task.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{task.description}</p>
+        )}
+      </div>
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "useSortable menyinkronkan node DOM dengan sistem koordinat dnd-kit. Penggunaan CSS.Translate.toString menjamin pergeseran kartu bebas dari distorsi skala, dan tombol drag handle diisolasi dengan touch-none.",
+          actionType: "manual",
+          targetPromptStep: 4
+        },
+        {
+          stepNumber: 5,
+          badge: "Kontainer Kolom Droppable",
+          instruction: "Merakit Kolom Kanban dengan SortableContext (src/components/kanban/kanban-column.tsx)",
+          code: `'use client';
+
+import React from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { KanbanColumn as ColumnType, KanbanTask } from '@/types/kanban';
+import { KanbanCard } from './kanban-card';
+import { Badge } from '@/components/ui/badge';
+
+export function KanbanColumn({
+  column,
+  tasks,
+}: {
+  column: ColumnType;
+  tasks: KanbanTask[];
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={\`flex flex-col w-full min-h-[500px] rounded-2xl border p-4 bg-muted/30 transition-colors \${
+        isOver ? 'ring-2 ring-indigo-500/50 bg-indigo-50/20 dark:bg-indigo-950/20' : ''
+      }\`}
+    >
+      <div className="flex items-center justify-between pb-3 mb-3 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+          <h3 className="font-bold text-sm text-foreground">{column.title}</h3>
+        </div>
+        <Badge variant="secondary" className="text-xs font-mono">
+          {tasks.length}
+        </Badge>
+      </div>
+
+      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+        <div className="flex flex-col gap-2.5 flex-1">
+          {tasks.map((task) => (
+            <KanbanCard key={task.id} task={task} />
+          ))}
+          {tasks.length === 0 && (
+            <div className="flex-1 flex items-center justify-center border-2 border-dashed border-border/60 rounded-xl p-4 text-xs text-muted-foreground">
+              Tarik kartu ke sini
+            </div>
+          )}
+        </div>
+      </SortableContext>
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "SortableContext membungkus array ID kartu dengan strategi verticalListSortingStrategy. Hook useDroppable memungkinkan kolom kosong menerima kartu dari kolom lain.",
+          actionType: "manual",
+          targetPromptStep: 4
+        },
+        {
+          stepNumber: 6,
+          badge: "Orkestrator Board & Optimistic UI",
+          instruction: "Merakit Orkestrator Papan Kanban Utama dengan useOptimistic & DragOverlay (src/components/kanban/kanban-board.tsx)",
+          code: `'use client';
+
+import React, { useState, useOptimistic, useTransition } from 'react';
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  DragStartEvent,
+  DragOverEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { createPortal } from 'react-dom';
+import { KanbanTask, KanbanColumn as ColumnType, KanbanStatus } from '@/types/kanban';
+import { KanbanColumn } from './kanban-column';
+import { KanbanCard } from './kanban-card';
+import { reorderTasksAction } from '@/actions/kanban';
+
+export function KanbanBoard({
+  initialTasks,
+  columns,
+}: {
+  initialTasks: KanbanTask[];
+  columns: ColumnType[];
+}) {
+  const [, startTransition] = useTransition();
+  const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
+
+  // Optimistic UI React 19: 0ms feedback saat drag-and-drop
+  const [optimisticTasks, setOptimisticTasks] = useOptimistic(
+    initialTasks,
+    (_state, update: KanbanTask[]) => update
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const task = optimisticTasks.find((t) => t.id === event.active.id);
+    if (task) setActiveTask(task);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+    if (activeId === overId) return;
+
+    const activeTask = optimisticTasks.find((t) => t.id === activeId);
+    if (!activeTask) return;
+
+    // Cek apakah target over adalah kolom atau kartu lain
+    const targetColumn = columns.find((c) => c.id === overId);
+    const overTask = optimisticTasks.find((t) => t.id === overId);
+    const newStatus = targetColumn ? (targetColumn.id as KanbanStatus) : overTask?.status;
+
+    if (newStatus && activeTask.status !== newStatus) {
+      const updated = optimisticTasks.map((t) =>
+        t.id === activeId ? { ...t, status: newStatus } : t
+      );
+      setOptimisticTasks(updated);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveTask(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const oldIndex = optimisticTasks.findIndex((t) => t.id === activeId);
+    const newIndex = optimisticTasks.findIndex((t) => t.id === overId);
+
+    let reordered = [...optimisticTasks];
+    if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+      reordered = arrayMove(optimisticTasks, oldIndex, newIndex);
+    }
+
+    const finalized = reordered.map((task, idx) => ({ ...task, position: idx }));
+
+    startTransition(async () => {
+      setOptimisticTasks(finalized);
+      await reorderTasksAction(
+        finalized.map((t) => ({ id: t.id, status: t.status, position: t.position }))
+      );
+    });
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {columns.map((col) => (
+          <KanbanColumn
+            key={col.id}
+            column={col}
+            tasks={optimisticTasks
+              .filter((t) => t.status === col.id)
+              .sort((a, b) => a.position - b.position)}
+          />
+        ))}
+      </div>
+
+      {typeof window !== 'undefined' &&
+        createPortal(
+          <DragOverlay>
+            {activeTask ? (
+              <div className="rotate-2 scale-105 shadow-2xl">
+                <KanbanCard task={activeTask} />
+              </div>
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
+    </DndContext>
+  );
+}`,
+          language: "tsx",
+          explanation: "Mengorkestrasi seluruh siklus drag-and-drop: sensor ramah pointer/touch/keyboard, algoritma closestCorners, optimistic UI 0ms via startTransition, dan DragOverlay di portal body untuk mencegah pemotongan kontainer.",
+          actionType: "manual",
+          targetPromptStep: 5
         }
       ],
       aiPromptTemplate: {
-        role: "Senior React Developer",
-        prompt: "Buatkan komponen Sortable Kanban Column menggunakan @dnd-kit/sortable di Next.js App Router (Client Component). Sertakan handler onDragEnd yang mengembalikan urutan array baru.",
-        tip: "Gunakan arrayMove utility dari @dnd-kit/sortable untuk menghitung index baru secara presisi."
+        role: "Senior Frontend UI/UX Engineer & Next.js 16 / @dnd-kit Specialist",
+        prompt: `Bertindaklah sebagai Senior Frontend UI/UX Engineer & Next.js 16 Specialist. Kita sedang mengimplementasikan papan interaktif Drag and Drop Kanban Board pada aplikasi "The Serverless Odyssey" pasca-UTS Milestone 1 menggunakan pustaka @dnd-kit, React 19 useOptimistic, dan Supabase PostgreSQL RPC.
+
+PERIKSA & INSTALL DEPENDENCY TERLEBIH DAHULU:
+Periksa apakah paket '@dnd-kit/core', '@dnd-kit/sortable', dan '@dnd-kit/utilities' sudah terinstal di package.json. Jika belum, jalankan perintah terminal:
+'npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities'
+
+PERINGATAN KRUSIAL: INTEGRASI END-TO-END LANGSUNG (DILARANG MEMINTA KONFIRMASI):
+Dilarang keras hanya membuat berkas komponen di folder 'src/components/kanban/' lalu berhenti atau bertanya kepada pengguna apakah komponen tersebut ingin dipanggil di halaman!
+Anda WAJIB LANGSUNG membuat berkas skema migrasi database SQL, kontrak Zod, Server Action, komponen klien (@dnd-kit), DAN SEKALIGUS MENGHUBUNGKANNYA ke rute server 'src/app/(dashboard)/tasks/kanban/page.tsx', serta memperbarui Landing Page 'src/app/page.tsx' sesuai Root Navigation Rule.
+Eksekusi seluruh pembuatan dan perakitan berkas secara mandiri (autonomous) TANPA MEMINTA KONFIRMASI. Mahasiswa harus dapat langsung membuka browser di http://localhost:3000/tasks/kanban dan menguji drag-and-drop seketika!
+
+BATASAN ARSITEKTURAL & TEKNIS (NEXT.JS 16 & REACT 19):
+1. Next.js 16 App Router: Dilarang keras menambahkan 'use client' di file src/app/page.tsx atau src/app/(dashboard)/tasks/kanban/page.tsx. Pertahankan Server Components untuk fetching data langsung ke Supabase!
+2. Pushing 'use client' to the Leaves: Seluruh komponen interaktif @dnd-kit (DndContext, useSortable, useDroppable, DragOverlay) wajib berada di Client Component daun (src/components/kanban/*).
+3. Transformasi CSS Anti-Distorsi: WAJIB menggunakan 'CSS.Translate.toString(transform)' BUKAN 'CSS.Transform.toString(transform)' untuk mencegah distorsi ukuran/font kartu saat di-drag.
+4. Sensor Interaksi Aman: Konfigurasikan PointerSensor dengan 'activationConstraint: { distance: 8 }' agar klik tombol biasa tidak terpicu sebagai drag, dan TouchSensor dengan 'activationConstraint: { delay: 250, tolerance: 5 }' serta styling 'touch-action: none' pada drag handle.
+5. Optimistic UI 0ms: Gunakan hook React 19 'useOptimistic' di dalam 'startTransition' untuk memberikan umpan balik visual 0 milidetik saat kartu digeser, disertai rollback otomatis jika Server Action gagal.
+6. DragOverlay Portal: Bungkus DragOverlay ke dalam React Portal ('createPortal(..., document.body)') agar kartu yang melayang bebas dari pemotongan overflow kontainer kolom (overflow clipping).
+7. Persistensi Atomik Database: Sinkronisasi urutan wajib memanggil Stored Procedure Supabase 'reorder_kanban_tasks(payload JSONB)' melalui Server Action Next.js 16 (await cookies()), DILARANG menjalankan loop update N+1 individual dari klien.
+8. Gunakan token semantik Tailwind CSS (bg-card, border-border, text-card-foreground) yang konsisten mendukung Dark Mode dan Light Mode tanpa hardcoded hex colors.
+
+TARGET STRUKTUR BERKAS YANG DIBANGUN & DIINTEGRASIKAN:
+1. BERKAS 1: supabase/migrations/04_kanban_reorder_rpc.sql
+   - Skrip SQL DDL: Tambahkan kolom 'position INTEGER NOT NULL DEFAULT 0' pada tabel 'tasks', buat indeks komposit 'idx_tasks_user_status_pos (user_id, status, position ASC)', dan buat Stored Procedure 'reorder_kanban_tasks(payload JSONB)' dengan klausa SECURITY DEFINER dan filter kepemilikan 'auth.uid() = user_id' berbasis 'jsonb_array_elements'.
+2. BERKAS 2: src/types/kanban.ts
+   - Ekspor tipe TypeScript: KanbanStatus ('todo' | 'in_progress' | 'done'), KanbanTask (id, title, description, status, position, user_id, created_at), dan KanbanColumn (id: KanbanStatus, title: string).
+3. BERKAS 3: src/lib/schemas/kanban.ts
+   - Skema validasi Zod: ReorderItemSchema (id uuid, status enum, position int non-negative) dan ReorderPayloadSchema (array of ReorderItemSchema).
+4. BERKAS 4: src/actions/kanban.ts
+   - Server Action ('use server'): 'reorderTasksAction(rawPayload)' yang memvalidasi input via Zod, memanggil supabase.rpc('reorder_kanban_tasks', { payload }), dan mengeksekusi revalidatePath('/tasks/kanban').
+5. BERKAS 5: src/components/kanban/kanban-card.tsx
+   - Client Component ('use client'): Kartu tugas sortable menggunakan hook 'useSortable({ id: task.id })', transformasi 'CSS.Translate.toString', tombol drag handle dengan ikon GripVertical dan kelas 'touch-none', serta indikator visual saat sedang di-drag (opacity 30% dan border putus-putus).
+6. BERKAS 6: src/components/kanban/kanban-column.tsx
+   - Client Component ('use client'): Kolom droppable menggunakan hook 'useDroppable({ id: column.id })', SortableContext dengan strategi 'verticalListSortingStrategy', header kolom dengan badge penghitung jumlah kartu, dan area dropzone kosong.
+7. BERKAS 7: src/components/kanban/kanban-board.tsx
+   - Client Component ('use client'): Orkestrator papan Kanban utama dengan DndContext, PointerSensor (constraint 8px), TouchSensor, collisionDetection={closestCorners}, React 19 useOptimistic, handler onDragOver untuk perpindahan antar-kolom, handler onDragEnd untuk finalisasi urutan dan pemanggilan Server Action, serta DragOverlay yang dirender via createPortal.
+8. BERKAS 8: src/app/(dashboard)/tasks/kanban/page.tsx (INTEGRASI WAJIB!)
+   - Server Component (RSC): Mengambil data tugas dari Supabase server client (order by position ASC), merender tajuk halaman Kanban dengan metrik tugas, tombol navigasi kembali ke list view, dan komponen terpadu <KanbanBoard initialTasks={tasks ?? []} columns={COLUMNS} />.
+9. BERKAS 9: src/app/page.tsx (ROOT NAVIGATION RULE)
+   - Perbarui Landing Page root '/' dengan Hero CTA visual yang memuat tombol interaktif 'Buka Kanban Board Tugas ➔' yang mengarahkan pengguna langsung ke rute '/tasks/kanban'.`,
+        tip: "Gunakan selalu activationConstraint: { distance: 8 } pada PointerSensor agar klik biasa pada tombol kartu tugas tidak disalahartikan sebagai gestur drag, dan gunakan CSS.Translate.toString(transform) untuk mencegah distorsi ukuran kartu saat di-drag.",
+        steppedPrompts: [
+          {
+            stepNumber: 1,
+            title: "Tahap 1: Instalasi Pustaka @dnd-kit & Migrasi SQL Stored Procedure Supabase",
+            badge: "Tahap 1: CLI & Database RPC",
+            description: "Memasang paket @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities dan menyusun berkas migrasi SQL untuk kolom position serta stored procedure reorder_kanban_tasks.",
+            targetFiles: ["supabase/migrations/04_kanban_reorder_rpc.sql"],
+            manualAction: {
+              required: true,
+              title: "Eksekusi DDL di Supabase SQL Editor",
+              description: "Buka dashboard Supabase ➔ SQL Editor ➔ Jalankan skrip DDL migrasi dari supabase/migrations/04_kanban_reorder_rpc.sql untuk membuat kolom position, index, dan stored procedure reorder_kanban_tasks.",
+              codeSnippet: {
+                code: `-- 1. Tambah kolom position & pastikan status kanban valid
+ALTER TABLE public.tasks 
+ADD COLUMN IF NOT EXISTS position INTEGER NOT NULL DEFAULT 0;
+
+-- 2. Buat composite index untuk akselerasi query pemilahan kolom
+CREATE INDEX IF NOT EXISTS idx_tasks_user_status_pos 
+ON public.tasks(user_id, status, position ASC);
+
+-- 3. Stored Procedure RPC untuk Batch Reorder Atomik
+CREATE OR REPLACE FUNCTION public.reorder_kanban_tasks(payload JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Update status dan posisi seluruh kartu dalam 1 transaksi atomik
+  UPDATE public.tasks AS t
+  SET 
+    status = (item->>'status')::TEXT,
+    position = (item->>'position')::INTEGER,
+    updated_at = NOW()
+  FROM jsonb_array_elements(payload) AS item
+  WHERE t.id = (item->>'id')::UUID
+    AND t.user_id = auth.uid();
+END;
+$$;`,
+                language: "sql"
+              }
+            },
+            prompt: `Bertindaklah sebagai Database Engineer & Next.js Full-Stack Specialist.
+Tugas Anda adalah menyiapkan fondasi dependensi dan migrasi database PostgreSQL untuk papan Kanban:
+
+1. PERIKSA & INSTAL DEPENDENSI:
+   Periksa package.json. Jika belum ada, jalankan terminal CLI:
+   npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+
+2. BUAT BERKAS MIGRASI DATABASE: 'supabase/migrations/04_kanban_reorder_rpc.sql'
+   Tulis skrip SQL lengkap yang memuat:
+   - ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS position INTEGER NOT NULL DEFAULT 0;
+   - CREATE INDEX IF NOT EXISTS idx_tasks_user_status_pos ON public.tasks(user_id, status, position ASC);
+   - CREATE OR REPLACE FUNCTION public.reorder_kanban_tasks(payload JSONB) RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER yang melakukan UPDATE massal kolom status dan position menggunakan 'jsonb_array_elements(payload)' dengan klausa 'WHERE t.id = (item->>'id')::UUID AND t.user_id = auth.uid()'.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Tulis berkas migrasi SQL ini sekarang secara mandiri tanpa meminta konfirmasi dari pengguna!`,
+            checkpoint: "Tabel tasks memiliki kolom position, index idx_tasks_user_status_pos tercipta, dan fungsi reorder_kanban_tasks aktif di Supabase Database.",
+            tip: "Fungsi SECURITY DEFINER menjamin mutasi batch update puluhan kartu berjalan dalam 1 transaksi atomik (all-or-nothing) di kernel PostgreSQL."
+          },
+          {
+            stepNumber: 2,
+            title: "Tahap 2: Definisi Tipe Data Kanban & Skema Validasi Zod Terbagi",
+            badge: "Tahap 2: Tipe & Skema Zod",
+            description: "Menyusun kontrak tipe data task, column, status kanban, dan skema validasi Zod untuk payload sinkronisasi urutan.",
+            targetFiles: ["src/types/kanban.ts", "src/lib/schemas/kanban.ts"],
+            prompt: `Bertindaklah sebagai TypeScript & Schema Specialist.
+Tugas Anda adalah membuat kontrak tipe data dan skema validasi Zod untuk papan Kanban:
+
+1. BUAT BERKAS TIPE DATA: 'src/types/kanban.ts'
+   Definisikan dan ekspor tipe-tipe berikut:
+   - export type KanbanStatus = 'todo' | 'in_progress' | 'done';
+   - export interface KanbanTask { id: string; title: string; description?: string | null; status: KanbanStatus; position: number; user_id?: string; created_at?: string; }
+   - export interface KanbanColumn { id: KanbanStatus; title: string; }
+   - export const KANBAN_COLUMNS: KanbanColumn[] = [ { id: 'todo', title: 'Belum Dikerjakan' }, { id: 'in_progress', title: 'Sedang Dikerjakan' }, { id: 'done', title: 'Selesai' } ];
+
+2. BUAT SKEMA VALIDASI ZOD: 'src/lib/schemas/kanban.ts'
+   - Impor z dari 'zod'.
+   - Ekspor ReorderItemSchema: z.object({ id: z.string().uuid(), status: z.enum(['todo', 'in_progress', 'done']), position: z.number().int().min(0) }).
+   - Ekspor ReorderPayloadSchema: z.array(ReorderItemSchema).
+   - Ekspor type ReorderPayload = z.infer<typeof ReorderPayloadSchema>.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Buat kedua berkas di atas secara lengkap dengan 0 tipe any dan ekspor modular!`,
+            checkpoint: "Tipe KanbanTask, KanbanColumn, dan ReorderPayloadSchema dapat diimpor tanpa kesalahan tipe TypeScript (0 errors).",
+            tip: "Gunakan union literal type untuk status ('todo' | 'in_progress' | 'done') agar autocomplete dan type narrowing berjalan sempurna di seluruh komponen."
+          },
+          {
+            stepNumber: 3,
+            title: "Tahap 3: Server Action Batch Reorder dengan Supabase Server Client",
+            badge: "Tahap 3: Server Action Gateway",
+            description: "Membangun fungsi Server Action yang memvalidasi array urutan baru dengan Zod dan memanggil RPC reorder_kanban_tasks di Supabase.",
+            targetFiles: ["src/actions/kanban.ts"],
+            prompt: `Bertindaklah sebagai Backend Next.js Specialist.
+Tugas Anda adalah merakit Server Action untuk persistensi urutan kartu Kanban:
+
+BUAT BERKAS: 'src/actions/kanban.ts' ('use server')
+1. Impor createClient dari '@/utils/supabase/server' dan revalidatePath dari 'next/cache'.
+2. Impor ReorderPayloadSchema dari '@/lib/schemas/kanban'.
+3. Buat dan ekspor fungsi:
+   export async function reorderTasksAction(rawPayload: unknown)
+4. Lakukan validasi input menggunakan ReorderPayloadSchema.safeParse(rawPayload). Jika gagal, kembalikan { success: false, error: 'Payload tidak valid' }.
+5. Inisialisasi Supabase server client dengan 'const supabase = await createClient();'.
+6. Panggil Stored Procedure:
+   const { error } = await supabase.rpc('reorder_kanban_tasks', { payload: parseResult.data });
+7. Jika terjadi error, catat ke console.error dan kembalikan { success: false, error: error.message }.
+8. Panggil revalidatePath('/tasks/kanban') untuk memperbarui cache halaman, dan kembalikan { success: true }.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Rakit Server Action ini secara mandiri dengan penanganan error komprehensif!`,
+            checkpoint: "Fungsi reorderTasksAction siap dipanggil dari antarmuka klien dan berhasil melakukan revalidatePath('/tasks/kanban').",
+            tip: "Ingat konvensi Next.js 16: utilitas createClient di src/utils/supabase/server.ts bersifat async sehingga wajib diawali await createClient()."
+          },
+          {
+            stepNumber: 4,
+            title: "Tahap 4: Merakit Komponen SortableCard & KanbanColumn (@dnd-kit/sortable)",
+            badge: "Tahap 4: Primitif Klien Sortable",
+            description: "Membangun kartu sortable dengan CSS.Translate, drag handle aksesibel, status visual isDragging, dan kolom droppable dengan SortableContext.",
+            targetFiles: [
+              "src/components/kanban/kanban-card.tsx",
+              "src/components/kanban/kanban-column.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Senior Frontend UI Engineer.
+Tugas Anda adalah merakit dua primitif komponen klien untuk @dnd-kit:
+
+1. BUAT KOMPONEN KARTU: 'src/components/kanban/kanban-card.tsx' ('use client')
+   - Impor useSortable dari '@dnd-kit/sortable' dan CSS dari '@dnd-kit/utilities'.
+   - Impor GripVertical dari 'lucide-react'.
+   - Menerima prop 'task: KanbanTask'.
+   - Gunakan hook useSortable({ id: task.id, data: { task } }).
+   - Gunakan styling transformasi 'transform: CSS.Translate.toString(transform)'. DILARANG KERAS menggunakan CSS.Transform.toString!
+   - Terapkan drag handle terisolasi pada tombol ikon GripVertical dengan atribut {...attributes} {...listeners} dan kelas 'touch-none' agar gestur mobile tidak memicu scroll layar.
+   - Berikan feedback visual saat isDragging aktif (opacity 30% dan border putus-putus indigo).
+
+2. BUAT KOMPONEN KOLOM: 'src/components/kanban/kanban-column.tsx' ('use client')
+   - Impor useDroppable dari '@dnd-kit/core' dan SortableContext, verticalListSortingStrategy dari '@dnd-kit/sortable'.
+   - Menerima props 'column: KanbanColumn' dan 'tasks: KanbanTask[]'.
+   - Pasang hook useDroppable({ id: column.id }) pada kontainer kolom terluar.
+   - Bungkus list kartu dengan <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>.
+   - Tampilkan header kolom dengan nama kolom dan badge penunjuk jumlah kartu.
+   - Sediakan placeholder 'Tarik kartu ke sini' jika kolom kosong.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Buat kedua komponen ini secara modular dengan styling Tailwind semantik yang adaptif Dark Mode & Light Mode!`,
+            checkpoint: "Komponen kartu dan kolom merender tata letak flex/grid dengan styling Tailwind yang rapi, badge status semantik, dan drag handle yang siap menerima gestur.",
+            tip: "Sertakan styling touch-action: none pada elemen tombol drag handle agar gestur sentuh di layar smartphone tidak memicu scroll peramban."
+          },
+          {
+            stepNumber: 5,
+            title: "Tahap 5: Orkestrasi Papan Kanban, Optimistic UI 0ms & DragOverlay Portal",
+            badge: "Tahap 5: Board & Optimistic UI",
+            description: "Mengintegrasikan DndContext, sensor pointer berbatas aktivasi 8px, deteksi tabrakan closestCorners, hook React 19 useOptimistic, transisi antar-kolom di onDragOver, dan persistensi di onDragEnd.",
+            targetFiles: ["src/components/kanban/kanban-board.tsx"],
+            prompt: `Bertindaklah sebagai Senior Frontend Architect & React 19 Specialist.
+Tugas Anda adalah merakit orkestrator utama papan Kanban:
+
+BUAT BERKAS: 'src/components/kanban/kanban-board.tsx' ('use client')
+1. Impor DndContext, DragOverlay, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, closestCorners dari '@dnd-kit/core'.
+2. Impor arrayMove, sortableKeyboardCoordinates dari '@dnd-kit/sortable'.
+3. Impor createPortal dari 'react-dom'.
+4. Impor useState, useOptimistic, useTransition dari 'react'.
+5. Impor KanbanColumn dan KanbanCard, serta reorderTasksAction dari '@/actions/kanban'.
+6. Konfigurasikan sensors:
+   - PointerSensor dengan { activationConstraint: { distance: 8 } }
+   - TouchSensor dengan { activationConstraint: { delay: 250, tolerance: 5 } }
+   - KeyboardSensor dengan sortableKeyboardCoordinates
+7. Implementasikan Optimistic UI React 19:
+   const [optimisticTasks, setOptimisticTasks] = useOptimistic(initialTasks, (_state, update: KanbanTask[]) => update);
+8. Logika Handlers:
+   - onDragStart: Simpan kartu aktif ke state activeTask.
+   - onDragOver: Jika kartu diseret melintasi kolom lain (cross-column), perbarui status task secara spekulatif (optimistic) seketika tanpa jeda!
+   - onDragEnd: Bersihkan activeTask. Hitung arrayMove jika dalam kolom yang sama. Hitung index position baru (idx 0, 1, 2...). Jalankan startTransition(async () => { setOptimisticTasks(finalized); await reorderTasksAction(...); }).
+9. Render grid 3 kolom responsif (grid-cols-1 md:grid-cols-3 gap-6).
+10. Render DragOverlay di dalam createPortal(..., document.body) dengan efek rotasi miring 2 derajat dan bayangan elevasi tebal agar kartu melayang dramatis tanpa terpotong batas kolom.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Rakit orkestrator Kanban lengkap ini tanpa potongan kode atau placeholder komentar singkatan!`,
+            checkpoint: "Kartu dapat di-drag secara halus di dalam kolom maupun berpindah antar kolom secara instan (0ms), dan DragOverlay melayang bebas tanpa terpotong batas kolom.",
+            tip: "Gunakan useOptimistic reducer yang menerima aksi pemindahan kartu dan menghasilkan struktur kolom baru secara instan sebelum Server Action selesai."
+          },
+          {
+            stepNumber: 6,
+            title: "Tahap 6: Halaman Server RSC Kanban & Integrasi Hero CTA di Landing Page",
+            badge: "Tahap 6: Server Route & Root Hero",
+            description: "Membuat rute server RSC di src/app/(dashboard)/tasks/kanban/page.tsx untuk data fetching dari Supabase, serta memperbarui landing page src/app/page.tsx dengan tombol Hero CTA.",
+            targetFiles: [
+              "src/app/(dashboard)/tasks/kanban/page.tsx",
+              "src/app/page.tsx"
+            ],
+            prompt: `Bertindaklah sebagai Full-Stack Architect & Next.js 16 Specialist.
+Tugas Anda adalah merakit halaman server RSC Kanban dan memperbarui navigasi root landing page:
+
+1. BUAT HALAMAN SERVER RSC: 'src/app/(dashboard)/tasks/kanban/page.tsx'
+   - PERHATIAN: DILARANG menambahkan 'use client' di berkas ini! Jadikan React Server Component murni.
+   - Impor createClient dari '@/utils/supabase/server'.
+   - Impor KanbanBoard dari '@/components/kanban/kanban-board' dan KANBAN_COLUMNS dari '@/types/kanban'.
+   - Fetch data tugas dari Supabase:
+     const supabase = await createClient();
+     const { data: tasks } = await supabase.from('tasks').select('*').order('position', { ascending: true });
+   - Render header dashboard yang memukau: Judul 'Papan Kanban Tugas', subtitle informatif, tombol link kembali ke list view ('/tasks'), dan kartu metrik statistik tugas.
+   - Render <KanbanBoard initialTasks={tasks ?? []} columns={KANBAN_COLUMNS} />.
+
+2. PERBARUI LANDING PAGE ROOT: 'src/app/page.tsx' (ROOT NAVIGATION RULE)
+   - Buka berkas 'src/app/page.tsx'.
+   - Pastikan halaman root '/' menyajikan antarmuka Hero modern dengan CTA yang jelas.
+   - Tambahkan tombol Hero CTA utama: 'Buka Kanban Board Tugas ➔' yang menautkan pengunjung langsung ke rute '/tasks/kanban'.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Selesaikan perakitan kedua berkas ini sekarang secara mandiri tanpa meminta konfirmasi dari pengguna!`,
+            checkpoint: "Buka http://localhost:3000/tasks/kanban di peramban; papan Kanban muncul dengan data riil dari Supabase, dan halaman root / memiliki tombol 'Buka Kanban Board Tugas ➔'.",
+            tip: "Sesuai Root Navigation Rule di AGENTS.md, halaman utama / tidak boleh dibiarkan menampilkan starter template Next.js polos; wajib menyediakan tombol CTA langsung ke fitur yang dibangun."
+          }
+        ]
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 9: Integrasi Drag and Drop",
-      taskDesc: "Tambahkan fitur Drag and Drop untuk mengurutkan atau memindahkan item antar kolom di Proyek Akhir Anda.",
+      taskTitle: "Misi Minggu 9: Papan Kanban Interaktif & Persistensi Drag and Drop Atomik",
+      taskDesc: "Bangun fitur Papan Kanban multi-kolom interaktif (Todo, In Progress, Done) pada Proyek Akhir Anda menggunakan @dnd-kit, responsivitas antarmuka spekulatif 0ms dengan React 19 useOptimistic, serta persistensi urutan kartu atomik ke PostgreSQL Supabase via Stored Procedure (RPC).",
       definitionOfDone: [
-        "Elemen dapat di-drag dan di-drop secara halus tanpa glitch visual",
-        "Urutan baru tersimpan ke kolom order/position di database Supabase"
+        "Dependensi @dnd-kit/core, @dnd-kit/sortable, dan @dnd-kit/utilities terinstal dan terkonfigurasi dengan PointerSensor (activationConstraint 8px) & TouchSensor",
+        "Skema tabel tasks memiliki kolom position berindeks komposit dan Stored Procedure reorder_kanban_tasks aktif di Supabase",
+        "Komponen kartu tugas menerapkan useSortable dengan CSS.Translate.toString (bebas distorsi skala) dan tombol drag handle aksesibel",
+        "Komponen kolom menerapkan SortableContext dan useDroppable untuk mendukung pemindahan kartu antar-kolom di onDragOver",
+        "Papan Kanban mengimplementasikan React 19 useOptimistic untuk responsivitas pergeseran seketika 0ms tanpa menunggu latency jaringan",
+        "Kartu yang sedang di-drag dirender di dalam <DragOverlay> menggunakan createPortal sehingga bebas dari pemotongan batas kontainer (overflow clipping)",
+        "Perubahan urutan dan status kartu disinkronisasikan ke Supabase melalui Server Action yang memvalidasi payload dengan skema Zod",
+        "Landing page root (src/app/page.tsx) diperbarui dengan tombol Hero CTA yang menghubungkan pengguna langsung ke rute papan Kanban (/tasks/kanban)"
       ],
       gitBranchTask: "git checkout -b feature/dnd-kanban-board"
+    },
+    quiz: {
+      totalQuestions: 7,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Mengapa HTML5 Drag and Drop API standar industri ('draggable=true') dinilai usang dan tidak memadai untuk aplikasi web modern, dan bagaimana @dnd-kit menyelesaikannya melalui arsitektur 'Headless'? Jelaskan pula peran konfigurasi batasan aktivasi sensor (activationConstraint: { distance: 8 } pada PointerSensor dan { delay: 250, tolerance: 5 } pada TouchSensor) dalam mencegah konflik gestur dengan event klik tombol atau scroll layar sentuh!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Keterbatasan HTML5 DnD yang tidak mendukung layar sentuh seluler (mobile touch), tampilan preview kaku terikat peramban, dan aksesibilitas keyboard buruk bagi pengguna disabilitas. 2) Arsitektur Headless @dnd-kit yang memisahkan logika matematika koordinat dan collision detection dari elemen DOM/CSS sehingga dapat dikustomisasi bebas dan diisolasi pada leaf Client Component. 3) Peran activationConstraint distance: 8 pada PointerSensor untuk mencegah klik biasa pada tombol/link kartu terpicu sebagai drag. 4) Peran TouchSensor (delay 250ms dan tolerance 5px) serta styling touch-action: none untuk membedakan antara gestur scroll vertikal halaman dengan niat menyeret kartu.",
+          keyConcepts: [
+            "Headless @dnd-kit Architecture",
+            "HTML5 Drag and Drop Limits (Mobile/A11y)",
+            "PointerSensor activationConstraint (distance: 8px)",
+            "TouchSensor vs Browser Scroll (delay & tolerance)",
+            "WAI-ARIA Keyboard Accessibility"
+          ],
+          weight: 15,
+          socraticHint: "Bayangkan pengguna membuka papan Kanban di smartphone. Apa yang terjadi jika setiap sentuhan jari langsung dianggap sebagai drag kartu alih-alih scrolling halaman? Dan di desktop, bagaimana cara peramban membedakan antara 'klik tombol edit pada kartu' dengan 'menyeret kartu'?"
+        },
+        {
+          id: 2,
+          question: "Mengapa saat menerapkan hook useSortable dari @dnd-kit/sortable, kita WAJIB menggunakan fungsi utilitas CSS.Translate.toString(transform) dan DILARANG KERAS menggunakan CSS.Transform.toString(transform)? Jelaskan fenomena 'Scale Distortion' yang terjadi pada dimensi kartu dan tipografi jika aturan ini dilanggar!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) CSS.Transform.toString(transform) mengaplikasikan matriks transformasi lengkap yang mencakup translasi koordinat (X, Y) serta faktor skala (scale factor X dan Y). 2) Saat kartu disortir melintasi item lain atau kontainer dengan dimensi berbeda, @dnd-kit menghitung pergeseran layout yang dapat menyertakan proporsi skala sementara. 3) Jika CSS.Transform digunakan, kartu yang sedang di-drag atau elemen tetangga akan mengalami efek distorsi peregangan (stretching) atau font membesar/mengecil secara visual (scale distortion). 4) Sebaliknya, CSS.Translate.toString(transform) secara eksplisit membatasi transformasi hanya pada translasi koordinat pergeseran translate3d(x, y, 0) tanpa pernah mengubah skala fisik elemen (scale diabaikan), menjamin dimensi, font, dan padding kartu tetap stabil dan proporsional 100%.",
+          keyConcepts: [
+            "CSS.Translate vs CSS.Transform",
+            "Scale Distortion Elimination",
+            "useSortable Coordinate Matrix",
+            "translate3d GPU Compositing",
+            "Layout Geometry Preservation"
+          ],
+          weight: 15,
+          socraticHint: "Perhatikan rumus CSS transform: apa perbedaan antara 'transform: translate3d(x, y, 0)' dengan 'transform: translate3d(x, y, 0) scale(sx, sy)'? Mengapa faktor skala (scale) berbahaya bagi tampilan kartu tugas yang memiliki teks dan padding tetap?"
+        },
+        {
+          id: 3,
+          question: "Pada papan Kanban multi-kolom (Todo, In Progress, Done), mengapa perpindahan kartu antar-kolom wajib ditangani secara sementara di event handler onDragOver alih-alih menunggu onDragEnd? Selain itu, jelaskan mengapa elemen preview kartu yang melayang wajib dibungkus di dalam <DragOverlay> menggunakan React Portal (createPortal)!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) onDragOver terjadi secara kontinu saat kartu aktif melintasi batas kolom lain; menangani perpindahan sementara di onDragOver memindahkan kartu secara dinamis ke array kolom target sehingga pengguna dapat melihat ruang kosong baru (insertion placeholder gap) terbuka secara real-time sebelum jari/mouse dilepas. 2) Jika hanya ditangani di onDragEnd, kartu tidak akan pernah bisa dijatuhkan ke kolom kosong (karena kolom kosong tidak memiliki item sortable untuk memicu tabrakan) dan pengguna kehilangan kejelasan visual. 3) Kebutuhan <DragOverlay> dengan createPortal: Kolom Kanban umumnya memiliki aturan CSS overflow-hidden atau overflow-y-auto untuk scrolling daftar kartu. Jika kartu yang di-drag tetap berada di dalam hierarki DOM kolom aslinya, kartu tersebut akan terpotong (clipped) atau tersembunyi di balik batas kolom saat diseret keluar. createPortal(..., document.body) merender kartu melayang langsung di level root dokumen dengan z-index tinggi, menjamin kartu bebas melayang melintasi seluruh layar tanpa terpotong.",
+          keyConcepts: [
+            "Multi-Container onDragOver vs onDragEnd",
+            "Insertion Placeholder Gap",
+            "Empty Column useDroppable",
+            "DragOverlay via createPortal",
+            "Overflow Clipping Prevention"
+          ],
+          weight: 15,
+          socraticHint: "Apa yang terjadi jika kolom 'Done' sedang kosong melompong tanpa kartu sama sekali, dan Anda hanya mengandalkan tabrakan antar-kartu di onDragEnd? Dan apa yang terjadi pada kartu yang melayang jika kontainer kolom pembungkusnya memiliki style CSS 'overflow: hidden'?"
+        },
+        {
+          id: 4,
+          question: "Bagaimana hook resmi React 19 useOptimistic menghadirkan responsivitas antarmuka 0 milidetik pada interaksi drag-and-drop papan Kanban? Jelaskan peran 'startTransition' dalam mengikat state spekulatif dengan siklus hidup Server Action, serta bagaimana mekanisme rollback otomatis bekerja jika koneksi jaringan terputus (HTTP 500) saat Server Action dieksekusi!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) useOptimistic menerima state dasar (tasks dari database) dan fungsi reducer spekulatif; saat kartu dijatuhkan, setOptimisticTasks langsung memperbarui antarmuka dalam 0 ms di memori peramban tanpa menunggu transmisi jaringan server. 2) Peran startTransition: React 19 mewajibkan pemanggilan fungsi updater optimistik berada di dalam callback startTransition(async () => { ... }) yang membungkus Server Action asinkron. React menandai pembaruan ini sebagai transisi konkuren berprioritas rendah. 3) Mekanisme Rollback Otomatis: State optimistik bersifat sementara (ephemeral). Selama Server Action berjalan (pending), UI menampilkan state spekulatif. Jika Server Action berhasil dan server memvalidasi data via revalidatePath, state dasar baru dari server menggantikan state spekulatif secara mulus (cache harmony). Namun jika Server Action melempar exception (misal error jaringan atau HTTP 500), transisi berakhir dan React secara otomatis membuang state spekulatif, mengembalikan (rollback) posisi kartu ke kolom dan indeks aslinya tanpa meninggalkan state yang korup.",
+          keyConcepts: [
+            "React 19 useOptimistic Reducer",
+            "Zero-Latency UI (0ms Feedback)",
+            "startTransition Concurrency",
+            "Ephemeral State Management",
+            "Automatic Rollback on Network Failure"
+          ],
+          weight: 15,
+          socraticHint: "Bayangkan perbedaan antara 'menunggu server membalas 800ms baru memindahkan kartu di layar' vs 'memindahkan kartu di layar detik ini juga (0ms) sambil meminta server menyimpan di latar belakang'. Apa yang dilakukan React jika fungsi asinkron di dalam startTransition mengalami error/throw?"
+        },
+        {
+          id: 5,
+          question: "Bandingkan dua pendekatan persistensi urutan kartu di database: 'Integer Sequence Reindexing' dan 'Fractional Indexing / Lexorank'! Jelaskan kelebihan dan kekurangan masing-masing, masalah keterbatasan presisi floating-point (IEEE 754) pada fractional indexing, serta mengapa pendekatan Integer Batch Reordering via Stored Procedure lebih aman dan terprediksi untuk proyek tahap awal!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Integer Sequence Reindexing memberikan indeks bulat terurut (0, 1, 2, 3...). Kelebihan: sederhana, bebas dari masalah presisi, deterministik dengan ORDER BY position ASC. Kekurangan: saat 1 kartu disisipkan ke atas, seluruh N kartu di bawahnya harus diperbarui posisinya (O(N) updates). 2) Fractional Indexing / Lexorank menghitung titik tengah antara dua tetangga (pos = (posA + posB) / 2). Kelebihan: mutasi kartu hanya butuh update 1 baris tunggal (O(1)). 3) Kelemahan Presisi Float (IEEE 754): jika pengguna berulang kali menyisipkan kartu di antara dua posisi yang sama, selisih desimal mengecil hingga mencapai limit presisi 64-bit IEEE 754 (terjadi underflow / precision collapse di mana dua kartu memiliki angka pecahan identik), menuntut algoritma penyeimbangan ulang berkala (rebalancing job) yang sangat rumit. 4) Mengapa Integer via Stored Procedure Lebih Aman: untuk skala puluhan hingga ratusan tugas, overhead O(N) pada PostgreSQL selesai dalam waktu < 5 ms melalui kueri batch UPDATE ... FROM jsonb_array_elements tanpa risiko bug pembulatan desimal, menjamin stabilitas arsitektur tahap awal tanpa over-engineering.",
+          keyConcepts: [
+            "Integer Sequence Reindexing O(N)",
+            "Fractional Indexing / Lexorank O(1)",
+            "IEEE 754 Floating-Point Precision Underflow",
+            "Rebalancing Complexity",
+            "Predictable Architecture Pragmatism"
+          ],
+          weight: 14,
+          socraticHint: "Jika Anda menyisipkan kartu di antara posisi 1.0 dan 2.0, posisinya jadi 1.5. Lalu sisipkan lagi di antara 1.0 dan 1.5 jadi 1.25. Apa yang terjadi jika proses ini diulang 60 kali berturut-turut pada tipe data floating-point komputer? Apa bedanya dengan menyusun ulang nomor urut 0, 1, 2, 3 secara rapi?"
+        },
+        {
+          id: 6,
+          question: "Jelaskan bahaya fatal dari anti-pattern pembaruan urutan kartu di mana klien mengeksekusi perulangan (loop) kueri update individual (misal: 'for (const task of tasks) await supabase.from(\"tasks\").update(...)') dari peramban! Bagaimana pembuatan Stored Procedure PostgreSQL 'reorder_kanban_tasks' berbasis 'jsonb_array_elements' menyelesaikan masalah round-trip jaringan, menjamin prinsip ACID (Atomisitas), serta melindungi keamanan baris data?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Bahaya Anti-Pattern Loop Client-Side: N+1 Network Latency (30 kartu = 30 HTTP requests terpisah bolak-balik ke Supabase yang memicu latency tinggi), risiko koneksi serverless pool habis, serta ketiadaan garansi atomisitas (jika koneksi putus di tengah jalan, sebagian data ter-update dan sebagian tidak, memicu split-brain / urutan korup). 2) Solusi Stored Procedure RPC: mengirimkan 1 payload JSONB dalam 1 round-trip jaringan tunggal, di mana fungsi jsonb_array_elements(payload) mengonversi array JSON menjadi recordset dalam RAM PostgreSQL dan mengeksekusi UPDATE ... FROM dalam 1 transaksi SQL atomik (semua sukses atau semua dibatalkan). 3) Keamanan: fungsi SECURITY DEFINER dan klausa WHERE t.id = item_id AND t.user_id = auth.uid() menjamin pengguna hanya berhak memperbarui urutan kartu miliknya sendiri, mencegah eskalasi manipulasi posisi tugas pengguna lain.",
+          keyConcepts: [
+            "N+1 Network Round-Trip Anti-Pattern",
+            "Connection Pool Exhaustion",
+            "ACID Atomicity (All-or-Nothing)",
+            "jsonb_array_elements in UPDATE FROM",
+            "Row Ownership Enforcement (auth.uid() = user_id)"
+          ],
+          weight: 13,
+          socraticHint: "Apa yang terjadi pada integritas data di database jika koneksi Wi-Fi mahasiswa mati tepat di tengah-tengah loop JavaScript kueri update ke-15 dari 30 kartu? Bandingkan dengan transaksi Stored Procedure yang dibungkus dalam blok atomik database!"
+        },
+        {
+          id: 7,
+          question: "Bagaimana Server Action pada Next.js 16 App Router bertindak sebagai gerbang terproteksi antara Client Component Kanban dengan Supabase RPC? Jelaskan mengapa pembacaan cookies wajib menggunakan 'await cookies()' di Next.js 16, bagaimana fungsi 'revalidatePath' menyelaraskan cache server, serta mengapa pola 'Debounced Network Dispatcher' penting dipasang saat pengguna menyeret kartu secara bertubi-tubi dalam tempo cepat!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Server Action sebagai Gerbang Aman: memvalidasi integritas data menggunakan skema Zod di lingkungan runtime server terisolasi sebelum meneruskan payload ke RPC Supabase, melindungi kredensial database. 2) Konvensi Next.js 16 await cookies(): pembacaan cookie bersifat asinkron untuk streaming SSR dan concurrent rendering; inisialisasi createClient() wajib diawali await agar token sesi JWT terbaca sah dari HTTP-only cookie. 3) Penyelarasan Cache via revalidatePath: setelah RPC sukses, revalidatePath('/tasks/kanban') membersihkan cache server dan menyegarkan data ke klien, mencegah data kembali ke urutan lama saat refresh. 4) Kebutuhan Debounce: jika pengguna memindahkan beberapa kartu berturut-turut dengan cepat, tanpa debounce sistem akan menembakkan banyak request Server Action berurutan yang memicu race condition (request lama menimpa request baru yang selesai lebih dulu). Debounce menahan transmisi jaringan hingga pengguna berhenti menggeser kartu, memastikan hanya kondisi final yang dikirim ke server.",
+          keyConcepts: [
+            "Next.js 16 Server Actions Type-Safety",
+            "Async await cookies() Convention",
+            "revalidatePath Server Cache Invalidation",
+            "Debounced Network Dispatcher",
+            "Race Condition Prevention"
+          ],
+          weight: 13,
+          socraticHint: "Jika pengguna memindahkan kartu A, lalu sedetik kemudian memindahkan kartu B, lalu memindahkan kartu C: mengapa berbahaya jika aplikasi mengirim 3 mutasi database secara paralel tanpa jeda debounce? Dan apa yang terjadi jika Server Action lupa memanggil revalidatePath?"
+        }
+      ]
     }
   },
   {
@@ -5888,42 +7374,591 @@ Selesaikan seluruh instruksi di atas secara langsung dan tuntas!`,
     worldId: "world-2",
     worldTitle: "Dunia 2: Rich UI, Media & Real-time",
     weekNumber: 10,
-    title: "Manajemen Media & Aset dengan Cloudinary",
-    subtitle: "Unggah gambar langsung dari klien, transformasi cerdas berbasis AI, dan optimasi CDN.",
-    cpmk: "Mahasiswa mampu mengintegrasikan Cloudinary (next-cloudinary) untuk upload widget, kompresi otomatis, dan transformasi gambar.",
+    title: "Manajemen Media & Aset dengan Cloudinary (AI Media CDN & Image Processing)",
+    subtitle: "Menguasai pipeline aset media modern di Next.js 16: direct client upload zero-compute, optimasi format f_auto & q_auto, smart crop AI (g_face), serta arsitektur persistensi public_id di Supabase.",
+    cpmk: "Mahasiswa mampu merancang dan mengintegrasikan pipeline manajemen media cloud menggunakan Cloudinary (next-cloudinary) pada arsitektur serverless Next.js 16 App Router, membedakan direct browser upload dengan server proxy untuk melewati batas payload 4.5MB, mengonfigurasi transformasi AI dinamis (f_auto, q_auto, smart crop g_face/g_auto, generative fill), mengamankan unggahan dengan HMAC SHA-1 signed upload presets, serta merekayasa skema relasional PostgreSQL Supabase untuk persistensi public_id dan pembersihan aset fisik otomatis.",
+    cpmkPoints: [
+      {
+        code: "CPMK 10.1",
+        badge: "Media Architecture & CDN",
+        title: "Arsitektur Media Serverless & Global Multi-Tier Edge CDN",
+        desc: "Menganalisis inefisiensi penyimpanan biner BLOB pada database relasional dan batasan payload 4.5MB fungsi serverless FaaS, merancang arsitektur distribusi media multi-tier (Edge POP, Origin Shield, Object Store), serta menerapkan negosiasi format dinamis (`f_auto`) dan kompresi perseptual cerdas (`q_auto`) untuk reduksi bobot aset hingga 85%.",
+        keywords: ["Database BLOB vs Media CDN", "Vercel 4.5MB Payload Limit", "f_auto (WebP/AVIF)", "q_auto (SSIM Optimization)", "Origin Shield & Edge Caching"]
+      },
+      {
+        code: "CPMK 10.2",
+        badge: "Upload Pipeline & Security",
+        title: "Direct Client Upload & Otorisasi Kriptografis Signed Presets",
+        desc: "Mengimplementasikan direct client upload nir-komputasi (*zero-compute*) menggunakan komponen `<CldUploadWidget>`, membandingkan tingkat keamanan *Unsigned Presets* dengan *HMAC SHA-1 Signed Presets*, serta merancang Server Action penandatangan signature terproteksi autentikasi JWT Supabase.",
+        keywords: ["CldUploadWidget", "Zero-Compute Direct Upload", "Unsigned vs Signed Presets", "HMAC SHA-1 Signature", "Server Actions Token Signing"]
+      },
+      {
+        code: "CPMK 10.3",
+        badge: "AI Transformations & Web Vitals",
+        title: "Transformasi Gambar Dinamis Berbasis AI & Kepatuhan Core Web Vitals",
+        desc: "Mengembangkan komponen visual adaptif menggunakan `<CldImage>` dengan fitur AI *Smart Cropping* berbasis deteksi wajah (`c_fill, g_face`) dan salience (`g_auto`), memanfaatkan kemampuan *Generative Fill* (`b_gen_fill`) dan *Background Removal*, serta mengeliminasi Cumulative Layout Shift (CLS = 0.00) melalui LQIP *blur-up* dan otomatisasi `srcset` responsif.",
+        keywords: ["<CldImage>", "Smart Crop (c_fill, g_face)", "Generative Fill (b_gen_fill)", "Background Removal", "Zero CLS & LQIP Blur-Up"]
+      },
+      {
+        code: "CPMK 10.4",
+        badge: "Schema & Lifecycle Management",
+        title: "Arsitektur Skema public_id Supabase, URL Bertanda Tangan & Cleanup",
+        desc: "Merekayasa skema database PostgreSQL Supabase dengan menyimpan `public_id` alih-alih URL statis kaku, merancang mekanisme akses dokumen terproteksi (*Authenticated Delivery*) menggunakan URL bertanda tangan berbatas waktu (*expiring signed URLs*), serta mengotomasi siklus hidup pembersihan aset fisik Cloudinary saat baris data dihapus (*orphan asset prevention*).",
+        keywords: ["public_id Storage Pattern", "Authenticated Delivery (Expiring URLs)", "Two-Phase Asset Cleanup", "cloudinary.uploader.destroy", "Zombie File Prevention"]
+      }
+    ],
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 450,
     concepts: {
-      summary: "Menyimpan gambar langsung di database adalah praktik buruk. Cloudinary bertindak sebagai CDN dan media server khusus yang mengompres gambar otomatis menjadi format WebP/AVIF.",
+      summary: "Mengelola file media (foto, avatar, dokumen lampiran) dalam arsitektur serverless memerlukan pemisahan tegas antara penyimpanan data relasional dan pengiriman aset biner. Menyimpan gambar sebagai biner BLOB (BYTEA) di PostgreSQL memicu database bloat, merusak performa backup, dan membebani serverless compute dengan transmisi data lambat yang rentan terhadap batasan 4.5MB Vercel. Pada modul ini, kita mengintegrasikan Cloudinary sebagai AI Media CDN khusus. Kita mempelajari pipeline direct browser upload menggunakan <CldUploadWidget> yang melewati Vercel API gateway secara utuh (zero-compute), transformasi format dan kompresi perseptual otomatis (f_auto, q_auto), pemotongan cerdas AI (g_face), serta arsitektur persistensi public_id pada PostgreSQL Supabase disertai pembersihan aset fisik otomatis guna mencegah penumpukan file zombie.",
       points: [
-        { title: "Direct Upload Widget", desc: "Mengunggah gambar langsung dari browser ke Cloudinary tanpa membebani memori serverless Next.js." },
-        { title: "Dynamic Transformations", desc: "Mengubah ukuran, memotong (crop) berbasis AI deteksi wajah, dan efek gambar langsung melalui URL." }
-      ]
-    },
-    references: [
-      { title: "Next Cloudinary Official Docs", url: "https://next-cloudinary.spacejelly.dev/", source: "Cloudinary" },
-      { title: "Cloudinary Programmable Media API", url: "https://cloudinary.com/documentation", source: "Cloudinary" }
-    ],
-    lab: {
-      prerequisites: ["Akun Cloudinary siap", "Cloud Name & Upload Preset terkonfigurasi"],
-      steps: [
+        { title: "Serverless Media Architecture", desc: "Memisahkan biner gambar ke CDN khusus dan hanya menyimpan referensi public_id di PostgreSQL Supabase untuk menjaga performa serverless tetap ramping." },
+        { title: "Direct Browser Uploads", desc: "Mengunggah aset langsung dari peramban ke Cloudinary menggunakan <CldUploadWidget>, mem-bypass batasan payload 4.5MB Vercel tanpa membebani memori FaaS." },
+        { title: "AI-Powered Dynamic Transformations", desc: "Mengubah ukuran, rasio aspek, format (WebP/AVIF), dan gravitasi wajah (g_face) secara instan melalui parameter URL on-the-fly." },
+        { title: "Lifecycle & Orphan Assets Prevention", desc: "Mengotomasi penghapusan file di Cloudinary saat baris data terkait dihapus di Supabase untuk menghemat kuota penyimpanan." }
+      ],
+      diagramNote: "Browser Upload Widget ➔ Direct POST to Cloudinary (Bypass Vercel 4.5MB) ➔ Cloudinary AI Processing (f_auto, q_auto, g_face) ➔ Return public_id to Client ➔ Server Action Persist public_id to Supabase ➔ Next.js 16 <CldImage> Renders with Responsive srcset & Zero CLS",
+      deepDiveSections: [
         {
-          stepNumber: 1,
-          instruction: "Instal pustaka next-cloudinary",
-          code: "npm install next-cloudinary",
-          language: "bash"
+          title: "1. Arsitektur Media Serverless & CDN Edge Delivery (Cloudinary vs DB BLOB)",
+          badge: "Pilar 1: Arsitektur Media Serverless",
+          content: "Dalam rekayasa sistem terdistribusi modern, aset media (citra digital, video, dokumen PDF) memiliki karakteristik komputasi yang bertolak belakang dengan data transaksional relasional. Menyatukan keduanya dalam satu basis data monolitik adalah sumber utama kegagalan skalabilitas sistem (*system scalability failure*).\n\n" +
+                   "Pada platform *Serverless* seperti Vercel dan Supabase, batasan komputasi semakin nyata: memori eksekusi fungsi FaaS dibatasi (1024–3008 MB), ukuran payload HTTP dibatasi maksimal 4.5 MB, dan durasi eksekusi dipatok maksimal 10–15 detik. Mengalirkan byte biner media melalui serverless backend memicu *memory leak*, kehabisan *bandwidth pool*, dan memblokir thread eksekusi I/O.\n\n" +
+                   "Solusi baku industri adalah menerapkan **Dedicated AI Media CDN**: komputasi penyimpanan dan transformasi dialihkan sepenuhnya ke penyedia CDN terspesialisasi (Cloudinary), sementara basis data relasional (Supabase) hanya menyimpan pointer identitas string (`public_id`) yang berukuran beberapa puluh byte saja.",
+          subpoints: [
+            {
+              label: "Mengapa BLOB Database & Penyimpanan Lokal Anti-Pattern pada Serverless FaaS?",
+              text: "1. Bahaya Kolom BYTEA / BLOB di Database Relasional:\n" +
+                    "Menyimpan file biner 3 MB langsung ke dalam kolom PostgreSQL memicu fenomena Database Bloat. Ukuran database yang awalnya 50 MB dapat melonjak menjadi 50 GB dalam beberapa minggu. Hal ini menyebabkan:\n" +
+                    "- Operasi pencadangan data (`pg_dump`) menjadi sangat lambat (berjam-jam alih-alih detik).\n" +
+                    "- Penurunan drastis performa buffer pool RAM database karena halaman memori dipenuhi byte gambar statis alih-alih indeks B-Tree yang sering diakses.\n" +
+                    "- Melewati kuota tier gratis database secara prematur.\n\n" +
+                    "2. Sifat Efemeral Serverless Filesystem (/tmp):\n" +
+                    "Pada fungsi serverless (Vercel Functions), sistem file lokal bersifat *stateless* dan *ephemeral* (hanya bertahan selama container aktif). Menulis file ke disk lokal (`fs.writeFileSync`) akan hilang seketika saat container dimatikan (*cold shutdown*).",
+              code: `// ❌ ANTI-PATTERN: Menyimpan Base64 / BLOB ke Database Supabase
+// Membengkakkan ukuran database hingga puluhan Gigabyte!
+const { data, error } = await supabase
+  .from('tasks')
+  .insert({
+    title: 'Review Mockup Desain',
+    image_blob: base64DataString // 3.5 MB text string!
+  });
+
+// ✅ BEST PRACTICE: Hanya simpan public_id (~30 byte string)
+// Byte biner gambar didelegasikan ke Cloudinary CDN
+const { data, error } = await supabase
+  .from('tasks')
+  .insert({
+    title: 'Review Mockup Desain',
+    image_public_id: 'tasks/mockup_v2_f89a' // Hanya 24 byte!
+  });`,
+              language: "typescript",
+              caption: "Perbandingan skema data: BLOB biner raksasa vs public_id ramping pada PostgreSQL."
+            },
+            {
+              label: "Arsitektur Multi-Tier & Global Edge Caching Cloudinary",
+              text: "1. Tiga Lapisan Arsitektur Pengiriman Media:\n" +
+                    "Cloudinary mengadopsi topologi pengiriman multi-tier:\n" +
+                    "- **Tier 1: Global Edge POPs (Points of Presence)**: Jaringan server cache Akamai, Fastly, dan CloudFront di ratusan kota di seluruh dunia. Permintaan gambar disajikan dari lokasi fisik terdekat dengan pengguna (latensi < 25ms).\n" +
+                    "- **Tier 2: Origin Shield**: Lapisan perantara yang melindungi datacenter utama dari lonjakan trafik serentak (*thundering herd problem*).\n" +
+                    "- **Tier 3: Cloudinary AI Transformation Engine & Object Storage**: Klaster komputasi GPU/CPU yang mengeksekusi kompresi, cropping, dan konversi format saat terjadi Cache MISS.\n\n" +
+                    "2. Mekanisme Cache HIT vs Cache MISS:\n" +
+                    "Saat URL gambar diminta untuk pertama kali, terjadi Cache MISS (~280ms) di mana Cloudinary mentranskode gambar secara on-the-fly. Seluruh permintaan berikutnya dari peramban manapun akan langsung dijawab oleh Edge POP sebagai Cache HIT (~18ms) dengan biaya komputasi 0.",
+              code: `// HTTP Response Headers dari Cloudinary Edge CDN
+HTTP/2 200 OK
+content-type: image/webp
+content-length: 42180
+cache-control: public, max-age=31536000, immutable
+x-cld-cache: HIT
+server-timing: cdn-cache; desc=HIT, edge; dur=14
+access-control-allow-origin: *`,
+              language: "http",
+              caption: "Header HTTP respons CDN Cloudinary yang menunjukkan status Cache HIT dan waktu transfer 14ms."
+            },
+            {
+              label: "Format Otomatis (f_auto) & Kompresi Cerdas (q_auto) Berbasis AI",
+              text: "1. Negosiasi Konten Dinamis via `f_auto`:\n" +
+                    "Parameter `f_auto` membaca header HTTP peramban `Accept: image/avif,image/webp,*/*`. Jika peramban mendukung format AVIF (Next-Gen), Cloudinary secara dinamis mengirimkan AVIF. Jika peramban versi lama (misal Safari lama), Cloudinary otomatis jatuh kembali ke WebP atau JPEG tanpa perlu perubahan kode di aplikasi!\n\n" +
+                    "2. Kompresi Kualitas Perseptual `q_auto`:\n" +
+                    "Alih-alih menggunakan angka statis (misal kompresi 80% yang sering merusak gradien halus atau over-compress teks), algoritma AI `q_auto` menganalisis frekuensi spasial gambar menggunakan metrik SSIM (Structural Similarity Index Measure):\n" +
+                    "- Mengompres area datar/latar belakang secara agresif.\n" +
+                    "- Menjaga ketajaman tepi teks dan kontur wajah manusia.\n" +
+                    "- Menghasilkan penghematan bobot file rata-rata 60–85% tanpa perbedaan yang dapat dideteksi oleh mata manusia.",
+              code: `// Contoh URL Transformasi Cloudinary: Otomatisasi Format & Kualitas
+// Sintaks: https://res.cloudinary.com/<cloud_name>/image/upload/<transformasi>/<public_id>
+
+// URL Asli JPEG Mentah: 1.85 MB
+https://res.cloudinary.com/kampus/image/upload/sample.jpg
+
+// URL Teroptimasi f_auto,q_auto: 195 KB (-89% bandwidth!)
+https://res.cloudinary.com/kampus/image/upload/f_auto,q_auto/sample.jpg`,
+              language: "text",
+              caption: "Penambahan parameter f_auto,q_auto memangkas ukuran byte gambar hingga 89% seketika."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Kriteria / Metrik", "Penyimpanan Database BLOB", "Server Proxy Upload (FaaS)", "Dedicated Media CDN (Cloudinary)"],
+            rows: [
+              ["Batas Ukuran File", "Terbatas RAM DB (< 5 MB)", "Maksimal 4.5 MB (Limit Vercel)", "Hingga 100 MB per file"],
+              ["Beban RAM Serverless", "Tinggi (Buffer Base64)", "Kritis (Memory Pressure)", "0 MB (Direct Client Upload)"],
+              ["Dampak Backup DB", "Sangat Lambat (Database Bloat)", "Normal", "Instan (< 1 detik, hanya string ID)"],
+              ["Format File Dinamis", "Manual (Statis)", "Manual di Node.js (Sharp/Canvas)", "Otomatis via f_auto (AVIF/WebP)"],
+              ["Distribusi Geografis", "Tergantung lokasi single DB", "Single Region", "Multi-Tier Global Edge POPs (< 30ms)"],
+              ["Biaya Bandwidth", "Sangat Mahal (DB Egress)", "Terkena Kuota Vercel Bandwidth", "Hemat (Kompresi q_auto hingga -85%)"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Peringatan Arsitektur: Jangan Pernah Mengunggah Gambar Melalui Server Actions",
+            text: "DILARANG KERAS membuat formulir yang mengirim file biner gambar mentah melalui Server Action Next.js (misal: formData.get('file')). Vercel Serverless Functions memiliki batasan ketat 'HTTP 413 Payload Too Large' pada ukuran 4.5 MB. Selalu gunakan Direct Client Upload (<CldUploadWidget>) agar browser mengirim langsung ke Cloudinary!"
+          }
         },
         {
-          stepNumber: 2,
-          instruction: "Konfigurasi next.config.ts untuk domain remote Cloudinary",
-          code: `import type { NextConfig } from "next";
+          title: "2. Pipeline Unggah Aset: Client-Side Direct Upload vs Signed Server Actions",
+          badge: "Pilar 2: Pipeline Unggah & Otorisasi",
+          content: "Tantangan terbesar dalam arsitektur media serverless adalah bagaimana mengunggah file berukuran besar secara aman tanpa mengekspos kredensial rahasia (*secret credentials*) ke peramban publik.\n\n" +
+                   "Cloudinary menyediakan dua model arsitektur unggah: **Unsigned Upload Presets** dan **Signed Upload Presets**. Memahami trade-off keamanan antara keduanya sangat krusial bagi mahasiswa untuk membangun aplikasi yang aman dari serangan eksploitasi kuota (*denial-of-wallet / storage exhaustion*).\n\n" +
+                   "Di pilar ini, kita mempelajari bagaimana memadukan pustaka resmi `next-cloudinary` dengan pola komposisi Next.js 16 Server Components dan Server Actions penandatangan signature kriptografis berbasis HMAC SHA-1.",
+          subpoints: [
+            {
+              label: "Direct Client Upload via <CldUploadWidget>: Zero-Compute Serverless",
+              text: "1. Mekanisme Zero-Compute:\n" +
+                    "Dalam pola Direct Upload, peramban membuka koneksi HTTP multipart/form-data langsung ke endpoint API Cloudinary (`https://api.cloudinary.com/v1_1/<cloud_name>/image/upload`). Paket data biner mengalir langsung dari kartu jaringan klien ke penyimpanan cloud tanpa melewati server Vercel.\n\n" +
+                    "2. Komponen `<CldUploadWidget>`:\n" +
+                    "`next-cloudinary` membungkus widget interaktif resmi Cloudinary ke dalam komponen React deklaratif. Komponen ini menangani drag-and-drop file lokal, cropping visual sebelum upload, validasi format berkas (.jpg, .png, .webp), dan indikator progres unggah secara otomatis.\n\n" +
+                    "3. Siklus Callback `onSuccess`:\n" +
+                    "Setelah unggahan berhasil, Cloudinary mengembalikan objek JSON berisi metadata aset (`public_id`, `secure_url`, `width`, `height`, `format`). Callback `onSuccess` menerima payload ini di sisi klien untuk kemudian dikirimkan ke database Supabase.",
+              code: `// src/components/media/media-upload-widget.tsx
+'use client';
+
+import { CldUploadWidget } from 'next-cloudinary';
+import { Button } from '@/components/ui/button';
+import { UploadCloud } from 'lucide-react';
+
+interface MediaUploadWidgetProps {
+  onUploadSuccess: (publicId: string, secureUrl: string) => void;
+}
+
+export function MediaUploadWidget({ onUploadSuccess }: MediaUploadWidgetProps) {
+  return (
+    <CldUploadWidget
+      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tasks_unsigned'}
+      options={{
+        maxFiles: 1,
+        maxFileSize: 10485760, // Batas 10 MB per file
+        clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
+        sources: ['local', 'camera', 'url'],
+      }}
+      onSuccess={(result) => {
+        if (typeof result.info === 'object' && 'public_id' in result.info) {
+          onUploadSuccess(result.info.public_id, result.info.secure_url);
+        }
+      }}
+    >
+      {({ open }) => (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => open()}
+          className="gap-2 text-xs font-semibold"
+        >
+          <UploadCloud className="w-4 h-4 text-indigo-500" />
+          Unggah Lampiran Gambar
+        </Button>
+      )}
+    </CldUploadWidget>
+  );
+}`,
+              language: "tsx",
+              caption: "Implementasi komponen Client-Side CldUploadWidget dengan pembatasan format dan ukuran."
+            },
+            {
+              label: "Unsigned Upload Presets vs Signed Upload Presets (HMAC SHA-1 Signature)",
+              text: "1. Unsigned Upload Presets:\n" +
+                    "- Tidak memerlukan tanda tangan server.\n" +
+                    "- Cukup menyertakan string preset publik (misal: `tasks_unsigned`).\n" +
+                    "- Kelebihan: implementasi sangat cepat dan mudah.\n" +
+                    "- Kekurangan: siapa pun yang menginspeksi network tab dapat menyalin preset dan mengunggah gambar ke akun Cloudinary Anda hingga kuota habis.\n\n" +
+                    "2. Signed Upload Presets (Standar Enterprise):\n" +
+                    "- Klien wajib meminta tanda tangan digital (*cryptographic signature*) ke server sebelum mengunggah.\n" +
+                    "- Server Action mengecek sesi autentikasi pengguna (`await createClient()`).\n" +
+                    "- Server menghitung hash HMAC SHA-1 dari gabungan parameter unggah (timestamp, folder, tags) menggunakan `CLOUDINARY_API_SECRET` yang dirahasiakan di server.\n" +
+                    "- Cloudinary memverifikasi signature ini; jika timestamp kedaluwarsa atau hash tidak cocok, unggahan langsung ditolak dengan `401 Unauthorized`.",
+              code: `// src/actions/cloudinary.ts
+'use server';
+
+import { createClient } from '@/utils/supabase/server';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function generateUploadSignature(folder: string = 'tasks') {
+  // 1. Verifikasi autentikasi pengguna via Supabase
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) throw new Error('Unauthorized');
+
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const paramsToSign = {
+    folder,
+    timestamp,
+  };
+
+  // 2. Generate HMAC SHA-1 signature menggunakan secret server
+  const signature = cloudinary.utils.api_sign_request(
+    paramsToSign,
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  return {
+    signature,
+    timestamp,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+  };
+}`,
+              language: "typescript",
+              caption: "Server Action penandatangan signature HMAC SHA-1 terproteksi autentikasi JWT Supabase."
+            },
+            {
+              label: "Arsitektur Schema Supabase: Menyimpan public_id vs Hardcoded URL",
+              text: "1. Anti-Pattern: Menyimpan URL Penuh di Database:\n" +
+                    "Banyak developer pemula menyimpan string lengkap `https://res.cloudinary.com/kampus/image/upload/v171720/tasks/foto.jpg` ke kolom database. Ini adalah anti-pattern fatal:\n" +
+                    "- Jika Anda mengubah Cloud Name atau mengaktifkan Custom Domain (misal `cdn.kampus.ac.id`), seluruh ribuan baris database menjadi *broken link* dan wajib dimigrasi dengan skrip SQL berbahaya.\n" +
+                    "- Parameter transformasi terkunci permanen di database dan tidak dapat diubah secara dinamis di level komponen frontend.\n\n" +
+                    "2. Best Practice: Simpan Hanya `public_id`:\n" +
+                    "Cukup simpan string identifier relatif: `'tasks/foto_v1'`. Di sisi frontend, komponen `<CldImage src={task.image_public_id} />` secara otomatis mengkombinasikan cloud name dari environment variable dan parameter transformasi sesuai kebutuhan antarmuka layar peramban saat itu.",
+              code: `-- supabase/migrations/05_tasks_media_schema.sql
+-- Tambahkan kolom penyimpanan media terstruktur pada tabel tasks
+ALTER TABLE public.tasks
+ADD COLUMN IF NOT EXISTS image_public_id TEXT,
+ADD COLUMN IF NOT EXISTS image_metadata JSONB DEFAULT '{}'::jsonb;
+
+-- Indeks pencarian jika sistem perlu mencari tugas berdasarkan aset media
+CREATE INDEX IF NOT EXISTS idx_tasks_image_public_id 
+ON public.tasks(image_public_id) 
+WHERE image_public_id IS NOT NULL;`,
+              language: "sql",
+              caption: "Skema DDL migrasi kolom image_public_id dan image_metadata JSONB di PostgreSQL."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Karakteristik", "Unsigned Upload Preset", "Signed Upload Preset (HMAC SHA-1)"],
+            rows: [
+              ["Kebutuhan Komputasi Server", "0 (Murni di Browser Klien)", "Ringan (1 Server Action untuk hitung Hash)"],
+              ["Kerahasiaan Kunci API", "API Secret tidak digunakan", "API Secret aman di lingkungan server Node.js"],
+              ["Proteksi Spam / Abuse", "Rendah (Siapapun yang punya preset bisa upload)", "Tinggi (Wajib login & signature bertenggat waktu)"],
+              ["Pemberian Tag & Folder Otomatis", "Terbatas pada konfigurasi preset statis", "Dinamis per pengguna (misal folder per user_id)"],
+              ["Kasus Penggunaan Ideal", "Aplikasi prototipe, tugas praktikum dasar", "Aplikasi skala produksi, portal enterprise"]
+            ]
+          },
+          callout: {
+            type: "tip",
+            title: "Rekomendasi Pemilihan: Kapan Menggunakan Unsigned vs Signed?",
+            text: "Untuk mempercepat eksplorasi di lab praktikum dan prototipe lokal, Anda dapat menggunakan Unsigned Preset. Namun untuk aplikasi produksi komersial dan penugasan akhir berstandar tinggi, selalu gunakan Signed Upload Presets yang diverifikasi melalui Server Action."
+          }
+        },
+        {
+          title: "3. Transformasi Gambar Dinamis Berbasis AI & Smart Cropping (<CldImage>)",
+          badge: "Pilar 3: AI Transformations & Web Vitals",
+          content: "Keunggulan utama Cloudinary dibanding penyimpanan objek mentah biasa (seperti AWS S3 atau Supabase Storage polos) terletak pada kemampuan **Programmable Media Engine** berbasis kecerdasan buatan (*AI-driven image processing*).\n\n" +
+                   "Setiap manipulasi gambar—mulai dari deteksi wajah, penghapusan latar belakang, restorasi resolusi super, hingga pengubahan rasio aspek—dapat dieksekusi secara deklaratif melalui parameter URL tanpa perlu menulis script kompresi manual dengan pustaka seperti `Sharp` atau `ImageMagick` di backend.\n\n" +
+                   "Pada ekosistem Next.js 16, komponen `<CldImage>` dari pustaka `next-cloudinary` bertindak sebagai pembungkus cerdas di atas komponen inti `next/image`, memberikan skor performa **Google Core Web Vitals** sempurna dengan Cumulative Layout Shift (CLS = 0.00).",
+          subpoints: [
+            {
+              label: "Gravitasi Wajah Otomatis (c_fill, g_face / g_auto) & Rekayasa Aspek Rasio",
+              text: "1. Masalah Klasik Headless Avatar:\n" +
+                    "Saat foto vertikal (3:4) dipotong menjadi kotak (1:1) dengan cropping tengah biasa (`g_center`), kepala orang sering terpotong di tepi atas, hanya menyisakan bagian leher dan dada. Ini adalah cacat visual yang sering merusak profesionalitas aplikasi profil pengguna.\n\n" +
+                    "2. Solusi AI Face Detection (`g_face`):\n" +
+                    "Cloudinary menjalankan model Computer Vision pada tier Origin untuk mendeteksi koordinat mata dan wajah manusia di dalam foto. Parameter `c_fill, g_face` memerintahkan algoritma untuk memusatkan bingkai cropping tepat di sekitar wajah dengan margin padding yang seimbang.\n\n" +
+                    "3. Gravitasi Salience (`g_auto`):\n" +
+                    "Jika gambar tidak memuat wajah manusia (misal: foto produk sepatu, lanskap arsitektur, atau mobil), parameter `g_auto` secara cerdas mendeteksi objek dengan kontras dan detail tertinggi sebagai titik fokus pemotongan.",
+              code: `// src/components/users/user-avatar.tsx
+'use client';
+
+import { CldImage } from 'next-cloudinary';
+
+export function UserAvatar({ publicId, name }: { publicId?: string; name: string }) {
+  if (!publicId) {
+    return <div className="w-12 h-12 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold">{name[0]}</div>;
+  }
+
+  return (
+    <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-indigo-500/20 shadow-sm">
+      <CldImage
+        src={publicId}
+        width={96}
+        height={96}
+        crop="fill"
+        gravity="face" // AI Face Detection: Wajah selalu berada di tengah avatar!
+        format="auto"
+        quality="auto"
+        alt={\`Avatar \${name}\`}
+        className="object-cover w-full h-full"
+      />
+    </div>
+  );
+}`,
+              language: "tsx",
+              caption: "Implementasi avatar pengguna anti-terpotong memanfaatkan crop='fill' dan gravity='face'."
+            },
+            {
+              label: "Generative AI Features: Generative Fill, Background Removal & Colorize",
+              text: "1. Generative Fill (`b_gen_fill`):\n" +
+                    "Terkadang pengguna mengunggah foto vertikal, namun desain aplikasi membutuhkan banner lanskap horizontal (16:9). Alih-alih menambahkan bar hitam jelek di kiri dan kanan (*pillarbox*), model difusi AI Cloudinary dapat melakukan *outpainting*—mengisi ruang kosong di samping foto dengan pemandangan latar belakang sintetis yang menyatu secara alami!\n\n" +
+                    "2. AI Background Removal (`e_background_removal`):\n" +
+                    "Menghilangkan latar belakang ruangan yang berantakan dari foto produk atau avatar secara instan, menghasilkan file PNG/WebP transparan murni dalam satu parameter URL.\n\n" +
+                    "3. Generative Replace (`e_gen_replace`):\n" +
+                    "Mengganti objek spesifik di dalam foto menggunakan instruksi prompt teks (misal: mengganti warna baju atau latar belakang cuaca).",
+              code: `// Contoh Sintaks URL Cloudinary Generative AI
+// 1. Generative Fill: Mengubah foto produk 1:1 menjadi banner 16:9 tanpa black bars
+https://res.cloudinary.com/kampus/image/upload/c_pad,b_gen_fill,ar_16:9,w_1200/products/shoes.jpg
+
+// 2. AI Background Removal: Menghapus latar belakang secara transparan
+https://res.cloudinary.com/kampus/image/upload/e_background_removal/products/headphone.png`,
+              language: "text",
+              caption: "Transformasi Generative Fill dan Background Removal langsung via parameter URL Cloudinary."
+            },
+            {
+              label: "Optimasi Next.js 16 <CldImage>: Remote Patterns, Responsive Srcset & Placeholder Blur",
+              text: "1. Konfigurasi `next.config.ts` (remotePatterns):\n" +
+                    "Next.js 16 mewajibkan deklarasi domain eksternal di file konfigurasi root untuk mencegah serangan SSRF (Server-Side Request Forgery). Kita wajib mendaftarkan host `res.cloudinary.com`.\n\n" +
+                    "2. Otomatisasi Atribut `srcset` Responsif:\n" +
+                    "Komponen `<CldImage>` membaca viewport layar peramban dan secara otomatis menghasilkan puluhan variasi lebar gambar (`w_390`, `w_768`, `w_1200`). Smartphone hanya mengunduh gambar 48 KB, sedangkan monitor 4K mengunduh gambar resolusi tinggi, menghemat bandwidth seluler pengguna secara masif.\n\n" +
+                    "3. Low Quality Image Placeholder (LQIP) Blur-up (Zero CLS):\n" +
+                    "Dengan menyertakan prop `placeholder=\"blur\"`, `<CldImage>` secara otomatis meminta siluet gambar berukuran sangat mini (~800 byte) dengan efek blur ekstrem. Kontainer gambar langsung mengunci dimensinya di DOM sejak frame pertama (CLS = 0.00), lalu bertransisi mulus (*fade-in*) saat gambar utama selesai diunduh.",
+              code: `// next.config.ts
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
+};
+
+export default nextConfig;`,
+              language: "typescript",
+              caption: "Konfigurasi remotePatterns di next.config.ts Next.js 16 untuk domain Cloudinary."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Fitur Transformasi", "Pemrosesan Tradisional di Node.js", "AI Media Engine (next-cloudinary)"],
+            rows: [
+              ["Deteksi Titik Fokus", "Manual (Koordinat X/Y kaku)", "AI Face Detection (g_face) & Salience (g_auto)"],
+              ["Kebutuhan CPU Server", "Berat (Sharp/Canvas memakan RAM FaaS)", "0% (Dikomputasi di GPU klaster Cloudinary)"],
+              ["Generative AI Fill", "Harus integrasi API model terpisah", "Native 1 baris URL (b_gen_fill)"],
+              ["Format & Kualitas", "Harus generate WebP dan JPEG terpisah", "Otomatisasi runtime (f_auto, q_auto)"],
+              ["Respon Core Web Vitals", "Manual hitung srcset & blur placeholder", "Built-in otomatis via komponen <CldImage>"]
+            ]
+          },
+          callout: {
+            type: "info",
+            title: "Kunci Core Web Vitals Hijau: Selalu Tentukan Width & Height",
+            text: "Saat menggunakan <CldImage>, selalu sertakan prop 'width' dan 'height' numerik atau gunakan 'fill' dengan kontainer CSS berukuran tetap ('relative aspect-video'). Hal ini menjamin peramban mengalokasikan ruang layout sebelum gambar selesai diunduh, mengeliminasi Cumulative Layout Shift (CLS) secara total."
+          }
+        },
+        {
+          title: "4. Keamanan Aset Media, Manajemen Siklus Hidup, & Webhook Notification",
+          badge: "Pilar 4: Keamanan & Siklus Hidup Aset",
+          content: "Mengunggah aset media ke cloud hanyalah separuh dari siklus hidup rekayasa perangkat lunak. Separuh lainnya yang sering dilupakan pengembang adalah **tata kelola akses data pribadi (*data privacy*)** dan **pembersihan aset sampah (*lifecycle garbage collection*)**.\n\n" +
+                   "Tidak semua gambar boleh diakses bebas oleh publik melalui internet terbuka. Dokumen pribadi seperti bukti pembayaran perbankan, kartu identitas, dan lampiran tugas rahasia wajib diproteksi menggunakan tautan bertanda tangan bertenggat waktu (*expiring signed URLs*).\n\n" +
+                   "Selain itu, ketika seorang pengguna menghapus tugas atau akun di aplikasi, aset fisik di Cloudinary harus dihapus secara sinkron untuk mencegah akumulasi *Zombie Files* yang terus membebani kuota dan biaya penyimpanan bulanan.",
+          subpoints: [
+            {
+              label: "Access Control: Public vs Authenticated vs Restricted Assets",
+              text: "1. Tiga Mode Delivery Cloudinary:\n" +
+                    "- **`upload` (Public)**: Aset dapat diakses oleh siapa saja yang memiliki URL publik. Cocok untuk logo aplikasi, avatar profil publik, dan cover postingan blog.\n" +
+                    "- **`authenticated` (Expiring Signed URL)**: Aset disimpan di bucket privat. URL pengiriman wajib menyertakan token hash kriptografis dan parameter kedaluwarsa waktu UNIX (`t_1717204800`). Link hanya valid selama durasi tertentu (misal 10 menit).\n" +
+                    "- **`private` (Restricted)**: Aset diblokir dari seluruh akses URL langsung; hanya dapat diunduh melalui API Admin atau IP Whitelist.\n\n" +
+                    "2. Menghasilkan Tautan Privat Sementara di Server Component:\n" +
+                    "Saat pengguna membuka detail dokumen rahasia, Server Component Next.js memverifikasi otorisasi RLS, lalu menggunakan SDK `cloudinary.url()` dengan opsi `sign_url: true` dan `expires_at` untuk menerbitkan link temporer.",
+              code: `// src/actions/media-access.ts
+'use server';
+
+import { createClient } from '@/utils/supabase/server';
+import { v2 as cloudinary } from 'cloudinary';
+
+export async function getPrivateDocumentUrl(publicId: string): Promise<string> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  // URL sah hanya selama 15 menit (900 detik)
+  const expiresAt = Math.floor(Date.now() / 1000) + 900;
+
+  const signedUrl = cloudinary.url(publicId, {
+    type: 'authenticated',
+    sign_url: true,
+    expires_at: expiresAt,
+    secure: true,
+  });
+
+  return signedUrl;
+}`,
+              language: "typescript",
+              caption: "Server Action penerbitan Expiring Signed URL untuk dokumen lampiran privat."
+            },
+            {
+              label: "Lifecycle & Cleanup: Otomasi Penghapusan Aset Cloudinary saat Row Supabase Dihapus",
+              text: "1. Masalah File Zombie (*Orphan Assets*):\n" +
+                    "Jika kita hanya mengeksekusi `DELETE FROM tasks WHERE id = taskId` di database Supabase, baris database memang terhapus, tetapi file gambar seukuran 4 MB tetap tersimpan abadi di Cloudinary CDN. Setelah berbulan-bulan, ribuan file sampah tak bertuan (*zombie assets*) ini akan menghabiskan kuota kredit akun Anda.\n\n" +
+                    "2. Strategi Two-Phase Cleanup di Server Action:\n" +
+                    "Sebelum baris data dihapus dari Supabase, Server Action wajib mengambil `image_public_id` dari baris terkait, memanggil API penghapusan `cloudinary.uploader.destroy(public_id)`, lalu setelah Cloudinary mengonfirmasi `{ result: 'ok' }`, baris data di Supabase baru dihapus secara bersih.",
+              code: `// src/actions/tasks-with-media.ts
+'use server';
+
+import { createClient } from '@/utils/supabase/server';
+import { v2 as cloudinary } from 'cloudinary';
+import { revalidatePath } from 'next/cache';
+
+export async function deleteTaskWithMediaAction(taskId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  // 1. Ambil public_id gambar yang tersimpan sebelum row dihapus
+  const { data: task } = await supabase
+    .from('tasks')
+    .select('image_public_id, user_id')
+    .eq('id', taskId)
+    .single();
+
+  if (!task || task.user_id !== user.id) {
+    return { success: false, error: 'Tugas tidak ditemukan atau akses ditolak' };
+  }
+
+  // 2. Hapus aset fisik di Cloudinary jika tugas memiliki gambar lampiran
+  if (task.image_public_id) {
+    try {
+      await cloudinary.uploader.destroy(task.image_public_id);
+    } catch (cldErr) {
+      console.error('Peringatan: Gagal menghapus aset di Cloudinary:', cldErr);
+    }
+  }
+
+  // 3. Hapus baris data dari PostgreSQL Supabase
+  await supabase.from('tasks').delete().eq('id', taskId);
+
+  revalidatePath('/tasks');
+  return { success: true };
+}`,
+              language: "typescript",
+              caption: "Server Action penghapusan dua fase untuk mencegah penumpukan file zombie di Cloudinary."
+            },
+            {
+              label: "Audit Penggunaan Kuota, Rate Limiting & Webhook Asinkron Cloudinary",
+              text: "1. Model Kuota Kredit Cloudinary:\n" +
+                    "Akun gratis Cloudinary menyediakan 25 Kredit per bulan. 1 Kredit setara dengan salah satu dari:\n" +
+                    "- 1.000 transformasi gambar biasa.\n" +
+                    "- 1 GB penyimpanan data (storage).\n" +
+                    "- 1 GB bandwidth pengiriman CDN (egress).\n\n" +
+                    "2. Webhook Transformasi Asinkron:\n" +
+                    "Untuk operasi berat seperti AI Generative Fill atau transkoding video panjang, Cloudinary tidak memprosesnya secara sinkron. Cloudinary menerima request dan mengembalikan status pending, lalu mengirimkan HTTP POST Webhook ke Route Handler aplikasi Anda (`/api/webhooks/cloudinary`) saat hasil render selesai.\n\n" +
+                    "3. Verifikasi Keaslian Webhook Signature:\n" +
+                    "Aplikasi wajib memverifikasi header `X-Cld-Signature` menggunakan SHA-1/SHA-256 untuk memastikan notifikasi benar-benar berasal dari server Cloudinary, bukan injeksi data palsu dari peretas.",
+              code: `// src/app/api/webhooks/cloudinary/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
+
+export async function POST(req: NextRequest) {
+  const bodyText = await req.text();
+  const timestamp = req.headers.get('x-cld-timestamp') || '';
+  const signature = req.headers.get('x-cld-signature') || '';
+
+  // Verifikasi keaslian signature webhook Cloudinary
+  const isValid = cloudinary.utils.verifyNotificationSignature(
+    bodyText,
+    timestamp,
+    signature,
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  if (!isValid) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  }
+
+  const payload = JSON.parse(bodyText);
+  // Tangani event pemrosesan media asinkron (misal: perbarui status database)
+  console.log('Webhook Cloudinary terverifikasi:', payload.public_id);
+
+  return NextResponse.json({ received: true });
+}`,
+              language: "typescript",
+              caption: "Route Handler penerima Webhook Cloudinary dengan verifikasi tanda tangan kriptografis."
+            }
+          ],
+          comparisonTable: {
+            headers: ["Fitur Keamanan", "Public Delivery (/upload)", "Authenticated Delivery (/authenticated)"],
+            rows: [
+              ["Aksesibilitas Tautan", "Terbuka untuk seluruh internet", "Terkunci (Hanya pengguna dengan signed URL)"],
+              ["Masa Berlaku URL", "Permanen tanpa batas", "Sementara (Dikonfigurasi via timestamp expires_at)"],
+              ["Parameter Tanda Tangan", "Tidak ada parameter signature", "Memuat token kriptografis HMAC di URL"],
+              ["Penyimpanan Fisik Cloud", "Folder bucket publik", "Folder bucket terproteksi akses privat"],
+              ["Contoh Kasus Nyata", "Logo aplikasi, avatar sosial, hero banner", "KTP pengguna, slip gaji, riwayat rekam medis"]
+            ]
+          },
+          callout: {
+            type: "warning",
+            title: "Peringatan Keamanan Privasi: Jangan Simpan Dokumen Sensitif di Folder Publik",
+            text: "Secara default, <CldUploadWidget> menyimpan file dengan mode 'upload' (publik). Jika aplikasi Anda memproses data sensitif (KTP, bukti transfer finansial, dokumen nilai), pastikan mengonfigurasi delivery type menjadi 'authenticated' dan buat Server Action penerbitan Expiring Signed URL untuk membatasi akses."
+          }
+        }
+      ]
+    },
+    references: [
+      { title: "Next Cloudinary Official Documentation & Recipes", url: "https://next-cloudinary.spacejelly.dev/", source: "Cloudinary" },
+      { title: "Cloudinary Programmable Media API Reference", url: "https://cloudinary.com/documentation/image_transformations", source: "Cloudinary" },
+      { title: "Google Web Vitals: Optimizing Largest Contentful Paint (LCP) & CLS", url: "https://web.dev/explore/fast", source: "Google Chrome Developers" },
+      { title: "Next.js 16 Image Optimization & Remote Patterns Guide", url: "https://nextjs.org/docs/app/building-your-application/optimizing/images", source: "Next.js Official" }
+    ],
+    lab: {
+      prerequisites: [
+        "Repositori Proyek Akhir aktif pasca-UTS (Modul 1 s.d. 9) dengan Next.js 16 App Router dan Supabase CRUD",
+        "Akun Cloudinary aktif dengan Cloud Name, API Key, dan API Secret terkonfigurasi di console.cloudinary.com",
+        "Unsigned Upload Preset (misal: 'tasks_preset') telah dibuat di Cloudinary Dashboard ➔ Settings ➔ Upload",
+        "Pustaka Lucide React dan komponen Button / Card / Dialog Shadcn UI terkonfigurasi di proyek"
+      ],
+      warningZone: {
+        title: "Peringatan Arsitektur: Cegah 413 Payload Too Large & Hindari Hardcoded URL di Database",
+        desc: "DILARANG KERAS mengunggah file biner gambar mentah melalui Server Action Next.js (formData.get('file')) karena akan membentur batasan ketat Vercel 4.5MB Payload Too Large! Wajib gunakan Direct Client Upload via <CldUploadWidget>. Selain itu, di tabel database Supabase, simpan HANYA string 'image_public_id' (bukan URL lengkap) agar transformasi gambar di frontend dapat dimutasi secara dinamis tanpa migrasi database."
+      },
+      steps: [
+        {
+          stepNumber: 1,
+          badge: "Instalasi & Konfigurasi Kredensial",
+          instruction: "Pemasangan Paket next-cloudinary dan Pengaturan Environment Variables",
+          code: `npm install next-cloudinary
+
+# Tambahkan kredensial di .env.local:
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="tasks_preset"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"`,
+          language: "bash",
+          explanation: "next-cloudinary mengintegrasikan komponen CldUploadWidget dan CldImage yang dioptimalkan untuk Next.js App Router.",
+          actionType: "manual",
+          targetPromptStep: 1
+        },
+        {
+          stepNumber: 2,
+          badge: "Keamanan Domain Eksternal",
+          instruction: "Konfigurasi remotePatterns di next.config.ts untuk Domain Cloudinary",
+          code: `import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
       },
     ],
   },
@@ -5931,30 +7966,496 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;`,
           language: "typescript",
-          explanation: "Next.js 16 mewajibkan konfigurasi remotePatterns di next.config.ts agar komponen gambar dapat merender aset dari domain Cloudinary secara aman."
+          explanation: "Next.js 16 mewajibkan deklarasi domain remotePatterns untuk mencegah serangan SSRF dan mengizinkan rendering aset dari res.cloudinary.com.",
+          actionType: "manual",
+          targetPromptStep: 1
         },
         {
           stepNumber: 3,
-          instruction: "Tambahkan kredensial Cloud Name di .env.local",
-          code: "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=\"your-cloud-name\"",
-          language: "bash"
+          badge: "Migrasi Database Supabase",
+          instruction: "Menambahkan Kolom image_public_id pada Tabel tasks di Supabase",
+          code: `-- Eksekusi di Supabase SQL Editor:
+ALTER TABLE public.tasks
+ADD COLUMN IF NOT EXISTS image_public_id TEXT,
+ADD COLUMN IF NOT EXISTS image_metadata JSONB DEFAULT '{}'::jsonb;
+
+CREATE INDEX IF NOT EXISTS idx_tasks_image_public_id 
+ON public.tasks(image_public_id) 
+WHERE image_public_id IS NOT NULL;`,
+          language: "sql",
+          explanation: "Menyimpan public_id (~30 byte string) menjaga ukuran PostgreSQL tetap ramping dan memungkinkan mutasi parameter transformasi secara bebas di frontend.",
+          actionType: "manual",
+          targetPromptStep: 2
+        },
+        {
+          stepNumber: 4,
+          badge: "Komponen Unggah Klien",
+          instruction: "Merakit Komponen Upload Widget Klien (src/components/media/media-upload-widget.tsx)",
+          code: `'use client';
+
+import { CldUploadWidget } from 'next-cloudinary';
+import { Button } from '@/components/ui/button';
+import { UploadCloud } from 'lucide-react';
+
+interface MediaUploadWidgetProps {
+  onUploadSuccess: (publicId: string, secureUrl: string) => void;
+}
+
+export function MediaUploadWidget({ onUploadSuccess }: MediaUploadWidgetProps) {
+  return (
+    <CldUploadWidget
+      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tasks_preset'}
+      options={{
+        maxFiles: 1,
+        maxFileSize: 10485760, // 10 MB limit
+        clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
+        sources: ['local', 'camera', 'url'],
+      }}
+      onSuccess={(result) => {
+        if (typeof result.info === 'object' && 'public_id' in result.info) {
+          onUploadSuccess(result.info.public_id, result.info.secure_url);
+        }
+      }}
+    >
+      {({ open }) => (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => open()}
+          className="gap-2 text-xs font-semibold"
+        >
+          <UploadCloud className="w-4 h-4 text-indigo-500" />
+          Pilih / Unggah Gambar
+        </Button>
+      )}
+    </CldUploadWidget>
+  );
+}`,
+          language: "tsx",
+          explanation: "Komponen leaf yang membuka modal upload Cloudinary resmi dan mengembalikan public_id setelah gambar berhasil tersimpan di CDN.",
+          actionType: "manual",
+          targetPromptStep: 3
+        },
+        {
+          stepNumber: 5,
+          badge: "Komponen Tampilan Media & AI Crop",
+          instruction: "Merakit Komponen Kartu Tugas dengan <CldImage> (src/components/tasks/task-card-media.tsx)",
+          code: `'use client';
+
+import { CldImage } from 'next-cloudinary';
+import { ImageIcon } from 'lucide-react';
+
+export function TaskCardMedia({ publicId, title }: { publicId?: string | null; title: string }) {
+  if (!publicId) return null;
+
+  return (
+    <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 mt-2">
+      <CldImage
+        src={publicId}
+        width={600}
+        height={338}
+        crop="fill"
+        gravity="auto" // AI Smart Subject Detection!
+        format="auto"  // f_auto: WebP/AVIF otomatis
+        quality="auto" // q_auto: Kompresi perseptual SSIM
+        placeholder="blur" // LQIP Blur-up (Zero CLS)
+        alt={\`Cover untuk \${title}\`}
+        className="object-cover w-full h-full transition-transform hover:scale-105 duration-300"
+      />
+    </div>
+  );
+}`,
+          language: "tsx",
+          explanation: "CldImage mengotomasi responsive srcset, AI smart crop (gravity='auto'), dan blur-up placeholder untuk menjaga Google Core Web Vitals hijau.",
+          actionType: "manual",
+          targetPromptStep: 4
+        },
+        {
+          stepNumber: 6,
+          badge: "Server Action Dua Fase",
+          instruction: "Merakit Server Action Pembersihan Dua Fase saat Hapus Tugas (src/actions/tasks-media.ts)",
+          code: `'use server';
+
+import { createClient } from '@/utils/supabase/server';
+import { v2 as cloudinary } from 'cloudinary';
+import { revalidatePath } from 'next/cache';
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function deleteTaskWithMediaAction(taskId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  // 1. Ambil public_id gambar sebelum baris dihapus
+  const { data: task } = await supabase
+    .from('tasks')
+    .select('image_public_id, user_id')
+    .eq('id', taskId)
+    .single();
+
+  if (!task || task.user_id !== user.id) {
+    return { success: false, error: 'Tugas tidak ditemukan atau akses ditolak' };
+  }
+
+  // 2. Hapus aset fisik di Cloudinary (Cegah file zombie!)
+  if (task.image_public_id) {
+    try {
+      await cloudinary.uploader.destroy(task.image_public_id);
+    } catch (err) {
+      console.error('Peringatan: Gagal hapus aset Cloudinary:', err);
+    }
+  }
+
+  // 3. Hapus baris data dari PostgreSQL Supabase
+  await supabase.from('tasks').delete().eq('id', taskId);
+
+  revalidatePath('/tasks');
+  return { success: true };
+}`,
+          language: "typescript",
+          explanation: "Server Action menghapus file biner di Cloudinary sebelum menghapus baris di PostgreSQL, mencegah penumpukan file zombie dan lonjakan biaya storage.",
+          actionType: "manual",
+          targetPromptStep: 5
         }
       ],
       aiPromptTemplate: {
-        role: "Media Pipeline Specialist",
-        prompt: "Tunjukkan cara mengintegrasikan <CldUploadWidget> dari next-cloudinary pada Next.js 16 App Router (React 19) dan menyimpan secure_url hasil upload ke form state sebelum dikirim ke Server Action.",
-        tip: "Pastikan membuat Unsigned Upload Preset di console Cloudinary dan tentukan event onSuccess={(result) => ...}."
+        role: "Senior Full-Stack Media Architect & Next.js 16 / Cloudinary Specialist",
+        prompt: `Bertindaklah sebagai Senior Full-Stack Media Architect & Next.js 16 Specialist. Kita sedang mengimplementasikan pipeline manajemen media modern terintegrasi Cloudinary pada aplikasi "The Serverless Odyssey" pasca-UTS (Minggu 10).
+
+PERIKSA & INSTALL DEPENDENCY TERLEBIH DAHULU:
+Periksa apakah paket 'next-cloudinary' dan 'cloudinary' sudah terinstal di package.json. Jika belum, jalankan perintah terminal:
+'npm install next-cloudinary cloudinary'
+
+PERINGATAN KRUSIAL: INTEGRASI END-TO-END LANGSUNG (DILARANG MEMINTA KONFIRMASI):
+Dilarang keras hanya membuat berkas komponen di folder 'src/components/media/' lalu berhenti atau bertanya kepada pengguna apakah komponen tersebut ingin dipanggil di halaman!
+Anda WAJIB LANGSUNG membuat berkas konfigurasi next.config.ts (remotePatterns), migrasi skema database Supabase, komponen upload widget, komponen render gambar CldImage, Server Actions, DAN SEKALIGUS MENGHUBUNGKANNYA ke formulir dan daftar tugas di 'src/app/(dashboard)/tasks/page.tsx', serta memperbarui Landing Page 'src/app/page.tsx' sesuai Root Navigation Rule.
+Eksekusi seluruh pembuatan dan perakitan berkas secara mandiri (autonomous) TANPA MEMINTA KONFIRMASI. Mahasiswa harus dapat langsung membuka browser di http://localhost:3000/tasks dan mencoba upload gambar seketika!
+
+BATASAN ARSITEKTURAL & TEKNIS (NEXT.JS 16 & REACT 19):
+1. Next.js 16 App Router: Dilarang keras menambahkan 'use client' di file src/app/page.tsx atau src/app/(dashboard)/tasks/page.tsx. Pertahankan Server Components untuk fetching data langsung ke Supabase!
+2. Zero-Compute Direct Upload: DILARANG mengunggah biner gambar melalui Server Action (formData.get('file')). Seluruh unggahan gambar wajib melewati browser direct client upload via <CldUploadWidget> untuk mem-bypass batas payload 4.5MB Vercel.
+3. Database Best Practice: Simpan HANYA string 'image_public_id' di tabel 'tasks' Supabase. DILARANG menyimpan hardcoded URL penuh di database!
+4. Remote Patterns: Pastikan domain 'res.cloudinary.com' terdaftar di images.remotePatterns pada 'next.config.ts'.
+5. Optimasi Media: Komponen tampilan wajib menggunakan <CldImage> dengan parameter 'format=\"auto\"', 'quality=\"auto\"', 'gravity=\"auto\"', dan 'placeholder=\"blur\"' untuk mencegah Cumulative Layout Shift (CLS = 0.00).
+6. Lifecycle Two-Phase Cleanup: Fungsi penghapusan tugas wajib memanggil 'cloudinary.uploader.destroy(public_id)' sebelum menghapus baris dari Supabase untuk mencegah file zombie.
+7. Gunakan token semantik Tailwind CSS (bg-card, border-border, text-card-foreground) yang konsisten mendukung Dark Mode dan Light Mode tanpa hardcoded hex colors.
+
+TARGET STRUKTUR BERKAS YANG DIBANGUN & DIINTEGRASIKAN:
+1. BERKAS 1: next.config.ts (UPDATE REMOTE PATTERNS)
+   - Daftarkan domain 'res.cloudinary.com' pada images.remotePatterns agar komponen gambar dapat merender aset Cloudinary secara aman.
+2. BERKAS 2: supabase/migrations/05_tasks_media_schema.sql
+   - Tambahkan kolom 'image_public_id TEXT' dan 'image_metadata JSONB DEFAULT \\'{}\\'::jsonb' pada tabel 'public.tasks', serta buat indeks pencarian 'idx_tasks_image_public_id'.
+3. BERKAS 3: src/components/media/media-upload-widget.tsx
+   - Client Component ('use client') yang merender <CldUploadWidget> dengan batasan 10MB, filter format gambar (jpg, png, webp), dan callback onSuccess yang meneruskan public_id.
+4. BERKAS 4: src/components/tasks/task-card-media.tsx
+   - Client Component ('use client') yang merender gambar tugas menggunakan <CldImage> dengan aspect-video, AI crop (gravity=\"auto\"), f_auto, q_auto, dan blur placeholder.
+5. BERKAS 5: src/actions/tasks-media.ts
+   - Server Actions ('use server'): fungsi 'createTaskWithMediaAction' untuk menyimpan tugas berlampiran gambar, dan 'deleteTaskWithMediaAction' yang mengeksekusi two-phase cleanup (destroy aset Cloudinary ➔ delete row Supabase ➔ revalidatePath('/tasks')).
+6. BERKAS 6: src/app/(dashboard)/tasks/page.tsx (INTEGRASI WAJIB!)
+   - Server Component (RSC): Mengambil data tugas dari Supabase, merender formulir tambah tugas yang dilengkapi <MediaUploadWidget />, dan merender kartu tugas yang memuat <TaskCardMedia /> secara terpadu.
+7. BERKAS 7: src/app/page.tsx (ROOT NAVIGATION RULE)
+   - Perbarui Landing Page root '/' dengan Hero CTA visual yang memuat tombol interaktif 'Buka Manajemen Tugas & Media ➔' yang mengarahkan pengguna langsung ke rute '/tasks'.`,
+        tip: "Pastikan selalu menyertakan konfigurasi remotePatterns di next.config.ts dan simpan hanya public_id di database Supabase agar URL gambar dapat dimutasi secara dinamis tanpa migrasi database.",
+        steppedPrompts: [
+          {
+            stepNumber: 1,
+            title: "Tahap 1: Instalasi Paket & Konfigurasi remotePatterns di next.config.ts",
+            badge: "Tahap 1: CLI & Next.js Config",
+            description: "Memasang paket next-cloudinary dan cloudinary, serta mendaftarkan domain res.cloudinary.com pada file konfigurasi next.config.ts.",
+            targetFiles: ["package.json", "next.config.ts"],
+            prompt: `Bertindaklah sebagai Full-Stack Next.js Specialist.
+Tugas Anda adalah memasang pustaka Cloudinary dan mengonfigurasi remotePatterns:
+
+1. PERIKSA & INSTAL DEPENDENSI:
+   Periksa package.json. Jika belum ada, jalankan terminal CLI:
+   npm install next-cloudinary cloudinary
+
+2. PERBARUI 'next.config.ts':
+   Buka berkas 'next.config.ts' dan tambahkan remotePatterns untuk domain Cloudinary:
+   images: {
+     remotePatterns: [
+       {
+         protocol: 'https',
+         hostname: 'res.cloudinary.com',
+       },
+     ],
+   }
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Eksekusi instalasi dan pembaruan next.config.ts sekarang secara mandiri tanpa meminta konfirmasi dari pengguna!`,
+            checkpoint: "Paket next-cloudinary terdaftar di package.json dan next.config.ts memiliki remotePatterns untuk res.cloudinary.com.",
+            tip: "Tanpa remotePatterns, Next.js akan melempar runtime error 'Invalid src prop on next/image' saat merender gambar dari domain eksternal."
+          },
+          {
+            stepNumber: 2,
+            title: "Tahap 2: Migrasi Skema Database Supabase untuk image_public_id",
+            badge: "Tahap 2: Skema PostgreSQL",
+            description: "Menyusun berkas migrasi SQL untuk menambahkan kolom image_public_id dan image_metadata pada tabel public.tasks.",
+            targetFiles: ["supabase/migrations/05_tasks_media_schema.sql"],
+            manualAction: {
+              required: true,
+              title: "Eksekusi DDL di Supabase SQL Editor",
+              description: "Buka dashboard Supabase ➔ SQL Editor ➔ Jalankan skrip DDL dari supabase/migrations/05_tasks_media_schema.sql untuk menambahkan kolom image_public_id dan indeks pencarian.",
+              codeSnippet: {
+                code: `ALTER TABLE public.tasks
+ADD COLUMN IF NOT EXISTS image_public_id TEXT,
+ADD COLUMN IF NOT EXISTS image_metadata JSONB DEFAULT '{}'::jsonb;
+
+CREATE INDEX IF NOT EXISTS idx_tasks_image_public_id 
+ON public.tasks(image_public_id) 
+WHERE image_public_id IS NOT NULL;`,
+                language: "sql"
+              }
+            },
+            prompt: `Bertindaklah sebagai Database Engineer.
+Tugas Anda adalah merancang migrasi skema database Supabase untuk mendukung penyimpanan metadata media:
+
+BUAT BERKAS: 'supabase/migrations/05_tasks_media_schema.sql'
+Tuliskan DDL SQL:
+1. ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS image_public_id TEXT;
+2. ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS image_metadata JSONB DEFAULT '{}'::jsonb;
+3. CREATE INDEX IF NOT EXISTS idx_tasks_image_public_id ON public.tasks(image_public_id) WHERE image_public_id IS NOT NULL;
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Tulis berkas migrasi SQL ini sekarang secara mandiri tanpa meminta konfirmasi pengguna!`,
+            checkpoint: "Tabel tasks memiliki kolom image_public_id bertipe TEXT dan image_metadata bertipe JSONB di Supabase.",
+            tip: "Hanya simpan public_id (bukan URL penuh) agar aplikasi bebas memutasi transformasi gambar di frontend tanpa migrasi SQL berulang."
+          },
+          {
+            stepNumber: 3,
+            title: "Tahap 3: Merakit Komponen Klien CldUploadWidget (Direct Upload)",
+            badge: "Tahap 3: Client Upload Widget",
+            description: "Membangun komponen upload widget daun interaktif yang membuka dialog unggah Cloudinary dan mengembalikan public_id.",
+            targetFiles: ["src/components/media/media-upload-widget.tsx"],
+            prompt: `Bertindaklah sebagai Senior Frontend UI Engineer.
+Tugas Anda adalah membangun komponen upload media berbasis <CldUploadWidget>:
+
+BUAT BERKAS: 'src/components/media/media-upload-widget.tsx' ('use client')
+1. Impor CldUploadWidget dari 'next-cloudinary'.
+2. Impor Button dari '@/components/ui/button' dan UploadCloud, CheckCircle2, Image from 'lucide-react'.
+3. Menerima props 'onUploadSuccess: (publicId: string, secureUrl: string) => void' dan opsional 'currentPublicId?: string'.
+4. Konfigurasikan CldUploadWidget:
+   - uploadPreset dari process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tasks_preset'
+   - options: maxFiles 1, maxFileSize 10485760 (10MB), clientAllowedFormats ['png', 'jpg', 'jpeg', 'webp']
+   - onSuccess: ekstrak public_id dan secure_url lalu panggil callback onUploadSuccess
+5. Sediakan tombol interaktif dengan styling Tailwind modern dan status indikator jika gambar sudah terpilih.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Rakit komponen klien ini sekarang dengan penanganan error ramah pengguna!`,
+            checkpoint: "Komponen MediaUploadWidget siap dipasang di formulir dan dapat memicu modal unggah Cloudinary resmi.",
+            tip: "Direct Client Upload mem-bypass server Next.js sepenuhnya, sehingga Anda bebas mengunggah file hingga 10MB tanpa terkena limitasi Vercel 4.5MB."
+          },
+          {
+            stepNumber: 4,
+            title: "Tahap 4: Merakit Komponen Tampilan Gambar Teroptimasi <CldImage>",
+            badge: "Tahap 4: Responsive CldImage",
+            description: "Membangun komponen tampilan gambar responsif dengan AI Smart Cropping, f_auto, q_auto, dan efek blur placeholder.",
+            targetFiles: ["src/components/tasks/task-card-media.tsx"],
+            prompt: `Bertindaklah sebagai Performance Frontend Specialist.
+Tugas Anda adalah merakit komponen visualizer aset menggunakan <CldImage>:
+
+BUAT BERKAS: 'src/components/tasks/task-card-media.tsx' ('use client')
+1. Impor CldImage dari 'next-cloudinary'.
+2. Menerima props 'publicId?: string | null' dan 'title: string'.
+3. Jika publicId kosong/null, kembalikan null.
+4. Bungkus di dalam div berukuran 'relative w-full aspect-video rounded-xl overflow-hidden border bg-muted'.
+5. Render <CldImage>:
+   - src={publicId}
+   - width={600} height={338}
+   - crop=\"fill\"
+   - gravity=\"auto\" // AI smart salience / subject detection
+   - format=\"auto\"  // f_auto
+   - quality=\"auto\" // q_auto
+   - placeholder=\"blur\" // LQIP Blur-up (Zero CLS)
+   - alt={\`Cover untuk \${title}\`}
+   - className=\"object-cover w-full h-full transition-transform hover:scale-105 duration-300\"
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Buat komponen ini dengan styling Tailwind semantik yang mendukung Dark Mode dan Light Mode!`,
+            checkpoint: "Komponen TaskCardMedia merender gambar dengan aspek rasio terkunci 16:9, otomatisasi AVIF/WebP, dan tanpa layout shifting.",
+            tip: "Mengunci aspek rasio kontainer dan menyertakan width/height numerik menghasilkan skor Cumulative Layout Shift (CLS = 0.00) sempurna."
+          },
+          {
+            stepNumber: 5,
+            title: "Tahap 5: Server Actions Pembersihan Dua Fase (Two-Phase Cleanup)",
+            badge: "Tahap 5: Lifecycle Server Actions",
+            description: "Membangun Server Actions untuk persistensi tugas berlampiran gambar dan penghapusan aset di Cloudinary saat tugas dihapus.",
+            targetFiles: ["src/actions/tasks-media.ts"],
+            prompt: `Bertindaklah sebagai Backend Next.js Specialist.
+Tugas Anda adalah merakit Server Actions untuk siklus hidup media:
+
+BUAT BERKAS: 'src/actions/tasks-media.ts' ('use server')
+1. Impor createClient dari '@/utils/supabase/server' dan revalidatePath dari 'next/cache'.
+2. Inisialisasi Cloudinary v2 SDK menggunakan CLOUDINARY_API_KEY dan CLOUDINARY_API_SECRET.
+3. Buat dan ekspor fungsi 'createTaskWithMediaAction(payload: { title: string; description?: string; imagePublicId?: string })':
+   - Validasi sesi pengguna auth.getUser()
+   - Simpan baris ke public.tasks menyertakan kolom image_public_id
+   - Panggil revalidatePath('/tasks')
+4. Buat dan ekspor fungsi 'deleteTaskWithMediaAction(taskId: string)':
+   - Ambil image_public_id dari baris database
+   - Jika ada image_public_id, panggil 'await cloudinary.uploader.destroy(image_public_id)'
+   - Hapus baris dari public.tasks
+   - Panggil revalidatePath('/tasks')
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Rakit Server Actions ini secara mandiri dengan penanganan error komprehensif!`,
+            checkpoint: "Fungsi deleteTaskWithMediaAction berhasil menghapus file fisik di Cloudinary sebelum menghapus baris data di Supabase.",
+            tip: "Pembersihan dua fase menjamin tidak ada aset zombie yang tertinggal di Cloudinary saat data dihapus oleh pengguna."
+          },
+          {
+            stepNumber: 6,
+            title: "Tahap 6: Integrasi Penuh ke Dashboard Tugas & Landing Page Root Hero CTA",
+            badge: "Tahap 6: UI Integration & Root Hero",
+            description: "Menghubungkan Upload Widget dan Media Display ke halaman tugas /tasks dan memperbarui Landing Page root / sesuai Root Navigation Rule.",
+            targetFiles: [
+              "src/app/(dashboard)/tasks/page.tsx",
+              "src/app/page.tsx"
+            ],
+            prompt: `Bertindaklah as Full-Stack Architect.
+Tugas Anda adalah menuntaskan integrasi antarmuka secara end-to-end:
+
+1. BUKA & PERBARUI 'src/app/(dashboard)/tasks/page.tsx':
+   - Pastikan halaman tetap sebagai React Server Component (RSC) murni.
+   - Sambungkan MediaUploadWidget pada formulir tambah tugas sehingga pengguna dapat memilih gambar sebelum menyimpan.
+   - Sambungkan TaskCardMedia pada setiap kartu tugas sehingga lampiran gambar terender dengan memukau.
+   - Sambungkan tombol hapus ke Server Action deleteTaskWithMediaAction.
+
+2. PERBARUI LANDING PAGE ROOT: 'src/app/page.tsx' (ROOT NAVIGATION RULE):
+   - Buka berkas 'src/app/page.tsx'.
+   - Pastikan halaman root '/' menyajikan Hero Section modern dengan CTA yang jelas.
+   - Tambahkan tombol Hero CTA utama: 'Buka Manajemen Tugas & Media ➔' yang menautkan pengunjung langsung ke rute '/tasks'.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Selesaikan perakitan kedua berkas ini sekarang secara mandiri tanpa meminta konfirmasi dari pengguna!`,
+            checkpoint: "Buka http://localhost:3000/tasks di peramban; formulir dapat mengunggah gambar via widget, kartu tugas menampilkan gambar teroptimasi, dan halaman root / memiliki tombol CTA langsung.",
+            tip: "Sesuai Root Navigation Rule di AGENTS.md, halaman root tidak boleh menampilkan template Next.js default polos."
+          }
+        ]
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 10: Fitur Unggah Gambar Proyek",
-      taskDesc: "Pasang fitur upload gambar (misal: Avatar User, Foto Produk, atau Cover Proyek) yang diproses via Cloudinary.",
+      taskTitle: "Misi Minggu 10: Integrasi Unggah Media & AI Image Processing",
+      taskDesc: "Bangun fitur unggah aset media dinamis (Cover Tugas / Lampiran Proyek) pada Proyek Akhir Anda menggunakan direct client upload via <CldUploadWidget>, optimasi pengiriman CDN dengan format f_auto dan q_auto, smart crop AI (g_face), serta persistensi public_id pada tabel tasks di Supabase.",
       definitionOfDone: [
-        "Upload widget Cloudinary terbuka dan berhasil mengunggah file gambar",
-        "URL gambar Cloudinary tersimpan di kolom database Supabase",
-        "Gambar dirender menggunakan komponen <CldImage> yang teroptimasi"
+        "Pustaka next-cloudinary dan cloudinary terinstal dengan domain res.cloudinary.com terdaftar di next.config.ts remotePatterns",
+        "Kredensial Cloudinary (Cloud Name, API Key, API Secret) dan Upload Preset terkonfigurasi di environment variables",
+        "Skema tabel tasks di Supabase diperbarui dengan kolom image_public_id dan image_metadata JSONB",
+        "Komponen <CldUploadWidget> terpasang pada formulir tambah tugas untuk mengunggah gambar langsung dari browser klien (zero-compute)",
+        "Gambar tugas dirender menggunakan komponen <CldImage> dengan parameter format='auto', quality='auto', dan crop='fill'",
+        "Komponen <CldImage> mengimplementasikan aspect-ratio locking dan placeholder='blur' sehingga skor Cumulative Layout Shift (CLS) bernilai 0.00",
+        "Fungsi penghapusan tugas menerapkan siklus hidup dua fase (Two-Phase Cleanup) dengan memanggil cloudinary.uploader.destroy() untuk mencegah file zombie",
+        "Landing page root (src/app/page.tsx) diperbarui dengan tombol Hero CTA yang menghubungkan pengguna langsung ke rute manajemen tugas (/tasks)"
       ],
-      gitBranchTask: "git checkout -b feature/cloudinary-media-upload"
+      gitBranchTask: "git checkout -b feature/cloudinary-media-management"
+    },
+    quiz: {
+      totalQuestions: 7,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Mengapa menyimpan file biner gambar mentah sebagai kolom BLOB (BYTEA) di database relasional PostgreSQL atau menyimpannya di sistem file lokal (/tmp) dinilai sebagai anti-pattern fatal dalam arsitektur Serverless? Jelaskan dampaknya terhadap performa backup database, memori RAM fungsi FaaS, dan batasan payload Vercel 4.5MB!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Database Bloat: menyimpan byte biner raksasa membuat ukuran basis data melonjak drastis, membebani buffer pool RAM, dan memperlambat pencadangan data (pg_dump) dari hitungan detik menjadi berjam-jam. 2) Sifat Efemeral Serverless Filesystem: penulisan lokal ke /tmp akan lenyap saat container serverless dimatikan (cold shutdown). 3) Batasan Vercel 4.5MB: mem-proxy biner melalui Server Actions atau API Route akan memicu HTTP 413 Payload Too Large jika file > 4.5MB dan membuang kuota memori/waktu eksekusi FaaS.",
+          keyConcepts: [
+            "Database Bloat (BYTEA / BLOB Limits)",
+            "Ephemeral Serverless Filesystem (/tmp)",
+            "Vercel 4.5MB Payload Too Large (HTTP 413)",
+            "pg_dump Backup Performance Degradation",
+            "Dedicated Media CDN Separation"
+          ],
+          weight: 15,
+          socraticHint: "Apa yang terjadi pada file yang Anda simpan di harddisk lokal laptop saat laptop dimatikan? Dan apa yang terjadi pada waktu backup database jika tabel Anda menyimpan ribuan foto masing-masing 5MB?"
+        },
+        {
+          id: 2,
+          question: "Jelaskan cara kerja topologi pengiriman Multi-Tier Global Edge Caching pada Cloudinary CDN! Bagaimana alur penanganan permintaan aset antara peramban klien, Edge POP, dan Origin Shield saat terjadi 'Cache MISS' pada permintaan pertama versus 'Cache HIT' pada permintaan-permintaan berikutnya?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Tiga lapisan topologi: Global Edge POPs (lokasi terdekat dengan user), Origin Shield (pelindung dari lonjakan trafik thundering herd), dan Origin Transformation Engine (klaster komputasi GPU/CPU). 2) Siklus Cache MISS: pada permintaan perdana, Edge meneruskan request ke Origin Shield untuk kompresi dan transformasi on-the-fly (~280ms), lalu hasilnya disimpan di cache Edge POP terdekat. 3) Siklus Cache HIT: permintaan berikutnya dari pengguna di kawasan regional yang sama langsung disajikan dari SSD Edge POP dalam ~18ms tanpa melibatkan Origin compute, menghemat biaya dan latensi secara masif.",
+          keyConcepts: [
+            "Multi-Tier Edge CDN Topology",
+            "Global Edge POPs Distribution",
+            "Origin Shield Protection",
+            "Cache MISS On-The-Fly Transcoding",
+            "Cache HIT Zero-Compute Delivery (< 20ms)"
+          ],
+          weight: 15,
+          socraticHint: "Bayangkan perbedaan antara 'koki memasak kue dari bahan mentah setiap kali ada pesanan' vs 'kue sudah matang dan dipajang di etalase toko cabang terdekat'. Bagaimana analogi ini menjelaskan Cache MISS vs Cache HIT?"
+        },
+        {
+          id: 3,
+          question: "Bagaimana parameter URL 'f_auto' dan 'q_auto' pada Cloudinary mengoptimasi aset media secara cerdas berbasis AI? Jelaskan mekanisme negosiasi konten format (Content Negotiation) pada header peramban serta peran metrik Structural Similarity Index Measure (SSIM) dalam menjaga kualitas visual tanpa membuang bandwidth!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) f_auto membaca header HTTP request 'Accept: image/avif,image/webp,*/*' dari peramban dan secara dinamis mengirimkan format tercanggih yang didukung klien (AVIF untuk browser modern, WebP untuk standar, JPEG untuk fallback). 2) q_auto memanfaatkan analisis AI berbasis SSIM (Structural Similarity Index Measure) untuk mengukur kemiripan persepsi mata manusia; algoritma mengompresi area datar secara agresif namun mempertahankan ketajaman kontur wajah dan teks, memangkas bobot file 60–85% tanpa degradasi yang terlihat oleh mata manusia.",
+          keyConcepts: [
+            "f_auto Dynamic Format Negotiation",
+            "HTTP Accept Header Detection",
+            "Next-Gen Formats (AVIF & WebP)",
+            "q_auto Perceptual Quality Optimization",
+            "SSIM (Structural Similarity Index Measure)"
+          ],
+          weight: 15,
+          socraticHint: "Mengapa mengirim file format AVIF ke peramban modern lebih menguntungkan dibanding JPEG konvensional? Dan bagaimana AI tahu batas kompresi maksimal sebelum sebuah gambar mulai terlihat buram di mata pengguna?"
+        },
+        {
+          id: 4,
+          question: "Bandingkan tingkat keamanan dan alur arsitektur antara 'Unsigned Upload Presets' dengan 'Signed Upload Presets' (HMAC SHA-1 Signature)! Vektor serangan siber apa yang dapat terjadi jika aplikasi produksi skala besar hanya mengandalkan Unsigned Upload Presets publik?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Unsigned Presets: klien langsung mengunggah dengan string preset publik tanpa verifikasi server; rentan terhadap serangan Denial-of-Wallet / Storage Exhaustion di mana penyerang menginspeksi network tab dan membombardir akun dengan file sampah hingga kuota kredit habis. 2) Signed Presets: mewajibkan Server Action memverifikasi sesi JWT pengguna (auth.getUser()), lalu menghasilkan signature digital HMAC SHA-1 dari gabungan timestamp + parameter unggah + CLOUDINARY_API_SECRET. Cloudinary memverifikasi signature ini sebelum menerima berkas, menjamin hanya pengguna sah yang dapat mengunggah aset ke folder tertentu dalam batas waktu yang ditentukan.",
+          keyConcepts: [
+            "Unsigned vs Signed Upload Presets",
+            "HMAC SHA-1 Signature Generation",
+            "Denial-of-Wallet & Storage Exhaustion Attack",
+            "Server Actions Cryptographic Signing",
+            "API Secret Server-Side Isolation"
+          ],
+          weight: 15,
+          socraticHint: "Jika nama preset upload Anda tertulis terang-terangan di kode HTML/JS browser pengguna ('my_public_preset'), apa yang menghalangi pengguna jahat mengirim ribuan file film bajakan ke akun Cloudinary Anda?"
+        },
+        {
+          id: 5,
+          question: "Mengapa menyimpan string lengkap URL gambar (misal: 'https://res.cloudinary.com/kampus/image/upload/v1234/foto.jpg') di database relasional dinilai sebagai anti-pattern, dan mengapa menyimpan hanya 'image_public_id' jauh lebih fleksibel dan tahan masa depan (future-proof)?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Bahaya Hardcoded URL: jika Cloud Name berganti, nama domain CDN beralih ke custom domain (cdn.perusahaan.com), atau struktur folder dimigrasi, seluruh URL di database akan menjadi tautan rusak (broken link) yang membutuhkan skrip update SQL berisiko tinggi. Selain itu, parameter transformasi terkunci mati di database. 2) Keunggulan public_id: database hanya menyimpan pointer string abstrak ('tasks/foto_v1'). Di level antarmuka frontend, komponen <CldImage src={public_id} /> dapat secara bebas mengubah ukuran, rasio aspek, gravitasi crop wajah (g_face), dan format tanpa pernah menyentuh atau memigrasi baris database.",
+          keyConcepts: [
+            "Hardcoded URL Anti-Pattern",
+            "Database Schema Portability (public_id)",
+            "Dynamic Parameter Mutation in Frontend",
+            "Custom Domain / Cloud Name Migration Safety",
+            "Separation of Identity vs Transformation Parameters"
+          ],
+          weight: 14,
+          socraticHint: "Jika perusahaan Anda memutuskan mengganti nama akun Cloudinary bulan depan, apa yang terjadi pada 50.000 link gambar yang tersimpan mati di tabel database Anda jika Anda menyimpan URL lengkap vs jika Anda hanya menyimpan public_id?"
+        },
+        {
+          id: 6,
+          question: "Bagaimana fitur AI Smart Cropping dengan parameter 'c_fill, g_face' dan 'g_auto' menyelesaikan masalah klasik 'Headless Avatar' pada foto profil pengguna? Jelaskan pula bagaimana komponen <CldImage> dari next-cloudinary mengeliminasi Cumulative Layout Shift (CLS = 0.00) melalui otomatisasi 'srcset' responsif dan placeholder 'blur' (LQIP)!",
+          rubric: "Mahasiswa wajib menjelaskan: 1) AI Face Detection: cropping standar (g_center) pada foto vertikal memotong bagian atas sehingga kepala hilang; g_face mendeteksi bounding box wajah manusia dan menempatkannya di tengah bingkai dengan proporsi pas; g_auto mendeteksi objek dengan salience/kontras tertinggi jika bukan manusia. 2) Eliminasi CLS: <CldImage> mengunci rasio aspek kontainer sebelum gambar selesai diunduh, menyajikan siluet gambar mini (~800 byte) dengan efek blur ekstrem (LQIP) sejak frame awal, serta menyusun atribut srcset responsif multi-resolusi (480w, 800w, 1200w) agar browser hanya mengunduh ukuran yang sesuai dengan lebar layar.",
+          keyConcepts: [
+            "AI Face Detection (c_fill, g_face)",
+            "Salience / Subject Detection (g_auto)",
+            "Headless Avatar Glitch Prevention",
+            "Cumulative Layout Shift (CLS = 0.00) Elimination",
+            "Responsive srcset & LQIP Blur-up Placeholder"
+          ],
+          weight: 13,
+          socraticHint: "Apa yang terjadi pada tata letak halaman web saat gambar berukuran 1200x800 px dimuat tanpa deklarasi width/height? Dan bagaimana Cloudinary tahu letak mata dan hidung seseorang di dalam foto?"
+        },
+        {
+          id: 7,
+          question: "Jelaskan konsep 'Two-Phase Cleanup' dalam pengelolaan siklus hidup media! Mengapa menghapus baris data di PostgreSQL Supabase wajib diiringi pemanggilan 'cloudinary.uploader.destroy(public_id)', dan bagaimana tautan privat sementara ('Expiring Signed URLs') melindungi dokumen rahasia seperti bukti pembayaran atau dokumen identitas?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Two-Phase Cleanup: menghapus baris database saja meninggalkan file biner di Cloudinary sebagai 'Zombie Asset' tak bertuan yang terus menghabiskan kuota kredit bulanan; Server Action wajib mengambil public_id, memanggil cloudinary.uploader.destroy() hingga sukses, lalu baru menghapus baris di PostgreSQL. 2) Expiring Signed URLs: dokumen privat disimpan dengan delivery type 'authenticated'; Server Component menerbitkan URL temporer yang memuat signature hash dan masa kedaluwarsa waktu UNIX (expires_at); setelah waktu habis (misal 15 menit), tautan otomatis mati dan mengembalikan 401 Unauthorized, melindungi data rahasia dari kebocoran.",
+          keyConcepts: [
+            "Two-Phase Cleanup Pattern",
+            "Zombie / Orphan Asset Elimination",
+            "cloudinary.uploader.destroy(public_id)",
+            "Authenticated Delivery Type",
+            "Expiring Signed URLs (Time-Bounded Access)"
+          ],
+          weight: 13,
+          socraticHint: "Jika seorang pengguna menghapus akunnya dan Anda hanya mengeksekusi 'DELETE FROM users', ke mana larinya foto KTP dan avatar pengguna yang tersimpan di Cloudinary? Dan bagaimana cara mengirim link download slip nilai yang hanya boleh dibuka selama 10 menit?"
+        }
+      ]
     }
   },
   {

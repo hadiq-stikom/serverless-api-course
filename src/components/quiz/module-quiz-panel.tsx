@@ -91,6 +91,12 @@ function formatSeconds(totalSec: number): string {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+export interface ResetAlertInfo {
+  type: "strike1" | "strike2" | "timeout";
+  title: string;
+  message: string;
+}
+
 export function ModuleQuizPanel({
   moduleId,
   moduleTitle,
@@ -120,7 +126,9 @@ export function ModuleQuizPanel({
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [quizProgress, setQuizProgress] = useState<QuizProgress | null>(null);
-  const [resetAlert, setResetAlert] = useState<string | null>(null);
+  const [strikeCount, setStrikeCount] = useState<number>(0);
+  const [resetAlert, setResetAlert] = useState<ResetAlertInfo | null>(null);
+  const lastViolationTimeRef = useRef<number>(0);
   const [pasteWarning, setPasteWarning] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [networkError, setNetworkError] = useState<string | null>(null);
@@ -223,10 +231,11 @@ export function ModuleQuizPanel({
     // Jika datang dengan mode perbaikan nilai (?retake=true), aktifkan sesi perbaikan
     if (typeof window !== "undefined" && window.location.search.includes("retake=true") && prog.isCompleted) {
       await restartQuizForImprovementAction(nim, moduleId);
-      prog = { ...prog, isCompleted: false, currentQuestionIndex: 0 };
+      prog = { ...prog, isCompleted: false, currentQuestionIndex: 0, strikeCount: 0 };
     }
 
     setQuizProgress(prog);
+    setStrikeCount(prog.strikeCount || 0);
     if (!prog.isCompleted) {
       const qIdx = Math.min(prog.currentQuestionIndex, questions.length - 1);
       setCurrentIndex(qIdx);
@@ -240,39 +249,98 @@ export function ModuleQuizPanel({
     }
   };
 
-  // Anti-Cheat: Handler pelanggaran fokus layar (window.blur atau tab switch) -> HARD RESET
+  // Anti-Cheat: Handler pelanggaran fokus layar (window.blur atau tab switch) -> Sistem 2-Strike
   const handleViolation = useCallback(async () => {
     // Abaikan jika kuis belum dimulai, kuis telah selesai, belum login, atau saat AI sedang proses evaluasi
     if (!session || !isQuizStarted || quizProgress?.isCompleted || isEvaluating) return;
 
-    // HARD RESET: Reset instan kuis ke Soal 1 demi integritas akademik
-    setIsQuizStarted(false);
-    setIsTypingStarted(false);
-    setIsReadingFeedback(false);
-    setBonusTimeGranted(false);
-    setCurrentIndex(0);
-    setStudentAnswer("");
-    setEvaluation(null);
-    setAccumulatedBank(0);
-    setLastRollover(0);
-    setTimeLeft(getBaseTimeForQuestion(questions[0]));
-    resetQuestionTelemetry();
-    setResetAlert(
-      "Pelanggaran Integritas Ujian Terdeteksi! Layar peramban kehilangan fokus atau berpindah tab/aplikasi luar saat ujian aktif. Sesi Anda di-reset kembali ke Soal 1, dan kejadian ini telah dicatat ke database dosen."
-    );
+    // Cooldown 3 detik untuk mencegah duplicate trigger dari event blur & visibilitychange bersamaan
+    const now = Date.now();
+    if (now - lastViolationTimeRef.current < 3000) return;
+    lastViolationTimeRef.current = now;
 
-    const res = await recordTabViolationAction(session.nim, moduleId, "tab_violation");
-    setQuizProgress((prev) =>
-      prev
-        ? {
-            ...prev,
-            resetCount: res.newResetCount,
-            currentQuestionIndex: 0,
-            answers: {},
-          }
-        : null
-    );
-  }, [session, isQuizStarted, moduleId, quizProgress?.isCompleted, isEvaluating, questions]);
+    if (strikeCount === 0) {
+      // ==========================================
+      // STRIKE 1: SOFT RESET (Toleransi Pertama)
+      // ==========================================
+      // Soal-soal sebelumnya yang telah lulus TETAP AMAN!
+      // Mahasiswa tetap di nomor soal yang sedang dikerjakan.
+      setStudentAnswer("");
+      setEvaluation(null);
+      setIsTypingStarted(false); // Timer dijeda sampai mulai mengetik ulang
+      setIsReadingFeedback(false);
+      setBonusTimeGranted(false);
+      setTimeLeft(getBaseTimeForQuestion(questions[currentIndex]));
+      resetQuestionTelemetry();
+      setStrikeCount(1);
+
+      setResetAlert({
+        type: "strike1",
+        title: "Peringatan Integritas: Strike 1 dari 2 (Toleransi Digunakan)",
+        message: `Terdeteksi kehilangan fokus layar atau berpindah tab saat mengerjakan Soal #${currentIndex + 1}. Sesuai toleransi insiden, jawaban soal-soal sebelumnya tetap tersimpan aman, namun draf jawaban soal aktif ini di-reset.\n\n⚠️ PERHATIAN KERAS: Anda telah menggunakan kuota toleransi (1/2). Jika terdeteksi berpindah tab atau membuka aplikasi lain sekali lagi (Strike 2), seluruh sesi kuis akan di-HARD RESET kembali ke Soal 1!`,
+      });
+
+      const res = await recordTabViolationAction(session.nim, moduleId, "tab_violation_strike_1");
+      setQuizProgress((prev) =>
+        prev
+          ? {
+              ...prev,
+              resetCount: res.newResetCount,
+              strikeCount: 1,
+              answers: {
+                ...prev.answers,
+                [currentIndex + 1]: undefined as any,
+              },
+            }
+          : null
+      );
+    } else {
+      // ==========================================
+      // STRIKE 2: HARD RESET (Kuota Toleransi Habis)
+      // ==========================================
+      // Seluruh sesi kuis di-reset penuh kembali ke Soal 1
+      setIsQuizStarted(false);
+      setIsTypingStarted(false);
+      setIsReadingFeedback(false);
+      setBonusTimeGranted(false);
+      setCurrentIndex(0);
+      setStudentAnswer("");
+      setEvaluation(null);
+      setAccumulatedBank(0);
+      setLastRollover(0);
+      setTimeLeft(getBaseTimeForQuestion(questions[0]));
+      resetQuestionTelemetry();
+      setStrikeCount(0); // Siklus di-reset kembali ke Soal 1
+
+      setResetAlert({
+        type: "strike2",
+        title: "Pelanggaran Integritas Ujian: Strike 2 dari 2 (Hard Reset Aktif)",
+        message: `Terdeteksi berpindah tab atau aplikasi luar untuk kedua kalinya! Kuota toleransi Anda telah habis. Sesuai protokol integritas, seluruh sesi kuis Anda di-HARD RESET penuh kembali ke Soal 1, dan catatan insiden ini telah dilaporkan ke sistem pemantauan dosen.`,
+      });
+
+      const res = await recordTabViolationAction(session.nim, moduleId, "tab_violation_strike_2");
+      setQuizProgress((prev) =>
+        prev
+          ? {
+              ...prev,
+              resetCount: res.newResetCount,
+              strikeCount: 0,
+              currentQuestionIndex: 0,
+              answers: {},
+            }
+          : null
+      );
+    }
+  }, [
+    session,
+    isQuizStarted,
+    quizProgress?.isCompleted,
+    isEvaluating,
+    strikeCount,
+    currentIndex,
+    moduleId,
+    questions,
+  ]);
 
   // Handler Waktu Habis: SOFT RESET (Hanya nomor soal aktif yang di-reset untuk kesempatan mencoba kembali)
   const handleTimeout = useCallback(async () => {
@@ -286,9 +354,11 @@ export function ModuleQuizPanel({
     setBonusTimeGranted(false);
     setTimeLeft(getBaseTimeForQuestion(questions[currentIndex]));
     resetQuestionTelemetry();
-    setResetAlert(
-      `⏱️ WAKTU PENGERJAAN SOAL ${currentIndex + 1} HABIS! Sesuai mekanisme kelonggaran adaptif, draf jawaban soal ini di-reset untuk Anda coba kembali. Nilai dari soal-soal sebelumnya yang telah lulus tetap tersimpan aman. Manfaatkan kesempatan ini untuk memformulasikan jawaban yang lebih matang!`
-    );
+    setResetAlert({
+      type: "timeout",
+      title: "Waktu Pengerjaan Soal Habis (Soft Reset)",
+      message: `Batas waktu pengerjaan Soal #${currentIndex + 1} telah habis. Sesuai mekanisme kelonggaran adaptif, draf jawaban soal ini di-reset untuk Anda coba kembali. Nilai dari soal-soal sebelumnya yang telah lulus tetap tersimpan aman.`,
+    });
 
     const res = await recordTabViolationAction(session.nim, moduleId, "timeout");
     setQuizProgress((prev) =>
@@ -296,6 +366,10 @@ export function ModuleQuizPanel({
         ? {
             ...prev,
             resetCount: res.newResetCount,
+            answers: {
+              ...prev.answers,
+              [currentIndex + 1]: undefined as any,
+            },
           }
         : null
     );
@@ -481,6 +555,8 @@ export function ModuleQuizPanel({
     setCurrentIndex(0);
     setAccumulatedBank(0);
     setLastRollover(0);
+    setStrikeCount(0);
+    setResetAlert(null);
     setTimeLeft(getBaseTimeForQuestion(questions[0]));
   };
 
@@ -927,6 +1003,8 @@ export function ModuleQuizPanel({
                 onClick={() => {
                   setQuizProgress((prev) => (prev ? { ...prev, isCompleted: false } : null));
                   setCurrentIndex(0);
+                  setStrikeCount(0);
+                  setResetAlert(null);
                   setIsQuizStarted(false);
                 }}
                 className="gap-2 text-xs rounded-xl"
@@ -1017,9 +1095,31 @@ export function ModuleQuizPanel({
             </div>
 
             {resetAlert && (
-              <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{resetAlert}</span>
+              <div
+                className={`p-3.5 rounded-xl border text-xs font-medium flex items-start gap-2.5 shadow-xs ${
+                  resetAlert.type === "strike2"
+                    ? "bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-200"
+                    : resetAlert.type === "strike1"
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-200"
+                    : "bg-blue-500/10 border-blue-500/30 text-blue-800 dark:text-blue-200"
+                }`}
+              >
+                {resetAlert.type === "strike2" ? (
+                  <ShieldAlert className="w-5 h-5 shrink-0 text-rose-500 mt-0.5" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
+                )}
+                <div className="space-y-1 flex-1">
+                  <h4 className="font-bold text-xs">{resetAlert.title}</h4>
+                  <p className="text-[11px] leading-relaxed whitespace-pre-line">{resetAlert.message}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setResetAlert(null)}
+                  className="text-xs text-muted-foreground hover:text-foreground font-semibold px-2 py-0.5 rounded cursor-pointer"
+                >
+                  ✕
+                </button>
               </div>
             )}
 
@@ -1059,10 +1159,10 @@ export function ModuleQuizPanel({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-bold text-xs text-foreground">
-                    Soft Reset Waktu vs Proteksi Integritas
+                    Sistem 2-Strike Anti-Cheat Layar
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Waktu habis = <strong>Soft Reset</strong> (hanya draf soal ini diulang, soal lulus sebelumnya tetap aman). Pindah tab/jendela = <strong>Hard Reset</strong> ke Soal 1.
+                    Pindah tab ke-1 = <strong>Strike 1 (Soft Reset)</strong>: draf soal aktif di-reset, soal lulus sebelumnya tetap aman. Pindah tab ke-2 = <strong>Strike 2 (Hard Reset)</strong>: kembali ke Soal 1.
                   </p>
                 </div>
               </div>
@@ -1272,11 +1372,20 @@ export function ModuleQuizPanel({
                 {session.classGroup}
               </Badge>
             </div>
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
               <span>Sesi Kuis Modul {moduleId}</span>
+              {strikeCount > 0 ? (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 font-semibold animate-pulse">
+                  ⚠️ Strike: 1/2 (Peringatan Terakhir!)
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
+                  🛡️ Integritas: 0/2 Strike
+                </Badge>
+              )}
               {quizProgress && quizProgress.resetCount > 0 && (
-                <span className="text-amber-600 dark:text-amber-400 font-medium">
-                  • Reset: {quizProgress.resetCount}x
+                <span className="text-muted-foreground font-medium hidden sm:inline">
+                  • Total Reset: {quizProgress.resetCount}x
                 </span>
               )}
             </p>
@@ -1348,13 +1457,25 @@ export function ModuleQuizPanel({
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive shadow-sm space-y-1.5"
+            className={`p-3.5 rounded-xl border shadow-sm space-y-2 ${
+              resetAlert.type === "strike2"
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
+                : resetAlert.type === "strike1"
+                ? "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200"
+                : "bg-blue-500/10 border-blue-500/30 text-blue-900 dark:text-blue-200"
+            }`}
           >
             <div className="flex items-start gap-2.5">
-              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <h4 className="font-bold text-xs">Peringatan Protokol Integritas Akademik!</h4>
-                <p className="text-[11px] leading-relaxed">{resetAlert}</p>
+              {resetAlert.type === "strike2" ? (
+                <ShieldAlert className="w-5 h-5 shrink-0 text-rose-500 mt-0.5" />
+              ) : resetAlert.type === "strike1" ? (
+                <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
+              ) : (
+                <Clock className="w-5 h-5 shrink-0 text-blue-500 mt-0.5" />
+              )}
+              <div className="space-y-0.5 flex-1">
+                <h4 className="font-bold text-xs">{resetAlert.title}</h4>
+                <p className="text-[11px] leading-relaxed whitespace-pre-line">{resetAlert.message}</p>
               </div>
             </div>
             <div className="text-right">
@@ -1362,9 +1483,15 @@ export function ModuleQuizPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => setResetAlert(null)}
-                className="text-[10px] h-6 px-2.5 border-destructive/30 text-destructive hover:bg-destructive/20"
+                className={`text-[10px] h-6 px-2.5 font-semibold ${
+                  resetAlert.type === "strike2"
+                    ? "border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20"
+                    : "border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+                }`}
               >
-                Saya Mengerti & Lanjutkan Kuis
+                {resetAlert.type === "strike2"
+                  ? "Saya Mengerti & Mulai dari Soal 1"
+                  : `Saya Mengerti & Lanjutkan Soal #${currentIndex + 1}`}
               </Button>
             </div>
           </motion.div>

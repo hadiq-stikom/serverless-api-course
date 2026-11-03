@@ -79,7 +79,23 @@ Setiap contoh kode, struktur berkas, dan formula prompt harus disajikan mengguna
 
 ---
 
-## 5. Lingkungan Pengembangan & Server Lokal
+## 5. Visualisasi Interaktif & Animasi Konsep (Zero Missing Simulator Rule)
+
+Setiap materi modul perkuliahan wajib menyertakan media visual interaktif dan animasi untuk menjembatani pemahaman mahasiswa terhadap konsep-konsep komputasi abstrak:
+- **Cakupan Wajib 100% Konsep (1:1 Mapping)**:
+  - Setiap konsep inti dan seluruh 12 subpoin teori (4 pilar × 3 subpoin) pada setiap modul perkuliahan (termasuk Modul 9 dan modul berikutnya) **WAJIB** memiliki visualisasi/simulasi interaktif mandiri.
+  - **DILARANG KERAS** membiarkan modul perkuliahan tanpa simulator atau hanya menyajikan materi teks/kode statis murni.
+  - Setiap simulator dipisahkan menjadi berkas komponen mandiri di `src/components/visualizers/<nama-konsep>-animator.tsx` dan didaftarkan pada kamus `MODULE_X_VISUALIZERS` serta percabangan `activeVizMap` di `src/app/modules/[id]/page.tsx`.
+- **Standar Manipulasi Gestur Fisik Langsung (Direct Drag & Drop Rule)**:
+  - Khusus modul berbasis gestur dan pergerakan posisi (Modul 7 & Modul 9), simulator **DILARANG HANYA MENGANDALKAN TOMBOL KLIK STATIS**.
+  - **WAJIB** mendukung interaksi seret-lepas fisik langsung (*direct drag & drop*) menggunakan kursor mouse dan sentuhan jari ponsel (`drag`, `whileDrag`, `onDragEnd` dengan deteksi koordinat dan drop zone real-time) agar mahasiswa mengalami proses komputasi secara empiris.
+- **Pola Interaksi Baku: Smooth Accordion Unfold**:
+  - Simulator diletakkan tepat di bawah cuplikan kode (`VsCodeSnippet`) dari masing-masing subpoin materi dengan transisi `AnimatePresence` + `motion.div` yang mulus.
+  - Wajib mendukung Dark Mode dan Light Mode konsisten menggunakan token semantik Tailwind/Shadcn.
+
+---
+
+## 6. Lingkungan Pengembangan & Server Lokal
 
 - Jangan pernah menjalankan `next build` bersamaan ketika dev server (`next dev`) sedang berjalan, karena dapat merusak cache internal Turbopack.
 - Jika browser menampilkan cache usang (*stale*), bersihkan direktori `.next/` lalu jalankan ulang dev server dan lakukan *hard refresh* (`Ctrl + Shift + R`).
