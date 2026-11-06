@@ -46,7 +46,7 @@ export interface UtsEvaluationSummary {
   ungradedCount: number;
   averageScore: number;
   highScore: number;
-  passedCount: number; // Nilai >= 75
+  passedCount: number; // Nilai >= 50 (Grade C ke atas / Lulus)
 }
 
 
@@ -177,7 +177,7 @@ export async function getUtsEvaluationDataAction(classGroup: string = "all"): Pr
     const totalScoresSum = gradedList.reduce((acc, curr) => acc + curr.final_score, 0);
     const averageScore = gradedCount > 0 ? Math.round((totalScoresSum / gradedCount) * 100) / 100 : 0;
     const highScore = gradedList.reduce((acc, curr) => Math.max(acc, curr.final_score), 0);
-    const passedCount = gradedList.filter((m) => m.final_score >= 75).length;
+    const passedCount = gradedList.filter((m) => m.final_score >= 50).length;
 
     const summary: UtsEvaluationSummary = {
       totalStudents,
@@ -227,7 +227,7 @@ export async function saveUtsEvaluationAction(input: UtsEvaluationInput): Promis
       ui_ux: input.score_ui_ux,
     });
 
-    const status = input.status || (final_score >= 60 ? "graded" : "revision_required");
+    const status = input.status || (final_score >= 50 ? "graded" : "revision_required");
 
     const payload = {
       student_nim: input.student_nim,

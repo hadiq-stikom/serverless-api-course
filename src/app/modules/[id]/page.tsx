@@ -73,6 +73,7 @@ import { SupabaseSqlEditorSimulator } from "@/components/visualizers/supabase-sq
 import { SupabaseApiKeysSimulator } from "@/components/visualizers/supabase-api-keys-simulator";
 import { MagicLinkInboxSimulator } from "@/components/visualizers/magic-link-inbox-simulator";
 import { NimAuthArchitectureSimulator } from "@/components/visualizers/nim-auth-architecture-simulator";
+import { CloudinaryDashboardSimulator } from "@/components/visualizers/cloudinary-dashboard-simulator";
 import { DualArchAnimator } from "@/components/visualizers/dual-arch-animator";
 import { SharedZodSchemaAnimator } from "@/components/visualizers/shared-zod-schema-animator";
 import { RestResponseContractAnimator } from "@/components/visualizers/rest-response-contract-animator";
@@ -120,6 +121,19 @@ import { CldImageSrcsetAnimator } from "@/components/visualizers/cld-image-srcse
 import { SignedUrlAccessAnimator } from "@/components/visualizers/signed-url-access-animator";
 import { MediaCleanupCascadeAnimator } from "@/components/visualizers/media-cleanup-cascade-animator";
 import { CloudinaryWebhookAuditAnimator } from "@/components/visualizers/cloudinary-webhook-audit-animator";
+import { PollingVsWebsocketAnimator } from "@/components/visualizers/polling-vs-websocket-animator";
+import { WalCdcPipelineAnimator } from "@/components/visualizers/wal-cdc-pipeline-animator";
+import { PublicationToggleAnimator } from "@/components/visualizers/publication-toggle-animator";
+import { PostgresChangesEventAnimator } from "@/components/visualizers/postgres-changes-event-animator";
+import { ServerFilterStreamAnimator } from "@/components/visualizers/server-filter-stream-animator";
+import { RlsRealtimeFilterAnimator } from "@/components/visualizers/rls-realtime-filter-animator";
+import { PresenceCrdtSyncAnimator } from "@/components/visualizers/presence-crdt-sync-animator";
+import { EphemeralBroadcastAnimator } from "@/components/visualizers/ephemeral-broadcast-animator";
+import { CdcVsBroadcastMatrixAnimator } from "@/components/visualizers/cdc-vs-broadcast-matrix-animator";
+import { ChannelCleanupLeakAnimator } from "@/components/visualizers/channel-cleanup-leak-animator";
+import { OptimisticVsRealtimeSyncAnimator } from "@/components/visualizers/optimistic-vs-realtime-sync-animator";
+import { HeartbeatReconnectAnimator } from "@/components/visualizers/heartbeat-reconnect-animator";
+import { SupabaseRealtimeStudioSimulator } from "@/components/visualizers/supabase-realtime-studio-simulator";
 import { ModuleQuizPanel } from "@/components/quiz/module-quiz-panel";
 import { VsCodeSnippet } from "@/components/vscode-snippet";
 import { VsCodePrompt } from "@/components/vscode-prompt";
@@ -130,7 +144,7 @@ import {
   ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Terminal, Target,
   ExternalLink, Sparkles, AlertTriangle, CheckCircle2, ShieldCheck,
   Rocket, Layers, Award, Clock, Zap, Map, GitBranch, GitMerge, GitPullRequest, Trash2,
-  Info, Lightbulb, ShieldAlert, Code, Brain, GraduationCap, FileCode
+  Info, Lightbulb, ShieldAlert, Code, Brain, GraduationCap, FileCode, Radio
 } from "lucide-react";
 
 // Mapping Konfigurasi Visualizer Interaktif untuk Seluruh 14 Subpoin Konsep Pertemuan 2
@@ -861,6 +875,88 @@ const MODULE_10_VISUALIZERS: Record<string, { key: string; title: string; subtit
   },
 };
 
+const MODULE_11_VISUALIZERS: Record<string, { key: string; title: string; subtitle: string; component: React.ReactNode }> = {
+  // Pilar 1: Arsitektur Komunikasi Real-Time & Change Data Capture (CDC)
+  "0-0": {
+    key: "polling-vs-websocket",
+    title: "Simulasi Arsitektur: Short Polling vs WebSocket Full-Duplex",
+    subtitle: "Analisis komparasi latensi pembaruan, frekuensi request, dan penghematan header HTTP overhead",
+    component: <PollingVsWebsocketAnimator />,
+  },
+  "0-1": {
+    key: "wal-cdc-pipeline",
+    title: "Anatomi Pipeline CDC: PostgreSQL WAL ke Phoenix Channels",
+    subtitle: "Lacak perjalanan mutasi data dari Write-Ahead Log, logical decoding, hingga ditransmisikan via WebSocket",
+    component: <WalCdcPipelineAnimator />,
+  },
+  "0-2": {
+    key: "publication-toggle",
+    title: "Aktivasi Publikasi: ALTER PUBLICATION supabase_realtime",
+    subtitle: "Penyebab utama kegagalan real-time pemula: mengapa tabel wajib didaftarkan ke publikasi replikasi",
+    component: <PublicationToggleAnimator />,
+  },
+
+  // Pilar 2: Mendengarkan Mutasi Data (Postgres Changes Subscriptions)
+  "1-0": {
+    key: "postgres-changes-event",
+    title: "Granularitas Event postgres_changes: INSERT, UPDATE, DELETE",
+    subtitle: "Inspeksi anatomi payload JSON { eventType, new, old } dan strategi pemutakhiran state lokal React",
+    component: <PostgresChangesEventAnimator />,
+  },
+  "1-1": {
+    key: "server-filter-stream",
+    title: "Server-Side Filtering: filter: 'column=eq.value'",
+    subtitle: "Mencegah pemborosan bandwidth klien dengan menyaring event langsung di server Supabase Realtime",
+    component: <ServerFilterStreamAnimator />,
+  },
+  "1-2": {
+    key: "rls-realtime-filter",
+    title: "Pertahanan Keamanan: Row Level Security (RLS) pada Realtime WebSocket",
+    subtitle: "Supabase mengevaluasi kebijakan RLS PostgreSQL sebelum mem-broadcast event ke token JWT klien",
+    component: <RlsRealtimeFilterAnimator />,
+  },
+
+  // Pilar 3: Komunikasi Ephemeral: Presence & Broadcast (Zero-DB Load)
+  "2-0": {
+    key: "presence-crdt-sync",
+    title: "Supabase Presence: Pelacakan Pengguna Online Berbasis CRDT",
+    subtitle: "Sinkronisasi status kehadiran multi-klien tanpa menulis satu byte pun ke disk database PostgreSQL",
+    component: <PresenceCrdtSyncAnimator />,
+  },
+  "2-1": {
+    key: "ephemeral-broadcast",
+    title: "Ephemeral Broadcast: Siaran Kilat Tanpa Beban Disk PostgreSQL",
+    subtitle: "Komunikasi pesan instan (typing indicator, mouse cursor) yang diteruskan langsung via RAM server",
+    component: <EphemeralBroadcastAnimator />,
+  },
+  "2-2": {
+    key: "cdc-vs-broadcast-matrix",
+    title: "Matriks Keputusan: Postgres Changes vs Broadcast vs Presence",
+    subtitle: "Panduan arsitektur menentukan kapan harus persistensi ke database vs kapan cukup in-memory PubSub",
+    component: <CdcVsBroadcastMatrixAnimator />,
+  },
+
+  // Pilar 4: Ketahanan, Siklus Hidup & Harmonisasi State di Next.js 16
+  "3-0": {
+    key: "channel-cleanup-leak",
+    title: "Siklus Hidup React: channel.unsubscribe() & Pencegahan Memory Leak",
+    subtitle: "Dampak fatal lupa membersihkan subscription saat komponen unmount atau saat re-render",
+    component: <ChannelCleanupLeakAnimator />,
+  },
+  "3-1": {
+    key: "optimistic-vs-realtime-sync",
+    title: "Harmonisasi Optimistic UI & Real-Time Sync: Anti Double-Render",
+    subtitle: "Mencegah kemunculan item ganda ketika antarmuka lokal melakukan optimistic update lalu disusul WebSocket",
+    component: <OptimisticVsRealtimeSyncAnimator />,
+  },
+  "3-2": {
+    key: "heartbeat-reconnect",
+    title: "Ketahanan Jaringan: Heartbeat Ping/Pong & Reconnection Catch-Up",
+    subtitle: "Mekanisme deteksi koneksi mati melalui frame heartbeat dan pemulihan data yang terlewat (catch-up query)",
+    component: <HeartbeatReconnectAnimator />,
+  },
+};
+
 
 // Helper to format inline markdown like `code`, **bold**, and *italic*
 function formatInlineText(str: string) {
@@ -1199,6 +1295,18 @@ const AI_AGENT_WORKFLOW: Record<
     step1: "Pilih metode eksekusi di bawah (Jalur Bertahap 6 Tahap atau Jalur All-in-One), lalu salin formula prompt ke panel AI Agent IDE Anda (Antigravity / Cursor / Copilot).",
     step2: "AI Agent otomatis memeriksa & menginstal next-cloudinary di terminal, mengonfigurasi remotePatterns di next.config.ts, menyusun skema database image_public_id di Supabase, dan merakit komponen CldUploadWidget serta CldImage.",
     step3: "Tinjau diff di editor, jalankan migrasi SQL di Supabase, lalu uji coba upload gambar langsung di browser http://localhost:3000/tasks untuk memverifikasi f_auto, q_auto, dan responsivitas tanpa CLS.",
+  },
+  11: {
+    theme: {
+      border: "border-emerald-200 dark:border-emerald-900/60",
+      bg: "bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-emerald-950/40",
+      badge: "bg-emerald-100/60 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800",
+      stepBorder: "border-emerald-100 dark:border-zinc-800",
+      stepBadge: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300",
+    },
+    step1: "Pilih metode eksekusi di bawah (Jalur Bertahap 6 Tahap atau Jalur All-in-One), lalu salin formula prompt ke panel AI Agent IDE Anda (Antigravity / Cursor / Copilot).",
+    step2: "AI Agent otomatis memverifikasi dependensi Supabase Realtime, merakit skrip SQL publikasi supabase_realtime, membuat custom hook useRealtimeTasks dengan pembersihan channel.unsubscribe(), serta mengintegrasikan status kehadiran Presence dan broadcast indikator mengetik.",
+    step3: "Buka dua jendela peramban berdampingan (misal Normal vs Incognito) di http://localhost:3000/tasks/kanban, lakukan mutasi data atau ketik pesan di salah satu jendela, dan saksikan sinkronisasi instan < 50ms tanpa reload halaman!",
   },
 };
 
@@ -1796,7 +1904,7 @@ export default function ModuleDetailPage() {
 
                                 {/* Interactive Simulation Accordions for Module Concepts (Option 2: Smooth Accordion Unfold) */}
                                 {(() => {
-                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : currentModule.id === 7 ? MODULE_7_VISUALIZERS : currentModule.id === 9 ? MODULE_9_VISUALIZERS : currentModule.id === 10 ? MODULE_10_VISUALIZERS : null;
+                                  const activeVizMap = currentModule.id === 1 ? MODULE_1_VISUALIZERS : currentModule.id === 2 ? MODULE_2_VISUALIZERS : currentModule.id === 3 ? MODULE_3_VISUALIZERS : currentModule.id === 4 ? MODULE_4_VISUALIZERS : currentModule.id === 5 ? MODULE_5_VISUALIZERS : currentModule.id === 6 ? MODULE_6_VISUALIZERS : currentModule.id === 7 ? MODULE_7_VISUALIZERS : currentModule.id === 9 ? MODULE_9_VISUALIZERS : currentModule.id === 10 ? MODULE_10_VISUALIZERS : currentModule.id === 11 ? MODULE_11_VISUALIZERS : null;
                                   const viz = activeVizMap ? activeVizMap[`${sIdx}-${subIdx}`] : null;
                                   if (!viz) return null;
                                   const isExpanded = !!expandedVisualizers[viz.key];
@@ -2671,6 +2779,159 @@ export default function ModuleDetailPage() {
                                                 className="overflow-hidden"
                                               >
                                                 <NimAuthArchitectureSimulator />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "cloudinary-console" atau "cloudinary-upload-preset" atau "cloudinary-media-library" */}
+                                {(currentStep.manualAction.simulatorKey === "cloudinary-console" ||
+                                  currentStep.manualAction.simulatorKey === "cloudinary-upload-preset" ||
+                                  currentStep.manualAction.simulatorKey === "cloudinary-media-library") && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `cloudinary-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      const initialTab =
+                                        currentStep.manualAction.simulatorKey === "cloudinary-upload-preset"
+                                          ? "presets"
+                                          : currentStep.manualAction.simulatorKey === "cloudinary-media-library"
+                                          ? "media_library"
+                                          : "credentials";
+
+                                      const title =
+                                        currentStep.manualAction.simulatorKey === "cloudinary-upload-preset"
+                                          ? "Simulasi Panduan: Cloudinary Console (Upload Presets & Signing Mode)"
+                                          : currentStep.manualAction.simulatorKey === "cloudinary-media-library"
+                                          ? "Simulasi Panduan: Cloudinary Console (Media Library & Dynamic Delivery URL)"
+                                          : "Simulasi Panduan: Cloudinary Console (Dashboard, API Keys & .env.local)";
+
+                                      const subtitle =
+                                        currentStep.manualAction.simulatorKey === "cloudinary-upload-preset"
+                                          ? "Buka panduan visual interaktif pembuatan Unsigned Upload Preset untuk <CldUploadWidget> direct client upload"
+                                          : currentStep.manualAction.simulatorKey === "cloudinary-media-library"
+                                          ? "Buka panduan visual interaktif inspeksi aset, simulasi transformasi on-the-fly, dan optimasi f_auto/q_auto"
+                                          : "Buka panduan visual interaktif menemukan Cloud Name, API Key, API Secret, dan konfigurasi .env.local";
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500 dark:border-blue-500 shadow-md ring-2 ring-blue-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-blue-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-blue-600 text-white"
+                                                  : "bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white"
+                                              }`}>
+                                                <Sparkles className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>{title}</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                                    Interactive Cloudinary Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi Cloudinary Console"
+                                                    : subtitle}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <CloudinaryDashboardSimulator initialTab={initialTab} />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+
+                                {/* Interactive Simulator jika simulatorKey === "supabase-realtime-studio" */}
+                                {currentStep.manualAction.simulatorKey === "supabase-realtime-studio" && (
+                                  <div className="pt-1">
+                                    {(() => {
+                                      const vizKey = `supabase-realtime-guide-${currentStep.stepNumber}`;
+                                      const isExpanded = !!expandedVisualizers[vizKey];
+
+                                      return (
+                                        <div className="space-y-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVisualizer(vizKey)}
+                                            className={`w-full group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left cursor-pointer ${
+                                              isExpanded
+                                                ? "bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-500 dark:border-emerald-500 shadow-md ring-2 ring-emerald-500/20"
+                                                : "bg-white dark:bg-zinc-800 border-amber-300 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-emerald-50/40 dark:hover:bg-zinc-800 shadow-xs"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`p-2 rounded-lg transition-colors ${
+                                                isExpanded
+                                                  ? "bg-emerald-600 text-white"
+                                                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
+                                              }`}>
+                                                <Radio className="w-4 h-4" />
+                                              </div>
+                                              <div>
+                                                <div className="text-xs sm:text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                                  <span>Simulasi Panduan: Supabase Studio (Database Publications &amp; Realtime Inspector)</span>
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                    Interactive Realtime Guide
+                                                  </span>
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+                                                  {isExpanded
+                                                    ? "Klik untuk melipat panel simulasi Supabase Realtime"
+                                                    : "Buka panduan visual interaktif pendaftaran tabel tasks ke publikasi supabase_realtime dan uji coba live WebSocket inspector"}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                              <span className="hidden sm:inline">{isExpanded ? "Tutup Simulasi" : "Buka Panduan Visual"}</span>
+                                              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                                            </div>
+                                          </button>
+
+                                          <AnimatePresence>
+                                            {isExpanded && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                className="overflow-hidden"
+                                              >
+                                                <SupabaseRealtimeStudioSimulator />
                                               </motion.div>
                                             )}
                                           </AnimatePresence>

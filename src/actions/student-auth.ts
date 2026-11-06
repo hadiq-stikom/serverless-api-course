@@ -6,6 +6,7 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { MODULES } from "@/data/curriculum";
 import { PRACTICUM_MODULES } from "@/data/practicum";
 import { getLecturerSessionAction } from "./lecturer-auth";
+import { getGradeLetter, GradeLetter } from "@/lib/academic-grades";
 
 export interface StudentSession {
   nim: string;
@@ -74,7 +75,7 @@ export interface StudentDashboardData {
     averageScore: number;
     totalXp: number;
     masteryLevel: string;
-    gradeLetter: "A" | "B+" | "B" | "C" | "D";
+    gradeLetter: GradeLetter;
     improvementOpportunitiesCount: number;
     totalResets: number;
   };
@@ -560,12 +561,8 @@ export async function getStudentDashboardDataAction(): Promise<{
 
   const averageScore = completedCount > 0 ? Math.round((totalScoreSum / completedCount) * 10) / 10 : 0;
 
-  // Grade Letter
-  let gradeLetter: "A" | "B+" | "B" | "C" | "D" = "D";
-  if (averageScore >= 85) gradeLetter = "A";
-  else if (averageScore >= 80) gradeLetter = "B+";
-  else if (averageScore >= 75) gradeLetter = "B";
-  else if (averageScore >= 60) gradeLetter = "C";
+  // Grade Letter (Standar Akademik 8-Tier)
+  const gradeLetter: GradeLetter = getGradeLetter(averageScore);
 
   // Mastery Level Title
   let masteryLevel = "Novice Explorer";

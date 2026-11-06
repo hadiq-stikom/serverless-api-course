@@ -8168,6 +8168,14 @@ TARGET STRUKTUR BERKAS YANG DIBANGUN & DIINTEGRASIKAN:
             badge: "Tahap 1: CLI & Next.js Config",
             description: "Memasang paket next-cloudinary dan cloudinary, serta mendaftarkan domain res.cloudinary.com pada file konfigurasi next.config.ts.",
             targetFiles: ["package.json", "next.config.ts"],
+            manualAction: {
+              required: true,
+              title: "Ambil Cloud Name & API Keys di Cloudinary Console (Settings ➔ API Keys)",
+              location: "Cloudinary Console ➔ Settings ➔ API Keys",
+              description: "Sebelum menjalankan aplikasi, Anda wajib mengambil Cloud Name, API Key, dan API Secret dari Console Cloudinary (Settings ➔ API Keys), lalu menempelkannya ke berkas .env.local proyek Next.js 16. Buka simulator interaktif di bawah untuk panduan visual menemukan pengaturan ini di dashboard Cloudinary versi terbaru.",
+              simulatorKey: "cloudinary-console",
+              note: "⚠️ PENTING: CLOUDINARY_API_SECRET adalah kredensial rahasia server (backend). DILARANG KERAS menambahkan prefix NEXT_PUBLIC_ agar kunci rahasia tidak bocor ke browser publik pengguna!"
+            },
             prompt: `Bertindaklah sebagai Full-Stack Next.js Specialist.
 Tugas Anda adalah memasang pustaka Cloudinary dan mengonfigurasi remotePatterns:
 
@@ -8200,6 +8208,7 @@ Eksekusi instalasi dan pembaruan next.config.ts sekarang secara mandiri tanpa me
             manualAction: {
               required: true,
               title: "Eksekusi DDL di Supabase SQL Editor",
+              location: "Supabase Dashboard ➔ SQL Editor",
               description: "Buka dashboard Supabase ➔ SQL Editor ➔ Jalankan skrip DDL dari supabase/migrations/05_tasks_media_schema.sql untuk menambahkan kolom image_public_id dan indeks pencarian.",
               codeSnippet: {
                 code: `ALTER TABLE public.tasks
@@ -8210,7 +8219,9 @@ CREATE INDEX IF NOT EXISTS idx_tasks_image_public_id
 ON public.tasks(image_public_id) 
 WHERE image_public_id IS NOT NULL;`,
                 language: "sql"
-              }
+              },
+              simulatorKey: "supabase-sql-editor",
+              note: "💡 Tips: Simpan hanya image_public_id (bukan URL penuh) agar transformasi gambar dapat diubah kapan saja di frontend tanpa migrasi database."
             },
             prompt: `Bertindaklah sebagai Database Engineer.
 Tugas Anda adalah merancang migrasi skema database Supabase untuk mendukung penyimpanan metadata media:
@@ -8232,6 +8243,14 @@ Tulis berkas migrasi SQL ini sekarang secara mandiri tanpa meminta konfirmasi pe
             badge: "Tahap 3: Client Upload Widget",
             description: "Membangun komponen upload widget daun interaktif yang membuka dialog unggah Cloudinary dan mengembalikan public_id.",
             targetFiles: ["src/components/media/media-upload-widget.tsx"],
+            manualAction: {
+              required: true,
+              title: "Pembuatan 'Unsigned Upload Preset' di Cloudinary Console (Settings ➔ Upload)",
+              location: "Cloudinary Console ➔ Settings ➔ Upload ➔ Upload presets",
+              description: "Komponen <CldUploadWidget> mengunggah file langsung dari browser pengguna ke CDN Cloudinary (bypass server Next.js). Fitur ini WAJIB menggunakan Upload Preset dengan Signing Mode 'Unsigned'. Buka simulator interaktif di bawah untuk mereplikasi langkah pembuatan preset 'tasks_preset' pada Cloudinary Console sebenarnya.",
+              simulatorKey: "cloudinary-upload-preset",
+              note: "⚠️ PERINGATAN: Jika Signing Mode dibiarkan 'Signed', unggahan dari browser akan gagal dengan error 400 'Upload preset must be specified or signature missing'!"
+            },
             prompt: `Bertindaklah sebagai Senior Frontend UI Engineer.
 Tugas Anda adalah membangun komponen upload media berbasis <CldUploadWidget>:
 
@@ -8256,6 +8275,14 @@ Rakit komponen klien ini sekarang dengan penanganan error ramah pengguna!`,
             badge: "Tahap 4: Responsive CldImage",
             description: "Membangun komponen tampilan gambar responsif dengan AI Smart Cropping, f_auto, q_auto, dan efek blur placeholder.",
             targetFiles: ["src/components/tasks/task-card-media.tsx"],
+            manualAction: {
+              required: true,
+              title: "Inspeksi Media Library & Uji URL Dynamic Transformation di Cloudinary Console",
+              location: "Cloudinary Console ➔ Media Library ➔ Asset Inspector",
+              description: "Buka simulator Media Library di bawah untuk memahami bagaimana Cloudinary secara cerdas menyusun URL transformasi dinamis (f_auto, q_auto, g_face AI face detection) berdasarkan Public ID yang dirender oleh komponen <CldImage>.",
+              simulatorKey: "cloudinary-media-library",
+              note: "💡 Tips: Anda tidak perlu menyimpan file hasil crop di storage. Cloudinary melakukan transformasi secara on-the-fly di Edge CDN dan meng-cache hasilnya secara global."
+            },
             prompt: `Bertindaklah sebagai Performance Frontend Specialist.
 Tugas Anda adalah merakit komponen visualizer aset menggunakan <CldImage>:
 
@@ -8286,6 +8313,11 @@ Buat komponen ini dengan styling Tailwind semantik yang mendukung Dark Mode dan 
             badge: "Tahap 5: Lifecycle Server Actions",
             description: "Membangun Server Actions untuk persistensi tugas berlampiran gambar dan penghapusan aset di Cloudinary saat tugas dihapus.",
             targetFiles: ["src/actions/tasks-media.ts"],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan merakit fungsi Server Action 'deleteTaskWithMediaAction' di src/actions/tasks-media.ts yang secara atomik memanggil cloudinary.uploader.destroy(publicId) untuk mencegah file sampah (zombie files) sebelum menghapus baris dari tabel PostgreSQL Supabase."
+            },
             prompt: `Bertindaklah sebagai Backend Next.js Specialist.
 Tugas Anda adalah merakit Server Actions untuk siklus hidup media:
 
@@ -8316,6 +8348,11 @@ Rakit Server Actions ini secara mandiri dengan penanganan error komprehensif!`,
               "src/app/(dashboard)/tasks/page.tsx",
               "src/app/page.tsx"
             ],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan menghubungkan MediaUploadWidget ke formulir TaskForm dan TaskCardMedia ke daftar kartu tugas, serta memperbarui landing page src/app/page.tsx sesuai Root Navigation Rule."
+            },
             prompt: `Bertindaklah as Full-Stack Architect.
 Tugas Anda adalah menuntaskan integrasi antarmuka secara end-to-end:
 
@@ -8463,64 +8500,838 @@ Selesaikan perakitan kedua berkas ini sekarang secara mandiri tanpa meminta konf
     worldId: "world-2",
     worldTitle: "Dunia 2: Rich UI, Media & Real-time",
     weekNumber: 11,
-    title: "Supabase Real-time (WebSocket Collaboration)",
-    subtitle: "Sinkronisasi data multi-pengguna secara langsung tanpa reload halaman menggunakan Postgres Changes Listener.",
-    cpmk: "Mahasiswa mampu memanfaatkan protokol WebSocket Supabase Realtime untuk mendeteksi perubahan database secara instan.",
+    title: "Supabase Real-time: Kolaborasi Multi-Pengguna dengan WebSockets (Postgres Changes, Broadcast & Presence)",
+    subtitle: "Membangun kolaborasi instan multi-pengguna di Next.js 16: arsitektur CDC (Change Data Capture) via PostgreSQL Replication, protokol WebSockets Phoenix Channels, sinkronisasi kehadiran (Presence), siaran kilat (Broadcast), serta pencegahan memory leak.",
+    cpmk: "Mahasiswa mampu merancang sistem kolaborasi real-time multi-pengguna di Next.js 16 memanfaatkan protokol WebSocket Supabase Realtime, publikasi database CDC (Postgres Changes), pelacakan pengguna aktif (Presence), dan siaran kilat in-memory (Broadcast) dengan proteksi Row Level Security (RLS).",
     duration: "150 Menit Lab + 180 Menit Mandiri",
     xp: 500,
+    cpmkPoints: [
+      {
+        code: "CPMK 11.1",
+        badge: "Arsitektur CDC & WebSockets",
+        title: "Menganalisis Arsitektur CDC dan Protokol WebSockets",
+        desc: "Mampu membandingkan efisiensi protokol `HTTP Polling` vs `WebSockets` full-duplex, serta melacak alur mutasi dari PostgreSQL `WAL (Write-Ahead Logging)` melalui logical replication ke `Elixir Phoenix Channels`.",
+        keywords: ["#WebSocket", "#CDC", "#WAL", "#PhoenixChannels", "#FullDuplex"]
+      },
+      {
+        code: "CPMK 11.2",
+        badge: "Postgres Changes & RLS Security",
+        title: "Mengonfigurasi Langganan Database Real-Time & Penegakan RLS",
+        desc: "Mampu mendaftarkan tabel ke publikasi `supabase_realtime`, menyaring aliran mutasi `INSERT`, `UPDATE`, `DELETE` via `postgres_changes`, serta menjamin evaluasi `Row Level Security (RLS)` pada tingkat serverless websocket.",
+        keywords: ["#PostgresChanges", "#SupabaseRealtime", "#ServerFilter", "#RLSSecurity"]
+      },
+      {
+        code: "CPMK 11.3",
+        badge: "Presence & Ephemeral Broadcast",
+        title: "Mengimplementasikan Protokol Ephemeral Presence & Broadcast",
+        desc: "Mampu merancang sinkronisasi kehadiran pengguna aktif berbasis `CRDT State` (`channel.presenceState()`) dan siaran kilat berlatensi rendah (`broadcast`) untuk indikator mengetik dan kolaborasi cursor tanpa beban I/O database.",
+        keywords: ["#PresenceCRDT", "#BroadcastChannel", "#TypingIndicator", "#ZeroDBLoad"]
+      },
+      {
+        code: "CPMK 11.4",
+        badge: "Siklus Hidup & Resiliensi",
+        title: "Mengelola Lifecycle Channel, Pembersihan Memory Leak & Rekonsiliasi State",
+        desc: "Mampu menyusun custom hook `useRealtimeTasks` dengan pembersihan `channel.unsubscribe()` & `supabase.removeChannel()`, rekonsiliasi state anti *double-render*, serta penanganan *reconnection heartbeat* saat jaringan terputus.",
+        keywords: ["#SubscriptionLifecycle", "#MemoryLeakPrevention", "#StateReconciliation", "#AutoReconnect"]
+      }
+    ],
     concepts: {
-      summary: "Supabase Realtime memanfaatkan WebSocket untuk mem-broadcast setiap event INSERT, UPDATE, atau DELETE di database Postgres ke semua browser klien yang sedang aktif.",
+      summary: "Supabase Realtime mentransformasi database PostgreSQL transaksional menjadi sistem kolaboratif multi-pengguna yang hidup melalui protokol WebSockets. Memanfaatkan arsitektur Change Data Capture (CDC) langsung dari PostgreSQL Write-Ahead Log (WAL), engine Elixir Phoenix Channels menyiarkan mutasi data (INSERT, UPDATE, DELETE) dengan latensi sub-50ms tanpa polling. Dilengkapi dengan pelacakan pengguna aktif (Presence) berbasis data CRDT dan siaran langsung kilat (Broadcast) tanpa beban disk, modul ini membimbing mahasiswa merancang papan Kanban kolaboratif Next.js 16 yang responsif, aman dengan Row Level Security (RLS), dan tahan bocor memori.",
       points: [
-        { title: "Postgres Changes Subscription", desc: "Mendengarkan event spesifik pada suatu tabel (misal: ada komentar baru masuk)." },
-        { title: "Presence & Broadcast", desc: "Mendeteksi siapa saja pengguna yang sedang online di halaman yang sama secara real-time." }
+        { title: "Arsitektur CDC & WebSockets", desc: "Mendengarkan replikasi logikal PostgreSQL WAL via Phoenix Channels Elixir tanpa membebani CPU database dengan polling berulang." },
+        { title: "Granularitas Postgres Changes", desc: "Menyaring aliran mutasi INSERT, UPDATE, dan DELETE pada tabel tasks yang diamankan oleh evaluasi kebijakan RLS PostgreSQL." },
+        { title: "Presence & Ephemeral Broadcast", desc: "Melacak daftar rekan tim yang sedang online (CRDT State) dan menyiarkan sinyal mengetik atau live cursor dengan Zero Database I/O." },
+        { title: "Siklus Hidup & Anti-Leak React", desc: "Menerapkan pembersihan channel.unsubscribe() & supabase.removeChannel(), serta deduplikasi ID untuk mencegah double-render saat Optimistic UI aktif." }
+      ],
+      diagramNote: "PostgreSQL Mutasi (WAL Commit) ➔ Logical Replication (pgoutput) ➔ Supabase Realtime Engine (Elixir Phoenix) ➔ RLS Evaluation ➔ WebSocket Push ➔ React useRealtimeTasks ➔ Instant Kanban UI State Update (< 50ms)",
+      deepDiveSections: [
+        {
+          title: "1. Arsitektur Komunikasi Real-Time & Change Data Capture (CDC)",
+          badge: "Pilar 1: CDC & WebSockets",
+          content: "Dalam rekayasa sistem terdistribusi modern, menghadirkan pengalaman kolaborasi langsung menuntut protokol komunikasi yang efisien. Memaksa arsitektur REST request-response tradisional untuk bertindak secara real-time melalui polling berulang memicu lonjakan penggunaan CPU, pemborosan bandwidth, dan kejenuhan koneksi database.\n\n" +
+                   "Supabase Realtime memecahkan tantangan ini dengan mengintegrasikan engine Elixir Phoenix Channels langsung di atas mekanisme replikasi internal PostgreSQL. Data mutasi ditransmisikan secara instan ke jutaan soket klien tanpa mengeksekusi query SELECT berulang.",
+          subpoints: [
+            {
+              label: "Spektrum Komunikasi Real-Time: Polling vs SSE vs WebSockets",
+              text: "1. Short Polling (Interval Berkala):\n" +
+                    "Klien mengirim HTTP request berulang (misal tiap 2 detik). Sebanyak 95% request mengembalikan data kosong atau 304 Not Modified, namun tetap membebani server dengan ribuan TCP handshake dan header HTTP overhead (~800–1.200 bytes per request).\n\n" +
+                    "2. Long Polling:\n" +
+                    "Klien membuka koneksi HTTP dan server menahan koneksi terbuka (hung connection) hingga ada data baru. Begitu data terkirim, koneksi ditutup dan klien wajib membuka koneksi baru.\n\n" +
+                    "3. Server-Sent Events (SSE):\n" +
+                    "Aliran data searah (unidirectional) dari server ke klien melalui protokol HTTP standar. Ideal untuk live ticker saham atau streaming LLM AI, namun tidak mendukung transmisi data dua arah dari klien ke server di saluran yang sama.\n\n" +
+                    "4. WebSockets (Full-Duplex Persisten):\n" +
+                    "Protokol berbasis TCP yang diawali dengan HTTP Upgrade handshake (101 Switching Protocols), lalu membuka saluran dua arah permanen. Setelah tersambung, frame data hanya membutuhkan overhead sekecil 2–6 bytes, menghasilkan latensi sub-50ms dan pemakaian bandwidth minimal.",
+              code: `// PERBANDINGAN FRAME OVERHEAD DI TINGKAT JARINGAN
+// 1. Polling HTTP Request:
+// GET /api/tasks HTTP/1.1
+// Host: example.com
+// Cookie: sb-access-token=... (~1.2 KB overhead)
+
+// 2. WebSocket Frame (Supabase Realtime):
+// FIN=1, RSV=0, Opcode=0x1 (Text), Mask=1, Len=48
+// Payload: {"event":"INSERT","topic":"realtime:public:tasks"} (~6 bytes overhead)`,
+              language: "typescript",
+              caption: "Perbandingan efisiensi header HTTP Polling vs frame WebSocket murni"
+            },
+            {
+              label: "Anatomi Realtime Engine Supabase: Dari PostgreSQL WAL ke Phoenix Channels",
+              text: "Supabase tidak memerlukan polling berulang ke database berkat arsitektur Change Data Capture (CDC) yang terintegrasi di kernel PostgreSQL:\n\n" +
+                    "1. Write-Ahead Logging (WAL):\n" +
+                    "Setiap transaksi mutasi (INSERT, UPDATE, DELETE) di PostgreSQL dicatat terlebih dahulu ke dalam log biner WAL di disk sebelum di-commit secara permanen demi integritas data (ACID compliance).\n\n" +
+                    "2. Logical Decoding (pgoutput / wal2json):\n" +
+                    "Fitur replikasi logikal membaca stream WAL secara berurutan dan menerjemahkan byte biner mentah menjadi stream event JSON terstruktur.\n\n" +
+                    "3. Realtime Server (Elixir Phoenix Channels):\n" +
+                    "Supabase Realtime Engine dibangun di atas bahasa Elixir dan Erlang BEAM VM yang terkenal mampu menangani jutaan koneksi konkuren dengan konsumsi memori sangat rendah. Engine ini menerima event dari logical decoder, memverifikasi token JWT klien, mengevaluasi kebijakan RLS, lalu mem-broadcast event ke semua socket klien yang berhak.",
+              code: `// ALUR DATA CHANGE DATA CAPTURE (CDC) SUPABASE:
+// [1. SQL Mutation] ➔ [2. Postgres WAL Disk] 
+// ➔ [3. Logical Replication pgoutput] 
+// ➔ [4. Elixir Realtime Server (Phoenix Channels)] 
+// ➔ [5. WebSocket Pusher] ➔ [6. React Client Component]`,
+              language: "bash",
+              caption: "Jalur transmisi data berlatensi rendah dari PostgreSQL kernel ke peramban klien"
+            },
+            {
+              label: "Aktivasi Publikasi Replikasi: ALTER PUBLICATION supabase_realtime",
+              text: "Demi alasan performa dan keamanan, PostgreSQL tidak menyiarkan seluruh tabel secara default. Agar mutasi pada tabel tertentu dapat didengar oleh klien real-time, tabel tersebut wajib didaftarkan ke dalam publikasi logikal bernama supabase_realtime:\n\n" +
+                    "1. Sintaks DDL SQL: Menambahkan tabel ke publikasi dieksekusi dengan perintah 'ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;'.\n\n" +
+                    "2. Inspeksi Status Publikasi: Mahasiswa dapat memverifikasi daftar tabel yang aktif melalui query 'SELECT * FROM pg_publication_tables WHERE pubname = 'supabase_realtime';'.\n\n" +
+                    "3. Dampak Jika Lupa Diaktifkan: Klien WebSocket dapat tersambung dengan status SUBSCRIBED tanpa error, namun tidak akan pernah menerima event mutasi data apa pun. Ini adalah jebakan nomor satu bagi pengembang pemula.",
+              code: `-- AKTIVASI REPLIKASI TABEL DI SUPABASE SQL EDITOR:
+ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+
+-- VERIFIKASI TABEL YANG AKTIF DI PUBLIKASI REALTIME:
+SELECT tablename 
+FROM pg_publication_tables 
+WHERE pubname = 'supabase_realtime';`,
+              language: "sql",
+              caption: "Perintah DDL SQL untuk mendaftarkan tabel ke slot replikasi logikal Supabase"
+            }
+          ]
+        },
+        {
+          title: "2. Mendengarkan Mutasi Data (Postgres Changes Subscriptions)",
+          badge: "Pilar 2: Postgres Changes",
+          content: "Setelah replikasi diaktifkan, komponen klien Next.js dapat berlangganan ke mutasi baris data secara langsung. Supabase menyediakan antarmuka deklaratif yang fleksibel untuk memfilter jenis event dan kolom yang relevan.",
+          subpoints: [
+            {
+              label: "Granularitas Event Listener: INSERT, UPDATE, DELETE",
+              text: "Supabase Realtime menyediakan listener granular postgres_changes yang memungkinkan komponen React mendengarkan jenis mutasi tertentu atau semua mutasi secara sekaligus:\n\n" +
+                    "1. Event INSERT: Dipicu saat ada baris baru. Payload menyediakan payload.new yang berisi seluruh kolom dari baris yang baru disisipkan. Komponen React dapat langsung menambahkan objek ini ke array state lokal.\n\n" +
+                    "2. Event UPDATE: Dipicu saat baris diubah. Payload menyediakan payload.new (data terbaru) dan payload.old (identitas baris lama). Komponen React memperbarui elemen yang cocok.\n\n" +
+                    "3. Event DELETE: Dipicu saat baris dihapus. Payload hanya menyediakan payload.old yang secara default hanya memuat kolom Primary Key (id). Komponen React memfilter keluar baris tersebut.",
+              code: `// CONTOH SUBSCRIPTION LENGKAP PADA NEXT.JS 16 CLIENT COMPONENT
+const channel = supabase
+  .channel('kanban-sync')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'tasks' },
+    (payload) => {
+      if (payload.eventType === 'INSERT') {
+        setTasks((prev) => [payload.new as Task, ...prev]);
+      } else if (payload.eventType === 'UPDATE') {
+        setTasks((prev) => prev.map((t) => t.id === payload.new.id ? payload.new as Task : t));
+      } else if (payload.eventType === 'DELETE') {
+        setTasks((prev) => prev.filter((t) => t.id !== payload.old.id));
+      }
+    }
+  )
+  .subscribe();`,
+              language: "typescript",
+              caption: "Menangani mutasi multi-event pada satu channel subscription"
+            },
+            {
+              label: "Optimasi Bandwidth dengan Server-Side Filtering",
+              text: "Jika aplikasi memiliki ribuan pengguna aktif, mendengarkan seluruh event tabel tasks tanpa filter akan membanjiri browser pengguna dengan data tugas milik pengguna lain yang tidak relevan. Supabase Realtime mendukung Server-Side Filtering menggunakan parameter filter:\n\n" +
+                    "1. Filter Berbasis Kolom: Sintaks filter: 'column=eq.value' memerintahkan Realtime Server di cloud untuk hanya mem-forward event jika nilai kolom cocok persis.\n\n" +
+                    "2. Contoh Isolasi Tenant: Menyaring tugas berdasarkan user_id menjamin browser hanya menerima notifikasi saat ada tugas baru milik dirinya sendiri.\n\n" +
+                    "3. Efisiensi Jaringan: Mengurangi beban CPU browser klien dan menghemat kuota transmisi data hingga lebih dari 90% pada sistem multi-pengguna.",
+              code: `// FILTER SERVER-SIDE: HANYA MENERIMA UPDATE STATUS DARI PROYEK TERTENTU
+const channel = supabase
+  .channel('project-123-changes')
+  .on(
+    'postgres_changes',
+    {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'tasks',
+      filter: 'project_id=eq.proj-123' // Filter dievaluasi di cloud server
+    },
+    (payload) => {
+      console.log('Update khusus proyek 123:', payload.new);
+    }
+  )
+  .subscribe();`,
+              language: "typescript",
+              caption: "Sintaks server-side filtering untuk menghemat bandwidth jaringan"
+            },
+            {
+              label: "Keamanan Aliran WebSocket: Penegakan Row Level Security (RLS)",
+              text: "Salah satu kekhawatiran terbesar dalam arsitektur real-time adalah kebocoran data rahasia ke klien yang tidak berhak. Supabase Realtime secara native mengintegrasikan Row Level Security (RLS) ke dalam jalur replikasi:\n\n" +
+                    "1. Evaluasi Token JWT Klien: Saat browser membuka koneksi WebSocket, klien menyertakan token JWT Supabase Auth. Server Realtime memverifikasi klaim auth.uid() pada token tersebut.\n\n" +
+                    "2. Evaluasi Policy PostgreSQL: Sebelum payload event disiarkan ke socket pengguna, Realtime Server mengevaluasi apakah token pengguna tersebut memenuhi syarat SELECT pada baris data tersebut berdasarkan policy RLS yang berlaku di PostgreSQL.\n\n" +
+                    "3. Penyensoran Otomatis (Silent Drop): Jika pengguna B tidak memiliki izin SELECT terhadap tugas rahasia milik pengguna A, Realtime Server secara otomatis menahan paket tersebut sehingga pengguna B tidak pernah tahu adanya perubahan data.",
+              code: `-- KEBIJAKAN RLS POSTGRESQL UNTUK REALTIME SUBSCRIPTIONS
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can subscribe to their own tasks"
+ON public.tasks FOR SELECT
+TO authenticated
+USING (
+  auth.uid() = user_id 
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);`,
+              language: "sql",
+              caption: "Kebijakan RLS yang dievaluasi Realtime Server sebelum menyiarkan event"
+            }
+          ]
+        },
+        {
+          title: "3. Komunikasi Ephemeral: Presence & Broadcast (Zero-DB Load)",
+          badge: "Pilar 3: Presence & Broadcast",
+          content: "Tidak semua pertukaran data memerlukan persistensi di hard drive basis data. Supabase menghadirkan protokol in-memory berlatensi rendah untuk fitur interaksi langsung yang tidak membutuhkan pencatatan jangka panjang.",
+          subpoints: [
+            {
+              label: "Pelacakan Pengguna Aktif (Presence): Model Data CRDT",
+              text: "Fitur kolaboratif modern membutuhkan informasi siapa saja rekan tim yang sedang membuka halaman yang sama. Menyimpan status online ke database dengan menulis timestamp last_seen setiap beberapa detik adalah anti-pattern yang akan melumpuhkan database.\n\n" +
+                    "Supabase memecahkan masalah ini dengan Supabase Presence:\n" +
+                    "1. Conflict-Free Replicated Data Types (CRDT): Presence dikelola sepenuhnya di dalam memori kluster Elixir BEAM menggunakan struktur data CRDT yang menjamin konsistensi state terdistribusi tanpa kunci (lock-free).\n\n" +
+                    "2. Siklus Hidup Presence: Klien memanggil channel.track({ user_id, online_at }). Server secara otomatis menyiarkan event sync, join, dan leave.\n\n" +
+                    "3. Deteksi Disconnect Otomatis: Jika pengguna menutup tab browser atau kehilangan koneksi internet, server Elixir mendeteksi matinya socket TCP dan otomatis memicu event leave ke seluruh pengguna lain tanpa memerlukan cron job pembersih.",
+              code: `// IMPLEMENTASI PRESENCE DI NEXT.JS 16
+const channel = supabase.channel('online-collaborators', {
+  config: { presence: { key: user.id } }
+});
+
+channel
+  .on('presence', { event: 'sync' }, () => {
+    const state = channel.presenceState();
+    setCollaborators(Object.values(state).flat());
+  })
+  .on('presence', { event: 'join' }, ({ newPresences }) => {
+    console.log('User bergabung:', newPresences);
+  })
+  .on('presence', { event: 'leave' }, ({ leftPresences }) => {
+    console.log('User keluar:', leftPresences);
+  })
+  .subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      await channel.track({ name: user.name, avatar: user.avatar });
+    }
+  });`,
+              language: "typescript",
+              caption: "Melacak daftar pengguna online secara instan tanpa menulis ke database"
+            },
+            {
+              label: "Siaran Langsung Instan (Broadcast): Zero-DB I/O",
+              text: "Tidak semua pesan antar-pengguna perlu disimpan permanen. Fitur seperti Indikator Mengetik (Typing Indicator), Live Mouse Cursor, atau Pemberitahuan UI Sementara bersifat ephemeral (sementara) dan berfrekuensi tinggi (bisa 10–60 event per detik per pengguna).\n\n" +
+                    "1. Mekanisme Broadcast: Klien mengirim payload langsung ke channel dengan channel.send({ type: 'broadcast', event: 'typing', payload: { userId } }).\n\n" +
+                    "2. In-Memory Routing: Server Realtime langsung memantulkan payload tersebut ke semua klien lain yang tersambung ke channel yang sama tanpa menyentuh disk database PostgreSQL sama sekali (Zero Disk I/O).\n\n" +
+                    "3. Latensi Sangat Rendah: Transmisi pesan selesai dalam waktu 10–25 milidetik, ideal untuk pengalaman kolaboratif interaktif layaknya Google Docs atau Figma.",
+              code: `// MENGIRIM & MENERIMA SINYAL BROADCAST INDIKATOR MENGETIK
+// Klien A: Mengirim sinyal mengetik saat pengguna mengetik di input
+const notifyTyping = () => {
+  channel.send({
+    type: 'broadcast',
+    event: 'typing',
+    payload: { user: 'Budi Santoso', isTyping: true }
+  });
+};
+
+// Klien B: Menerima sinyal dan menampilkan teks 'Budi sedang mengetik...'
+channel.on('broadcast', { event: 'typing' }, ({ payload }) => {
+  setActiveTypingUser(payload.isTyping ? payload.user : null);
+});`,
+              language: "typescript",
+              caption: "Mengirimkan sinyal interaksi antar-pengguna via saluran ephemeral broadcast"
+            },
+            {
+              label: "Matriks Keputusan: Kapan Postgres Changes vs Broadcast vs Presence",
+              text: "Sebagai arsitek serverless, memilih fitur Realtime yang tepat mencegah pembengkakan biaya dan kelebihan beban database:\n\n" +
+                    "1. Gunakan Postgres Changes: Jika data bersifat persisten, penting untuk audit, dan wajib bertahan saat browser di-refresh (contoh: pemindahan status kartu Kanban, perubahan judul tugas, penambahan komentar).\n\n" +
+                    "2. Gunakan Broadcast: Jika data bersifat sementara (ephemeral), berfrekuensi tinggi, dan tidak masalah jika hilang saat pengguna baru masuk (contoh: indikator mengetik, live cursor, notifikasi kartu bergetar).\n\n" +
+                    "3. Gunakan Presence: Khusus untuk mengetahui siapa yang sedang online / aktif di halaman dan membagikan state identitas pengguna tanpa polling tabel database.",
+              code: `// ATURAN PENGAMBILAN KEPUTUSAN ARSITEKTURAL:
+// 1. Apakah data harus tetap ada besok pagi? ➔ Postgres Changes
+// 2. Apakah data berupa koordinat kursor mouse atau sedang ngetik? ➔ Broadcast
+// 3. Apakah data berupa daftar siapa yang sedang login di tab ini? ➔ Presence`,
+              language: "bash",
+              caption: "Panduan praktis memilih fitur Realtime Supabase yang tepat"
+            }
+          ]
+        },
+        {
+          title: "4. Ketahanan, Siklus Hidup & Harmonisasi State di Next.js 16",
+          badge: "Pilar 4: Lifecycle & Resilience",
+          content: "Menggabungkan arsitektur real-time dengan React Client Components di Next.js 16 menuntut penanganan siklus hidup yang higienis guna mencegah memory leak, konflik duplikasi state lokal, serta pemulihan cerdas pasca-reconnection.",
+          subpoints: [
+            {
+              label: "Siklus Hidup React: channel.unsubscribe() & Pencegahan Memory Leak",
+              text: "Di lingkungan React dan Next.js App Router, komponen sering kali mengalami mount dan unmount saat pengguna berpindah halaman atau saat terjadi re-render:\n\n" +
+                    "1. Bahaya Subscription Tanpa Pembersihan:\n" +
+                    "Jika subscription channel dibuat di dalam useEffect tanpa fungsi cleanup, setiap kali komponen di-mount akan tercipta koneksi baru ke WebSocket. Klien akan memiliki 2, 5, bahkan 10 listener aktif yang sama!\n\n" +
+                    "2. Dampak Duplicate Execution:\n" +
+                    "Saat satu event INSERT tiba dari server, fungsi callback akan dipanggil sebanyak jumlah koneksi yang bocor, menyebabkan state React berkedip dan memori browser membengkak (memory leak).\n\n" +
+                    "3. Standar Cleanup yang Benar:\n" +
+                    "Wajib mengembalikan fungsi cleanup di useEffect: return () => { supabase.removeChannel(channel); } untuk memutus listener dan membebaskan resource memori.",
+              code: `// STANDAR CLEANUP SUBSCRIPTION WAJIB DI REACT USEEFFECT
+useEffect(() => {
+  const channel = supabase
+    .channel('realtime-tasks')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+      handleRealtimeUpdate(payload);
+    })
+    .subscribe();
+
+  // FUNGSI CLEANUP MUTLAK: Dipanggil saat unmount atau dependency berubah
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [supabase]);`,
+              language: "typescript",
+              caption: "Pembersihan subscription untuk mencegah duplikasi listener dan memory leak"
+            },
+            {
+              label: "Harmonisasi Optimistic UI & Real-Time Sync: Anti Double-Render",
+              text: "Ketika aplikasi menggabungkan Optimistic UI (pembaruan antarmuka instan 0ms sebelum Server Action selesai) dengan Real-time Listener, muncul risiko Double-Rendering:\n\n" +
+                    "1. Skenario Masalah: Pengguna A membuat tugas baru. Komponen lokal langsung menambahkan tugas ke antarmuka dengan ID sementara (temp-123). 200ms kemudian, Server Action berhasil dan PostgreSQL menyiarkan event INSERT via WebSocket. Jika listener naif langsung melakukan append, pengguna A akan melihat dua kartu kembar dengan judul yang sama!\n\n" +
+                    "2. Solusi Deduplikasi ID: Listener real-time wajib memeriksa apakah item dengan ID tersebut sudah ada, atau menggunakan struktur Map berbasis key unik.\n\n" +
+                    "3. Pola ID Reconciliation: Gantikan ID sementara dengan ID resmi dari database secara transparan tanpa menambahkan elemen baru ke dalam array state.",
+              code: `// STRATEGI DEDUPLIKASI PADA LISTENER REAL-TIME
+const handleInsert = (newTask: Task) => {
+  setTasks((prev) => {
+    // 1. Cek apakah tugas sudah ada di state (misal dari optimistic update)
+    const exists = prev.some((t) => t.id === newTask.id || t.title === newTask.title);
+    if (exists) {
+      // 2. Perbarui data sementara dengan data resmi dari database
+      return prev.map((t) => (t.id === newTask.id ? newTask : t));
+    }
+    // 3. Jika benar-benar baru dari klien lain, sisipkan ke daftar
+    return [newTask, ...prev];
+  });
+};`,
+              language: "typescript",
+              caption: "Strategi rekonsiliasi state untuk mencegah duplikasi data pada Optimistic UI"
+            },
+            {
+              label: "Ketahanan Jaringan: Heartbeat Ping/Pong & Reconnection Catch-Up",
+              text: "Koneksi jaringan mobile atau Wi-Fi pengguna sering mengalami gangguan sementara (packet loss, laptop sleep, atau perpindahan jaringan):\n\n" +
+                    "1. Heartbeat Protocol (Ping/Pong): Supabase Realtime secara otomatis mengirimkan frame ping/pong berkala tiap 30 detik untuk mendeteksi apakah soket TCP masih responsif.\n\n" +
+                    "2. Auto-Reconnect dengan Exponential Backoff: Jika koneksi terputus, SDK secara otomatis mencoba menyambung kembali dengan jeda waktu eksponensial (1s, 2s, 4s, 8s).\n\n" +
+                    "3. Kelemahan Buffer WebSocket: Selama masa offline, event mutasi yang terjadi di PostgreSQL tidak di-buffer tanpa batas oleh server. Begitu koneksi pulih (status === 'SUBSCRIBED'), klien wajib menjalankan Catch-up Re-fetch (memanggil query database terbaru atau router.refresh()) untuk mengambil data yang terlewat saat offline.",
+              code: `// PENANGANAN STATUS KONEKSI DAN CATCH-UP RE-FETCH
+const channel = supabase.channel('tasks-resilient');
+
+channel.subscribe((status) => {
+  if (status === 'SUBSCRIBED') {
+    console.log('✅ Terhubung ke Realtime!');
+  } else if (status === 'CLOSED') {
+    console.warn('⚠️ Koneksi terputus! Menunggu auto-reconnect...');
+  } else if (status === 'CHANNEL_ERROR') {
+    console.error('❌ Terjadi kesalahan pada channel!');
+  }
+});
+
+// Pemicu Catch-up query saat peramban kembali online
+useEffect(() => {
+  const handleOnline = () => {
+    console.log('🌐 Peramban kembali online: Eksekusi catch-up re-fetch');
+    reFetchFreshTasks(); // Ambil data terbaru dari Supabase
+  };
+  window.addEventListener('online', handleOnline);
+  return () => window.removeEventListener('online', handleOnline);
+}, []);`,
+              language: "typescript",
+              caption: "Menangani status koneksi dan pemulihan data yang terlewat pasca-reconnection"
+            }
+          ]
+        }
       ]
     },
     references: [
-      { title: "Supabase Realtime Guide", url: "https://supabase.com/docs/guides/realtime", source: "Supabase" },
-      { title: "Supabase Realtime React Hook Recipes", url: "https://supabase.com/docs/guides/realtime/subscribing-to-database-changes", source: "Supabase" }
+      { title: "Supabase Realtime Official Guide", url: "https://supabase.com/docs/guides/realtime", source: "Supabase" },
+      { title: "Subscribing to Postgres Changes", url: "https://supabase.com/docs/guides/realtime/subscribing-to-database-changes", source: "Supabase" },
+      { title: "Supabase Presence (CRDT State Sync)", url: "https://supabase.com/docs/guides/realtime/presence", source: "Supabase" },
+      { title: "Supabase Broadcast (Ephemeral Messaging)", url: "https://supabase.com/docs/guides/realtime/broadcast", source: "Supabase" }
     ],
     lab: {
-      prerequisites: ["Tabel Supabase sudah diaktifkan Realtime-nya di dashboard"],
+      prerequisites: [
+        "Sudah menyelesaikan Modul 9 (Kanban Board Drag & Drop) dan Modul 10 (Media CDN)",
+        "Tabel public.tasks sudah memiliki kolom id, title, status, position, dan image_public_id",
+        "Kredensial Supabase (NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY) sudah terpasang di .env.local",
+        "Akses ke Supabase Studio (Database ➔ Publications) untuk mengaktifkan replikasi tabel"
+      ],
+      warningZone: {
+        title: "Peringatan Wajib Aktivasi Publikasi Database",
+        desc: "Jika tabel belum didaftarkan ke publikasi 'supabase_realtime', channel subscription di React akan berstatus SUBSCRIBED namun tidak akan pernah menerima event mutasi data apa pun. Pastikan Anda mengeksekusi DDL publikasi di Tahap 1!"
+      },
       steps: [
         {
           stepNumber: 1,
-          instruction: "Buat Client Hook untuk mendengarkan perubahan data real-time",
-          code: `import { useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
+          instruction: "Daftarkan tabel public.tasks ke dalam publikasi supabase_realtime di PostgreSQL",
+          code: `-- EKSEKUSI DI SUPABASE DASHBOARD > SQL EDITOR:
+ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
 
-export function useRealtimeTasks(onUpdate: () => void) {
-  const supabase = createClient()
+-- VERIFIKASI STATUS PUBLIKASI:
+SELECT tablename FROM pg_publication_tables WHERE pubname = 'supabase_realtime';`,
+          language: "sql"
+        },
+        {
+          stepNumber: 2,
+          instruction: "Buat custom hook useRealtimeTasks dengan listener postgres_changes dan auto-cleanup",
+          code: `"use client";
 
+import { useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import type { Task } from "@/types/task";
+
+export function useRealtimeTasks(
+  onInsert: (task: Task) => void,
+  onUpdate: (task: Task) => void,
+  onDelete: (id: string) => void
+) {
   useEffect(() => {
+    const supabase = createClient();
+
     const channel = supabase
-      .channel('realtime-tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        onUpdate()
-      })
-      .subscribe()
+      .channel("tasks-realtime-channel")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "tasks" },
+        (payload) => onInsert(payload.new as Task)
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tasks" },
+        (payload) => onUpdate(payload.new as Task)
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "tasks" },
+        (payload) => onDelete(payload.old.id as string)
+      )
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [supabase, onUpdate])
+      supabase.removeChannel(channel);
+    };
+  }, [onInsert, onUpdate, onDelete]);
 }`,
           language: "typescript"
+        },
+        {
+          stepNumber: 3,
+          instruction: "Integrasikan hook useRealtimeTasks ke dalam komponen Kanban Board interaktif",
+          code: `// Hubungkan hook ke state lokal kanban dengan deduplikasi ID
+useRealtimeTasks(
+  useCallback((newTask) => {
+    setTasks((prev) => prev.some((t) => t.id === newTask.id) ? prev : [newTask, ...prev]);
+  }, []),
+  useCallback((updatedTask) => {
+    setTasks((prev) => prev.map((t) => t.id === updatedTask.id ? updatedTask : t));
+  }, []),
+  useCallback((deletedId) => {
+    setTasks((prev) => prev.filter((t) => t.id !== deletedId));
+  }, [])
+);`,
+          language: "typescript"
+        },
+        {
+          stepNumber: 4,
+          instruction: "Implementasikan pelacakan rekan tim aktif menggunakan Supabase Presence",
+          code: `const channel = supabase.channel('kanban-presence', {
+  config: { presence: { key: currentUser.id } }
+});
+
+channel
+  .on('presence', { event: 'sync' }, () => {
+    const state = channel.presenceState();
+    setOnlineUsers(Object.values(state).flat());
+  })
+  .subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      await channel.track({ name: currentUser.fullName, avatar: currentUser.avatarUrl });
+    }
+  });`,
+          language: "typescript"
+        },
+        {
+          stepNumber: 5,
+          instruction: "Implementasikan indikator mengetik ephemeral menggunakan Supabase Broadcast",
+          code: `// Kirim sinyal saat mengetik tanpa beban database
+const broadcastTyping = (isTyping: boolean) => {
+  channel.send({
+    type: 'broadcast',
+    event: 'typing',
+    payload: { user: currentUser.fullName, isTyping }
+  });
+};`,
+          language: "typescript"
+        },
+        {
+          stepNumber: 6,
+          instruction: "Buka dua jendela browser berdampingan (Normal vs Incognito) untuk menguji sinkronisasi < 50ms",
+          code: `# Buka jendela peramban utama:
+http://localhost:3000/tasks/kanban
+
+# Buka jendela incognito / peramban kedua:
+http://localhost:3000/tasks/kanban
+
+# Geser kartu tugas di jendela A dan amati pergeseran otomatis di jendela B!`,
+          language: "bash"
         }
       ],
       aiPromptTemplate: {
-        role: "Realtime Systems Engineer",
-        prompt: "Buatkan custom hook React di Next.js untuk mendengarkan event INSERT pada tabel 'comments' di Supabase dan menambahkan item baru ke state lokal secara instan.",
-        tip: "Jangan lupa fungsi cleanup supabase.removeChannel(channel) di return useEffect untuk mencegah memory leak."
+        role: "Senior Real-Time Systems Specialist & Next.js 16 Architect",
+        prompt: `Bertindaklah sebagai Senior Real-Time Systems Specialist & Next.js 16 Architect.
+Tugas Anda adalah mengintegrasikan sistem kolaborasi multi-pengguna real-time menggunakan Supabase Realtime (WebSockets, Postgres Changes, Presence, dan Broadcast) pada papan Kanban tugas di proyek "The Serverless Odyssey".
+
+LANGKAH PRE-KONDISI & VALIDASI DEPENDENSI:
+1. Pastikan '@supabase/ssr' dan '@supabase/supabase-js' sudah terpasang di package.json.
+2. Buat berkas migrasi SQL 'supabase/migrations/06_realtime_publications.sql':
+   ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+
+BATASAN ARSITEKTUR KETAT:
+1. Client Component Boundary: Seluruh channel subscription WAJIB berada di komponen daun 'use client' (misal: 'src/hooks/use-realtime-tasks.ts' atau 'src/components/kanban/kanban-realtime-board.tsx'). DILARANG memanggil supabase.channel di Server Components.
+2. Anti-Memory-Leak: Setiap 'supabase.channel()' WAJIB menyertakan pembersihan di return useEffect: 'return () => { supabase.removeChannel(channel); };'.
+3. Deduplikasi State: Mencegah kemunculan item kembar saat Optimistic UI lokal disusul oleh event WebSocket INSERT dari server.
+4. Fitur Ephemeral Zero-DB:
+   - Presence: Tampilkan badge avatar anggota tim yang sedang aktif membuka papan kanban ('channel.presenceState()').
+   - Broadcast: Tampilkan indikator 'User X sedang memindahkan kartu...' atau 'User X sedang mengetik...'.
+5. Root Navigation Rule: Perbarui 'src/app/page.tsx' dengan Hero CTA interaktif 'Masuk ke Papan Kolaboratif Real-Time ➔' yang mengarahkan langsung ke '/tasks/kanban'.
+6. Zero TypeScript 'any' types.
+
+STRUKTUR BERKAS YANG WAJIB DIBUAT/DIPERBARUI:
+1. 'supabase/migrations/06_realtime_publications.sql': DDL penambahan tabel tasks ke publikasi supabase_realtime.
+2. 'src/hooks/use-realtime-tasks.ts': Custom hook menangani subscription postgres_changes (INSERT, UPDATE, DELETE) dengan fungsi pembersihan.
+3. 'src/hooks/use-realtime-presence.ts': Custom hook mengelola status pengguna online (Presence CRDT sync/join/leave).
+4. 'src/components/kanban/kanban-presence-bar.tsx': Komponen avatar bar menampilkan anggota tim yang aktif.
+5. 'src/components/kanban/kanban-typing-indicator.tsx': Komponen ephemeral broadcast untuk status interaksi pengguna.
+6. 'src/components/kanban/kanban-board.tsx': Menghubungkan hook real-time ke state Kanban sehingga sinkronisasi lintas browser berlangsung < 50ms tanpa reload.
+7. 'src/app/page.tsx': Memperbarui Landing Page root dengan tombol Hero CTA real-time.`,
+        tip: "Pastikan selalu menyertakan return () => { supabase.removeChannel(channel) } di dalam useEffect agar tidak terjadi kebocoran koneksi saat komponen unmount.",
+        steppedPrompts: [
+          {
+            stepNumber: 1,
+            title: "Tahap 1: Pendaftaran Tabel ke Publikasi Database supabase_realtime",
+            badge: "Tahap 1: PostgreSQL DDL",
+            description: "Menyusun skrip DDL migrasi SQL untuk menambahkan tabel public.tasks ke dalam publikasi logikal supabase_realtime di database Supabase.",
+            targetFiles: ["supabase/migrations/06_realtime_publications.sql"],
+            manualAction: {
+              required: true,
+              title: "Eksekusi DDL & Pendaftaran Publikasi di Supabase Studio",
+              location: "Supabase Studio ➔ Database ➔ Publications",
+              description: "Buka dashboard Supabase Studio ➔ Database ➔ Publications ➔ Pastikan tabel tasks tercentang di publikasi supabase_realtime, atau jalankan skrip DDL di SQL Editor. Buka simulator interaktif di bawah untuk panduan visual langkah demi langkah.",
+              simulatorKey: "supabase-realtime-studio",
+              codeSnippet: {
+                code: `-- 1. DAFTARKAN TABEL TASKS KE PUBLIKASI REALTIME
+ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+
+-- 2. PASTIKAN ROW LEVEL SECURITY TETAP AKTIF
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+
+-- 3. VERIFIKASI STATUS PUBLIKASI
+SELECT * FROM pg_publication_tables WHERE pubname = 'supabase_realtime';`,
+                language: "sql"
+              },
+              note: "⚠️ PERINGATAN: Tanpa mendaftarkan tabel ke publikasi supabase_realtime, klien React tidak akan pernah menerima event mutasi data meskipun kode JavaScript sudah benar!"
+            },
+            prompt: `Bertindaklah sebagai Database Engineer.
+Tugas Anda adalah merakit skrip migrasi SQL untuk mengaktifkan fitur Realtime pada tabel tasks:
+
+BUAT BERKAS: 'supabase/migrations/06_realtime_publications.sql'
+Tuliskan DDL SQL:
+1. ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+2. Pastikan tabel public.tasks memiliki RLS policy SELECT yang valid untuk authenticated users.
+3. Tambahkan komentar SQL informatif mengenai Change Data Capture (CDC).
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Buat berkas migrasi SQL ini sekarang secara mandiri!`,
+            checkpoint: "Tabel public.tasks terdaftar di publikasi supabase_realtime dan siap menyiarkan event CDC.",
+            tip: "Di Supabase Studio, Anda juga dapat mengaktifkan Realtime via Table Editor dengan mengklik Edit Table ➔ centang 'Enable Realtime'."
+          },
+          {
+            stepNumber: 2,
+            title: "Tahap 2: Custom Hook useRealtimeTasks dengan Auto-Cleanup",
+            badge: "Tahap 2: Client Hook CDC",
+            description: "Membangun custom hook React di Next.js 16 untuk mendengarkan event INSERT, UPDATE, dan DELETE pada tabel tasks dengan pembersihan memori otomatis.",
+            targetFiles: ["src/hooks/use-realtime-tasks.ts"],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan merakit berkas 'src/hooks/use-realtime-tasks.ts' yang menginisialisasi createClient() browser, membuka channel 'tasks-realtime', dan mengembalikan fungsi pembersihan supabase.removeChannel(channel)."
+            },
+            prompt: `Bertindaklah sebagai Senior Frontend React Specialist.
+Tugas Anda adalah membangun custom hook 'useRealtimeTasks':
+
+BUAT BERKAS: 'src/hooks/use-realtime-tasks.ts' ('use client')
+1. Impor useEffect, useRef dari 'react'.
+2. Impor createClient dari '@/utils/supabase/client'.
+3. Definisikan tipe callback untuk onInsert, onUpdate, onDelete.
+4. Di dalam useEffect:
+   - Inisialisasi const supabase = createClient().
+   - Buat const channel = supabase.channel('tasks-cdc-sync').
+   - Pasang listener .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, (payload) => onInsert(payload.new)).
+   - Pasang listener .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tasks' }, (payload) => onUpdate(payload.new)).
+   - Pasang listener .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'tasks' }, (payload) => onDelete(payload.old.id)).
+   - Panggil .subscribe().
+5. KEMBALIKAN FUNGSI CLEANUP:
+   return () => {
+     supabase.removeChannel(channel);
+   };
+6. Tangani dependency array secara tepat agar tidak terjadi re-subscription berulang.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Rakit custom hook ini sekarang dengan tipe data TypeScript yang ketat tanpa tipe 'any'!`,
+            checkpoint: "Hook useRealtimeTasks terpasang rapi dan siap mengalirkan event mutasi dari database ke antarmuka.",
+            tip: "Gunakan useRef untuk menyimpan referensi callback agar tidak memicu unmount-remount channel setiap kali parent component re-render."
+          },
+          {
+            stepNumber: 3,
+            title: "Tahap 3: Integrasi Sinkronisasi Real-Time pada Papan Kanban",
+            badge: "Tahap 3: Kanban CDC Sync",
+            description: "Menyambungkan hook useRealtimeTasks ke state Papan Kanban dengan deduplikasi ID untuk mencegah bug double-render saat Optimistic UI aktif.",
+            targetFiles: ["src/components/kanban/kanban-board.tsx"],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan memperbarui komponen 'src/components/kanban/kanban-board.tsx' agar mendengarkan mutasi real-time dan memperbarui urutan kartu tugas secara mulus."
+            },
+            prompt: `Bertindaklah sebagai Senior UI Engineer.
+Tugas Anda adalah mengintegrasikan 'useRealtimeTasks' ke dalam komponen Papan Kanban:
+
+BUKA & PERBARUI: 'src/components/kanban/kanban-board.tsx' ('use client')
+1. Impor 'useRealtimeTasks' dari '@/hooks/use-realtime-tasks'.
+2. Sambungkan hook dengan strategi deduplikasi ID:
+   - onInsert: Jika task sudah ada di state (misal dari optimistic update), perbarui data; jika belum ada, tambahkan ke kolom yang sesuai.
+   - onUpdate: Perbarui kolom status dan posisi kartu secara halus menggunakan map.
+   - onDelete: Filter keluar kartu yang dihapus berdasarkan ID.
+3. Tambahkan indikator visual 'Realtime Sync: Connected ⚡' di header papan Kanban.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Sempurnakan antarmuka papan Kanban sekarang agar bereaksi seketika terhadap perubahan dari klien lain!`,
+            checkpoint: "Saat task diubah atau dipindahkan di database atau klien lain, kartu di papan Kanban berpindah otomatis tanpa reload.",
+            tip: "Pola deduplikasi ID menjamin antarmuka tetap tenang tanpa glitch visual saat mutasi optimistik dikonfirmasi oleh server."
+          },
+          {
+            stepNumber: 4,
+            title: "Tahap 4: Pelacakan Rekan Tim Aktif dengan Supabase Presence (CRDT)",
+            badge: "Tahap 4: Presence Bar",
+            description: "Membangun custom hook useRealtimePresence dan komponen KanbanPresenceBar untuk menampilkan avatar anggota tim yang sedang membuka papan tugas.",
+            targetFiles: [
+              "src/hooks/use-realtime-presence.ts",
+              "src/components/kanban/kanban-presence-bar.tsx"
+            ],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan merakit hook Presence berbasis CRDT State dan komponen visualizer avatar bar yang menampilkan siapa saja yang sedang online di papan kanban."
+            },
+            prompt: `Bertindaklah sebagai Real-Time UI Specialist.
+Tugas Anda adalah mengimplementasikan Supabase Presence untuk mendeteksi siapa yang online:
+
+1. BUAT BERKAS: 'src/hooks/use-realtime-presence.ts' ('use client')
+   - Hook 'useRealtimePresence(roomName: string, currentUser: { id: string; name: string; avatar?: string })'.
+   - Konfigurasi channel: 'supabase.channel(roomName, { config: { presence: { key: currentUser.id } } })'.
+   - Dengarkan event 'presence': 'sync', 'join', dan 'leave'.
+   - Eksekusi 'channel.track({ ...currentUser, onlineAt: new Date().toISOString() })' saat status 'SUBSCRIBED'.
+   - Kembalikan array onlineUsers dan fungsi cleanup 'supabase.removeChannel(channel)'.
+
+2. BUAT BERKAS: 'src/components/kanban/kanban-presence-bar.tsx' ('use client')
+   - Render deretan avatar pengguna yang sedang online dengan efek tumpuk (*stacked avatars*) Tailwind.
+   - Indikator titik hijau 'Online' yang berdenyut (*pulse*).
+   - Tooltip nama pengguna saat hover.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Rakit kedua berkas ini sekarang dengan desain antarmuka modern yang memukau!`,
+            checkpoint: "Header papan Kanban menampilkan avatar rekan tim yang sedang aktif membuka halaman.",
+            tip: "Presence bekerja 100% di memori server Elixir BEAM tanpa menulis baris status apa pun ke tabel PostgreSQL, menjamin zero database overhead."
+          },
+          {
+            stepNumber: 5,
+            title: "Tahap 5: Siaran Kilat Ephemeral Broadcast (Typing & Interaction Indicator)",
+            badge: "Tahap 5: Ephemeral Broadcast",
+            description: "Mengimplementasikan siaran langsung berlatensi rendah tanpa database untuk menampilkan indikator saat pengguna lain sedang mengetik atau memindahkan kartu.",
+            targetFiles: [
+              "src/components/kanban/kanban-typing-indicator.tsx",
+              "src/components/kanban/kanban-board.tsx"
+            ],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan membuat komponen siaran kilat Broadcast dan menyambungkannya ke event input formulir tugas."
+            },
+            prompt: `Bertindaklah sebagai Performance Frontend Specialist.
+Tugas Anda adalah mengimplementasikan Supabase Ephemeral Broadcast:
+
+1. BUAT BERKAS: 'src/components/kanban/kanban-typing-indicator.tsx' ('use client')
+   - Dengarkan event broadcast 'typing' dari channel.
+   - Jika ada pengguna yang sedang mengetik, render banner animasi halus: 'User X sedang mengetik tugas baru...'.
+   - Pasang auto-timeout 3 detik untuk mereset indikator jika tidak ada sinyal baru.
+
+2. PERBARUI 'src/components/kanban/kanban-board.tsx':
+   - Panggil 'channel.send({ type: 'broadcast', event: 'typing', payload: { user: currentUser.name, isTyping: true } })' saat input judul tugas difokuskan atau diketik.
+   - Posisikan KanbanTypingIndicator di atas kolom Todo.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Implementasikan fitur siaran kilat ini sekarang tanpa melibatkan penyimpanan database!`,
+            checkpoint: "Ketika Anda mengetik di jendela A, jendela B seketika menampilkan teks animasi bahwa Anda sedang mengetik.",
+            tip: "Broadcast memiliki latensi sub-20ms karena payload hanya dipantulkan oleh RAM server Elixir ke koneksi WebSocket aktif."
+          },
+          {
+            stepNumber: 6,
+            title: "Tahap 6: Verifikasi End-to-End Multi-Window & Root Landing Page CTA",
+            badge: "Tahap 6: Multi-Window E2E",
+            description: "Melakukan pengujian kolaborasi real-time pada dua jendela browser berdampingan dan memperbarui Landing Page root / sesuai Root Navigation Rule.",
+            targetFiles: [
+              "src/app/page.tsx",
+              "src/app/(dashboard)/tasks/kanban/page.tsx"
+            ],
+            manualAction: {
+              required: false,
+              title: "100% Diotomasi oleh AI Agent",
+              description: "AI Agent akan memperbarui halaman landing page root src/app/page.tsx sesuai Root Navigation Rule dan memastikan rute /tasks/kanban siap diuji multi-jendela."
+            },
+            prompt: `Bertindaklah sebagai Full-Stack QA & Lead Architect.
+Tugas Anda adalah menuntaskan integrasi dan navigasi root:
+
+1. PERBARUI LANDING PAGE ROOT: 'src/app/page.tsx' (ROOT NAVIGATION RULE)
+   - Buka berkas 'src/app/page.tsx'.
+   - Tambahkan tombol Hero CTA utama: 'Buka Papan Kolaborasi Real-Time ➔' yang menautkan pengunjung langsung ke rute '/tasks/kanban'.
+   - Sertakan badge indikator 'WebSockets Real-Time Active ⚡'.
+
+2. PERIKSA RUTE: 'src/app/(dashboard)/tasks/kanban/page.tsx'
+   - Pastikan halaman merender KanbanBoard, KanbanPresenceBar, dan KanbanTypingIndicator secara harmonis.
+   - Sediakan instruksi singkat bagi penguji: 'Buka dua jendela browser berdampingan untuk menguji kolaborasi instan'.
+
+ATURAN EKSEKUSI TANPA KONFIRMASI:
+Selesaikan perakitan kedua berkas ini sekarang secara mandiri!`,
+            checkpoint: "Buka http://localhost:3000/ di peramban, klik tombol CTA ke /tasks/kanban, lalu buka jendela Incognito berdampingan: mutasi di jendela satu langsung tersinkronisasi di jendela dua dalam hitungan milidetik!",
+            tip: "Sesuai Root Navigation Rule di AGENTS.md, halaman root tidak boleh dibiarkan menampilkan starter template Next.js default polos."
+          }
+        ]
       }
     },
     mission: {
-      taskTitle: "Misi Minggu 11: Fitur Kolaborasi Real-time",
-      taskDesc: "Pasang listener real-time di Proyek Akhir Anda sehingga perubahan data oleh User A langsung terlihat oleh User B tanpa refresh.",
+      taskTitle: "Misi Minggu 11: Sistem Kolaborasi Multi-Pengguna Real-Time (WebSockets & CDC)",
+      taskDesc: "Bangun fitur kolaborasi multi-pengguna instan pada papan Kanban Proyek Akhir Anda menggunakan Supabase Realtime: dengarkan mutasi database (Postgres Changes) untuk sinkronisasi kartu tugas < 50ms, tampilkan avatar rekan tim yang online dengan Presence (CRDT), dan siarkan indikator aktivitas mengetik dengan Ephemeral Broadcast.",
       definitionOfDone: [
-        "Fitur Realtime aktif pada tabel target di Dashboard Supabase",
-        "Dua tab browser berbeda menunjukkan sinkronisasi data seketika saat data ditambah atau diubah"
+        "Tabel public.tasks terdaftar di publikasi supabase_realtime di database PostgreSQL Supabase",
+        "Custom hook useRealtimeTasks terpasang dengan pembersihan channel.unsubscribe() & supabase.removeChannel() untuk mencegah memory leak",
+        "Event INSERT dari klien lain seketika menambahkan kartu tugas baru ke kolom Kanban tanpa reload halaman",
+        "Event UPDATE dari klien lain memperbarui posisi atau status kartu tugas secara halus di antarmuka",
+        "Event DELETE dari klien lain menghapus kartu dari antarmuka secara instan",
+        "Komponen KanbanPresenceBar menampilkan avatar pengguna yang sedang membuka halaman yang sama berbasis CRDT Presence",
+        "Komponen KanbanTypingIndicator menampilkan notifikasi saat pengguna lain sedang mengetik via Ephemeral Broadcast",
+        "Landing page root (src/app/page.tsx) diperbarui dengan tombol Hero CTA yang menghubungkan pengguna langsung ke rute kolaborasi (/tasks/kanban)"
       ],
-      gitBranchTask: "git checkout -b feature/supabase-realtime"
+      gitBranchTask: "git checkout -b feature/realtime-collaboration"
+    },
+    quiz: {
+      totalQuestions: 7,
+      passingScore: 80,
+      questions: [
+        {
+          id: 1,
+          question: "Jelaskan secara mendalam perbedaan arsitektur antara HTTP Short Polling dan WebSockets Full-Duplex dalam konteks aplikasi kolaboratif. Mengapa Short Polling dianggap tidak efisien untuk fitur real-time berfrekuensi tinggi, dan bagaimana WebSockets mengeliminasi overhead HTTP header?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Short Polling: klien mengirim HTTP request berulang pada interval tertentu (misal tiap 2 detik); sebagian besar request mengembalikan data kosong atau 304 Not Modified, namun tetap memakan TCP handshake dan header HTTP overhead (~800–1.200 bytes per request) yang membebani server dan bandwidth. 2) WebSockets: diawali dengan HTTP Upgrade handshake (101 Switching Protocols), lalu membuka koneksi TCP persisten dua arah (full-duplex). Setelah tersambung, frame data hanya membutuhkan overhead sekecil 2–6 bytes per pesan, memangkas latensi menjadi sub-50ms dan menghemat bandwidth hingga 95% pada frekuensi tinggi.",
+          keyConcepts: [
+            "HTTP Short Polling vs WebSockets Full-Duplex",
+            "HTTP Request-Response Overhead (~1 KB) vs WS Frame (2-6 Bytes)",
+            "TCP Upgrade Handshake (101 Switching Protocols)",
+            "Persistent Bi-directional Connection",
+            "Latensi Sub-50ms & Efisiensi Bandwidth"
+          ],
+          weight: 15,
+          socraticHint: "Bandingkan analogi seseorang yang menelpon resepsionis setiap 2 detik untuk bertanya 'ada paket buat saya?' dengan sambungan telepon yang tetap terhubung di mana kurir langsung berbisik saat paket tiba. Berapa banyak byte header HTTP yang terbuang sia-sia jika tidak ada mutasi data?"
+        },
+        {
+          id: 2,
+          question: "Bagaimana cara kerja Change Data Capture (CDC) pada Supabase Realtime? Uraikan alur data mulai dari penulisan mutasi SQL di PostgreSQL, peran Write-Ahead Log (WAL), logical replication decoding, hingga pengiriman frame WebSocket oleh Realtime Server (Elixir Phoenix Channels).",
+          rubric: "Mahasiswa wajib menguraikan 5 tahapan: 1) Mutasi SQL dieksekusi di PostgreSQL. 2) Kernel Postgres mencatat mutasi ke Write-Ahead Log (WAL) biner di disk untuk integritas transaksi (ACID). 3) Logical decoding (pgoutput) membaca stream WAL dari publikasi supabase_realtime dan menerjemahkannya ke event JSON terstruktur. 4) Realtime Server (Elixir Phoenix Channels) menerima stream event dari decoder, memverifikasi JWT klien, dan mengevaluasi Row Level Security (RLS). 5) Server mem-broadcast payload WebSocket ke seluruh klien yang me-subscribe channel tersebut.",
+          keyConcepts: [
+            "Change Data Capture (CDC)",
+            "Write-Ahead Log (WAL) biner",
+            "Logical Replication & pgoutput Decoder",
+            "Elixir Phoenix Channels Engine",
+            "Row Level Security (RLS) Evaluation on CDC"
+          ],
+          weight: 15,
+          socraticHint: "Apakah Supabase menjalankan query 'SELECT *' berkala ke PostgreSQL untuk mengetahui adanya perubahan data? Jika tidak, berkas log biner apa di level database yang dibaca oleh logical replication slot?"
+        },
+        {
+          id: 3,
+          question: "Mengapa sebuah tabel yang ingin disinkronkan secara real-time WAJIB didaftarkan ke publikasi 'supabase_realtime' via SQL 'ALTER PUBLICATION'? Apa yang terjadi pada sisi klien jika langkah ini terlewatkan, dan mengapa Row Level Security (RLS) SELECT policy mutlak diperlukan pada aliran ini?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Alasan publikasi: PostgreSQL secara default mematikan replikasi logikal pada tabel demi performa CPU dan ruang disk WAL; mendaftarkan tabel ke 'supabase_realtime' memberi instruksi kepada kernel Postgres untuk mengekspor mutasi tabel tersebut ke replication slot. 2) Gejala jika terlewat: Klien WebSocket akan tersambung dengan status SUBSCRIBED tanpa melempar error, namun tidak akan pernah menerima event mutasi data apa pun. 3) Kebutuhan RLS SELECT: Sebelum menyiarkan payload ke klien, Realtime Server mengevaluasi apakah token JWT klien berhak membaca baris tersebut melalui RLS SELECT policy; tanpa policy SELECT, server akan menahan (*silent drop*) seluruh event demi keamanan.",
+          keyConcepts: [
+            "ALTER PUBLICATION supabase_realtime ADD TABLE",
+            "Logical Replication Slot Resource Control",
+            "SUBSCRIBED status without events symptom",
+            "Row Level Security (RLS) SELECT Policy Requirement",
+            "Silent Drop Protection Against Data Leaks"
+          ],
+          weight: 15,
+          socraticHint: "Bayangkan stasiun radio yang sudah menyala (SUBSCRIBED), tetapi mikrofon di studio rekaman belum dicolokkan ke pemancar (ALTER PUBLICATION). Dan bagaimana sistem memastikan orang asing tidak bisa mendengarkan bisikan rahasia pengguna lain?"
+        },
+        {
+          id: 4,
+          question: "Jelaskan perbedaan struktur payload antara event INSERT, UPDATE, dan DELETE pada listener 'postgres_changes'. Mengapa pada event DELETE nilai 'payload.new' bernilai kosong, dan bagaimana kode klien React harus memperbarui state lokal untuk masing-masing event?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) INSERT: payload.new memuat seluruh data baris baru yang disisipkan, payload.old kosong; strategi state: setTasks(prev => [payload.new, ...prev]). 2) UPDATE: payload.new memuat data kolom terbaru, payload.old memuat primary key; strategi state: setTasks(prev => prev.map(t => t.id === payload.new.id ? payload.new : t)). 3) DELETE: payload.new kosong karena baris fisik sudah dihapus dari disk database; payload.old memuat primary key { id: '...' }; strategi state: setTasks(prev => prev.filter(t => t.id !== payload.old.id)).",
+          keyConcepts: [
+            "payload.new vs payload.old",
+            "INSERT payload anatomy & array prepend",
+            "UPDATE payload anatomy & array map replacement",
+            "DELETE payload anatomy (empty new, old PK) & array filter",
+            "REPLICA IDENTITY in PostgreSQL"
+          ],
+          weight: 15,
+          socraticHint: "Jika sebuah baris sudah musnah dari database karena perintah DELETE, data baru apa yang bisa dikirimkan oleh server? Mengapa hanya 'payload.old' (khususnya ID) yang tersisa untuk memfilter array state di React?"
+        },
+        {
+          id: 5,
+          question: "Bandingkan kegunaan arsitektur antara 'Postgres Changes' dengan fitur ephemeral 'Broadcast' dan 'Presence'. Mengapa fitur seperti 'Indikator Mengetik' dan 'Live Cursor' DILARANG disimpan ke tabel PostgreSQL, dan bagaimana Presence mengelola status online tanpa cron job pembersih?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Postgres Changes: untuk data persisten yang wajib bertahan di disk SSD (status tugas, komentar); memiliki latensi ~50-100ms karena menunggu commit WAL. 2) Broadcast: untuk data ephemeral berfrekuensi tinggi (10-60 fps seperti live cursor dan typing indicator); dilarang disimpan ke database karena ribuan mutasi per detik akan membanjiri I/O disk PostgreSQL dan menghabiskan kuota write; Broadcast dipantulkan 100% di RAM server Elixir dengan latensi ~15ms. 3) Presence: menggunakan Conflict-free Replicated Data Types (CRDT) di memori; saat tab peramban ditutup atau socket TCP putus, server Elixir langsung memicu event 'leave' secara otomatis tanpa memerlukan query berkala atau cron job 'last_seen'.",
+          keyConcepts: [
+            "Postgres Changes (Persistent) vs Broadcast (Ephemeral)",
+            "Zero Database I/O on Broadcast",
+            "High-Frequency UI Interactions (Typing, Live Cursor)",
+            "Presence CRDT State Synchronization",
+            "Automatic Disconnect & Leave Detection via TCP Drop"
+          ],
+          weight: 14,
+          socraticHint: "Jika ada 100 mahasiswa mengetik tugas bersamaan dan setiap ketukan keyboard memicu 'INSERT INTO typing_events', apa yang akan terjadi pada kecepatan baca-tulis database PostgreSQL Anda? Mengapa RAM server lebih cocok untuk data sementara ini?"
+        },
+        {
+          id: 6,
+          question: "Mengapa pembersihan channel subscription melalui 'supabase.removeChannel(channel)' di dalam return function 'useEffect' mutlak diperlukan di Next.js Client Components? Apa konsekuensi teknis jika pengembang lupa menyertakan fungsi cleanup saat komponen mengalami re-render atau navigasi halaman?",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Mekanisme React Lifecycle: saat navigasi atau re-render, komponen unmount dan mount ulang; tanpa cleanup, koneksi WebSocket lama tetap terbuka di memori latar belakang browser dan server. 2) Duplicate Listeners: setiap kali remount, subscription baru dibuat sehingga satu event dari server akan diterima dan dieksekusi 2x, 3x, atau berkali-kali oleh listener hantu (ghost listeners). 3) Dampak Teknis: Memory leak di RAM peramban, error React 'Can't perform state update on unmounted component', lonjakan kuota koneksi concurrent di dashboard Supabase, dan antarmuka berkedip ganda.",
+          keyConcepts: [
+            "React useEffect Cleanup Function",
+            "supabase.removeChannel(channel) / channel.unsubscribe()",
+            "Ghost Listeners & Duplicate Event Processing",
+            "Browser Memory Leak & React Unmounted State Warning",
+            "Concurrent Connection Exhaustion"
+          ],
+          weight: 13,
+          socraticHint: "Apa yang terjadi pada panggilan telepon Anda jika setiap kali Anda berpindah ruangan, Anda membiarkan telepon lama tetap menyala dan membuka sambungan telepon baru di ruangan lain? Berapa banyak suara yang akan Anda dengar saat ada panggilan masuk?"
+        },
+        {
+          id: 7,
+          question: "Jelaskan bagaimana mengintegrasikan antarmuka Optimistic UI dengan listener Real-time WebSocket agar tidak terjadi 'Double-Rendering' (kemunculan dua kartu kembar). Selain itu, uraikan mengapa klien wajib melakukan 'Catch-Up Re-fetch' ketika koneksi WebSocket pulih setelah offline sementara.",
+          rubric: "Mahasiswa wajib menjelaskan: 1) Anti Double-Render: saat user lokal membuat task, Optimistic UI langsung merender item dengan ID sementara; saat Server Action sukses, WebSocket menyiarkan event INSERT baris yang sama. Solusi: listener real-time harus memeriksa duplikasi (berdasarkan ID atau judul/tempId), lalu menggantikan item optimistik dengan data resmi dari database alih-alih melakukan append naif. 2) Catch-Up Re-fetch: selama perangkat offline, koneksi terputus dan buffer WebSocket di server terbatas; mutasi yang terjadi saat offline tidak akan diterima secara retroaktif; oleh karena itu, saat status koneksi pulih (SUBSCRIBED pasca-reconnect) atau event window 'online' terpicu, aplikasi wajib memanggil query fresh atau router.refresh() untuk menyelaraskan state lokal dengan database.",
+          keyConcepts: [
+            "Optimistic UI & Real-Time Conflict",
+            "ID Deduplication Strategy (Map / Filter)",
+            "Double-Render Prevention (Replacing Temporary ID)",
+            "Ephemeral WebSocket Buffer Limits during Offline",
+            "Catch-Up Re-fetch on Reconnect Pattern"
+          ],
+          weight: 13,
+          socraticHint: "Jika Anda langsung menampilkan kartu tugas saat tombol diklik (optimistic), lalu 200ms kemudian server mengirimkan notifikasi 'ada tugas baru masuk', bagaimana cara memastikan Anda tidak merender dua kartu yang sama? Dan jika internet Anda mati selama 5 menit saat rekan kerja menambahkan 10 tugas, bagaimana cara mendapatkan 10 tugas tersebut saat internet nyala kembali?"
+        }
+      ]
     }
   },
   {

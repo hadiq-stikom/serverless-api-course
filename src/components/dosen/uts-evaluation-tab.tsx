@@ -33,6 +33,7 @@ import {
   deleteUtsEvaluationAction,
 } from "@/actions/uts-evaluation";
 import { UtsScoringModal } from "@/components/dosen/uts-scoring-modal";
+import { getGradeLetter } from "@/lib/academic-grades";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -206,7 +207,7 @@ export function UtsEvaluationTab({ selectedClass: initialClass }: UtsEvaluationT
       item.is_graded ? item.score_features : 0,
       item.is_graded ? item.score_ui_ux : 0,
       item.is_graded ? item.final_score : 0,
-      item.is_graded ? (item.final_score >= 60 ? "Lulus" : "Perlu Revisi") : "Belum Dinilai",
+      item.is_graded ? (item.final_score >= 50 ? "Lulus" : "Perlu Revisi") : "Belum Dinilai",
       `"${(item.feedback_notes || "-").replace(/"/g, '""')}"`,
     ]);
 
@@ -634,19 +635,23 @@ CREATE POLICY "Allow all" ON public.project_uts_evaluations FOR ALL USING (true)
                           <div className="inline-flex flex-col items-center">
                             <span
                               className={`text-base font-extrabold font-mono px-2.5 py-0.5 rounded-lg border ${
-                                finalScore >= 85
-                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                                  : finalScore >= 75
-                                  ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
-                                  : finalScore >= 60
+                                finalScore >= 90
                                   ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                  : finalScore >= 80
+                                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                                  : finalScore >= 70
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                  : finalScore >= 60
+                                  ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30"
+                                  : finalScore >= 50
+                                  ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30"
                                   : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
                               }`}
                             >
                               {finalScore.toFixed(2)}
                             </span>
-                            <span className="text-[10px] text-muted-foreground mt-0.5">
-                              {finalScore >= 85 ? "Grade A" : finalScore >= 75 ? "Grade B" : finalScore >= 60 ? "Grade C" : "Revisi"}
+                            <span className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                              Grade {getGradeLetter(finalScore)}
                             </span>
                           </div>
                         ) : (

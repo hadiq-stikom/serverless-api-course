@@ -47,18 +47,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StudentPracticumSection } from "@/components/dashboard/student-practicum-section";
-
-const GRADE_TIERS = [
-  { grade: "A", range: "90..100", dot: "bg-amber-400", border: "border-amber-400/40", text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10" },
-  { grade: "AB", range: "80..89", dot: "bg-blue-400", border: "border-blue-400/40", text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10" },
-  { grade: "B", range: "70..79", dot: "bg-emerald-400", border: "border-emerald-400/40", text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10" },
-  { grade: "BC", range: "65..69", dot: "bg-cyan-400", border: "border-cyan-400/40", text: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-500/10" },
-  { grade: "C", range: "55..64", dot: "bg-yellow-400", border: "border-yellow-400/40", text: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10" },
-  { grade: "CD", range: "50..54", dot: "bg-orange-400", border: "border-orange-400/40", text: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10" },
-  { grade: "D", range: "40..49", dot: "bg-rose-400", border: "border-rose-400/40", text: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10" },
-  { grade: "DE", range: "30..39", dot: "bg-red-400", border: "border-red-400/40", text: "text-red-600 dark:text-red-400", bg: "bg-red-500/10" },
-  { grade: "E", range: "0..29", dot: "bg-zinc-400", border: "border-zinc-400/40", text: "text-zinc-600 dark:text-zinc-400", bg: "bg-zinc-500/10" },
-];
+import { GRADE_TIERS, getGradeLetter, getGradeBadgeStyle } from "@/lib/academic-grades";
 import {
   getStudentDashboardDataAction,
   logoutStudentAction,
@@ -609,7 +598,7 @@ export default function StudentDashboardPage() {
                 <Award className="w-3.5 h-3.5" />
               </div>
               <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                Peta 9 Tingkat Capaian &amp; Lencana Resmi
+                Peta 8 Tingkat Capaian &amp; Lencana Resmi
               </h3>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
@@ -621,8 +610,8 @@ export default function StudentDashboardPage() {
           </Badge>
         </div>
 
-        {/* 9 Grade Boxes */}
-        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2">
+        {/* 8 Grade Boxes */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
           {GRADE_TIERS.map((tier) => {
             const isCurrentGrade = stats.completedCount > 0 && stats.gradeLetter === tier.grade;
             return (
@@ -673,7 +662,7 @@ export default function StudentDashboardPage() {
 
           <div className="p-2.5 px-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs flex items-center justify-between">
             <span className="font-semibold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5 text-[11px]">
-              📘 Cukup (Skor 55–69)
+              📘 Cukup (Skor 50–69)
             </span>
             <Badge className="bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border-cyan-500/30 text-[10px] font-bold">
               C • BC
@@ -682,7 +671,7 @@ export default function StudentDashboardPage() {
 
           <div className="p-2.5 px-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs flex items-center justify-between">
             <span className="font-semibold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 text-[11px]">
-              ⚠️ Area Perbaikan (Skor 0–54)
+              ⚠️ Area Perbaikan (Skor 0–49)
             </span>
             <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px] font-bold">
               E s.d CD
@@ -964,15 +953,11 @@ export default function StudentDashboardPage() {
                               </span>
                               <span className="text-[10px] text-zinc-400 font-mono">/100</span>
                               <Badge
-                                className={`text-[9px] px-1.5 py-0 font-mono font-bold leading-tight ${
-                                  mod.totalScore >= 90
-                                    ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                                    : mod.totalScore >= 80
-                                    ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30"
-                                    : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                                }`}
+                                className={`text-[9px] px-1.5 py-0 font-mono font-bold leading-tight ${getGradeBadgeStyle(
+                                  getGradeLetter(mod.totalScore)
+                                )}`}
                               >
-                                {mod.totalScore >= 90 ? "A" : mod.totalScore >= 80 ? "AB" : "B"}
+                                {getGradeLetter(mod.totalScore)}
                               </Badge>
                             </div>
                             <div className="w-20 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700/60">

@@ -27,6 +27,7 @@ import {
   saveUtsEvaluationAction,
 } from "@/actions/uts-evaluation";
 import { calculateUtsFinalScore } from "@/lib/uts-calculator";
+import { getGradePredicate } from "@/lib/academic-grades";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -92,12 +93,9 @@ export function UtsScoringModal({
     });
   }, [scoreConcept, scoreArchitecture, scorePrompt, scoreFeatures, scoreUiUx]);
 
-  // Predikat
+  // Predikat Nilai (Standar Akademik 8-Tier)
   const gradePredicate = useMemo(() => {
-    if (liveFinalScore >= 85) return { label: "A (Sangat Memuaskan)", color: "emerald", border: "border-emerald-500/40", bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" };
-    if (liveFinalScore >= 75) return { label: "B (Baik & Lulus)", color: "indigo", border: "border-indigo-500/40", bg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" };
-    if (liveFinalScore >= 60) return { label: "C (Cukup / Lulus)", color: "amber", border: "border-amber-500/40", bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400" };
-    return { label: "Perlu Revisi (< 60)", color: "rose", border: "border-rose-500/40", bg: "bg-rose-500/10 text-rose-600 dark:text-rose-400" };
+    return getGradePredicate(liveFinalScore);
   }, [liveFinalScore]);
 
   // Quick preset helper
@@ -127,7 +125,7 @@ export function UtsScoringModal({
         score_features: scoreFeatures,
         score_ui_ux: scoreUiUx,
         feedback_notes: feedbackNotes,
-        status: liveFinalScore >= 60 ? "graded" : "revision_required",
+        status: liveFinalScore >= 50 ? "graded" : "revision_required",
       };
 
       const res = await saveUtsEvaluationAction(payload);

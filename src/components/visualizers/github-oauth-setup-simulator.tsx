@@ -62,7 +62,7 @@ export function GithubOauthSetupSimulator() {
   const [diagnosticScenario, setDiagnosticScenario] = useState<"correct" | "err_callback" | "err_disabled" | "err_redirect">("correct");
 
   const sampleClientId = "Ov23abc8899xyz4567";
-  const sampleClientSecret = "ghp_sec_a91b2c3d4e5f6g7h8i9j0k_demo";
+  const sampleClientSecret = "gh_demo_secret_a91b2c3d4e5f6g7h8i9j0k";
   const defaultSupabaseCallback = "https://xyzproject.supabase.co/auth/v1/callback";
 
   const handleCopy = (text: string, key: string) => {

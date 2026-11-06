@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { parseRawStudentsText, type StudentImportItem } from "@/utils/student-parser";
+import { getGradeLetter } from "@/lib/academic-grades";
 
 export type { StudentImportItem };
 
@@ -917,6 +918,7 @@ export async function exportStudentsAndGradesAction(
       "Status Sandi",
       "Kuis Selesai",
       "Rata-rata Skor Kuis",
+      "Grade Huruf",
       "Praktikum Disetujui",
       "Tanggal Terdaftar",
     ];
@@ -961,6 +963,7 @@ export async function exportStudentsAndGradesAction(
         escapeCsv(passwordStatus),
         escapeCsv(`${completedSubs.length}/16 Modul`),
         escapeCsv(avgScore),
+        escapeCsv(completedSubs.length > 0 ? getGradeLetter(Number(avgScore)) : "-"),
         escapeCsv(`${approvedPracs}/7 Praktikum`),
         escapeCsv(createdAtFormatted),
       ].join(",");
